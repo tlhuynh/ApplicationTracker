@@ -1,10 +1,7 @@
-﻿namespace ApplicationTracker
-{
-    public partial class MainPage : ContentPage
-    {
-        public MainPage()
-        {
-            InitializeComponent();
-        }
+namespace ApplicationTracker;
+
+public partial class MainPage : ContentPage {
+    public MainPage() {
+        InitializeComponent();
     }
 }

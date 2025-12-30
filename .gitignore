@@ -361,3 +361,50 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+###############################
+# Visual Studio Code
+###############################
+.vscode/
+*.code-workspace
+
+###############################
+# JetBrains Rider
+###############################
+.idea/
+*.sln.iml
+
+###############################
+# macOS
+###############################
+.DS_Store
+.AppleDouble
+.LSOverride
+
+###############################
+# MAUI Specific
+###############################
+# Android
+*.apk
+*.ap_
+*.aab
+
+# iOS
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# macOS
+*.app
+
+# Windows
+*.msix
+*.msixbundle
+*.appinstaller
+
+###############################
+# Backup files
+###############################
+*.backup
+*.bak
+*.old

@@ -1,0 +1,8 @@
+<Project>
+  <PropertyGroup>
+    <!-- Enforce code style in build -->
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <!-- Treat style warnings as errors (optional, set to false if too strict) -->
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+  </PropertyGroup>
+</Project>
