@@ -1,13 +1,14 @@
 # Application Tracker
 
-A cross-platform application tracker built with .NET MAUI and Blazor.
+A cross-platform application tracker built with .NET MAUI Blazor and MudBlazor.
 
 ## 🚀 Technologies
 
-- **.NET 8**
+- **.NET 10 Preview**
 - **.NET MAUI** - Cross-platform UI framework
-- **Blazor** - Web UI components within MAUI
-- **C# 12** - Latest C# features
+- **Blazor Hybrid** - Web UI components within MAUI
+- **MudBlazor** - Material Design component library
+- **C# 13** - Latest C# features
 
 ## 🎯 Platforms
 
@@ -18,64 +19,98 @@ A cross-platform application tracker built with .NET MAUI and Blazor.
 
 ## 🛠️ Prerequisites
 
-- [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
-- Visual Studio 2022 (17.8+) with MAUI workload
-- For specific platforms:
-  - **Android**: Android SDK
-  - **iOS/macOS**: Xcode (macOS only)
-  - **Windows**: Windows 10/11 SDK
+### Windows
+- [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
+- [Visual Studio 2022 (17.12+)](https://visualstudio.microsoft.com/) with:
+  - .NET MAUI workload
+  - Android SDK
+  - Windows SDK
+
+### macOS
+- [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
+- [Visual Studio 2022 for Mac](https://visualstudio.microsoft.com/vs/mac/) or [VS Code](https://code.visualstudio.com/)
+- [Xcode 15+](https://developer.apple.com/xcode/) (for iOS/macOS development)
+- Command Line Tools: `xcode-select --install`
 
 ## 🏃 Getting Started
 
-### Clone the repository
+### 1. Clone the Repository
 ```bash
 git clone https://github.com/tlhuynh/ApplicationTracker.git
 cd ApplicationTracker
 ```
 
-### Restore dependencies
+### 2. Install Workloads
+
+**On Windows:**
+```powershell
+dotnet workload restore
+```
+
+**On macOS:**
+```bash
+dotnet workload restore
+```
+
+### 3. Restore Dependencies
 ```bash
 dotnet restore
 ```
 
-### Run the application
-```bash
-dotnet build
-dotnet run
-```
+### 4. Run the Application
 
-Or open `ApplicationTracker.sln` in Visual Studio 2022 and press F5.
+**Visual Studio (Windows/Mac):**
+- Open `ApplicationTracker.sln`
+- Select target platform (Android/iOS/Windows/macOS)
+- Press `F5` or click Run
+
+**Command Line:**
+```bash
+# Build
+dotnet build
+
+# Run on specific platform
+dotnet build -f net10.0-android
+dotnet build -f net10.0-ios
+dotnet build -f net10.0-maccatalyst
+dotnet build -f net10.0-windows10.0.19041.0  # Windows only
+```
 
 ## 📁 Project Structure
 
 ```
 ApplicationTracker/
-├── Components/          # Blazor components
-├── wwwroot/            # Static web assets
-├── Resources/          # Images, fonts, splash screens
-│   ├── AppIcon/
-│   ├── Fonts/
-│   ├── Images/
-│   └── Splash/
-├── App.xaml           # Application entry point
-├── MainPage.xaml      # Main MAUI page with Blazor WebView
-└── MauiProgram.cs     # App configuration
+├── Components/              # Blazor components
+│   ├── Layout/             # Layout components (MainLayout, NavMenu)
+│   └── Pages/              # Page components (Home, Counter, Weather)
+├── Platforms/              # Platform-specific code
+│   ├── Android/
+│   ├── iOS/
+│   ├── MacCatalyst/
+│   └── Windows/
+├── Resources/              # App resources
+│   ├── AppIcon/           # Application icon
+│   ├── Fonts/             # Custom fonts
+│   ├── Images/            # Images
+│   └── Splash/            # Splash screen
+├── wwwroot/               # Static web assets
+│   ├── css/
+│   └── index.html         # Blazor host page
+├── App.xaml               # Application entry point
+├── MainPage.xaml          # Main MAUI page with BlazorWebView
+├── MauiProgram.cs         # App configuration & DI
+├── global.json            # SDK version pinning
+└── .editorconfig          # Code formatting rules
 ```
 
-## 🔧 Code Style
+## 🎨 MudBlazor Components
 
-This project uses `.editorconfig` for consistent code formatting:
-- File-scoped namespaces
-- Explicit types (no `var`)
-- Braces on same line
-- XAML properties on separate lines
+This project uses [MudBlazor](https://mudblazor.com/) for Material Design UI components. 
+See [MudBlazor Documentation](https://mudblazor.com/components) for more
 
-To format code: **Ctrl+K, Ctrl+D** in Visual Studio
+## 📚 Resources
 
-## 📝 License
-
-[Add your license here]
-
-## 👥 Contributing
-
-[Add contributing guidelines if applicable]
+- [.NET MAUI Documentation](https://learn.microsoft.com/dotnet/maui/)
+- [Blazor Hybrid Documentation](https://learn.microsoft.com/aspnet/core/blazor/hybrid/)
+- [MudBlazor Documentation](https://mudblazor.com/)
+- [.NET 10 Preview](https://dotnet.microsoft.com/download/dotnet/10.0)
