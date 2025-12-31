@@ -55,10 +55,12 @@ public class ExampleService {
 
 ### Technology Stack
 
-- **.NET 8** (LTS - supported until November 2026)
+- **.NET 10 Preview**
 - **.NET MAUI** for cross-platform UI
-- **Blazor** for web-style component development
-- **C# 12** language features
+- **Blazor Hybrid** for web-style component development
+- **MudBlazor** for Material Design components
+- **SQLite** for local data storage
+- **C# 13** language features
 - **Target Platforms**: Android, iOS, macOS Catalyst, Windows
 
 ### Naming Conventions
@@ -78,11 +80,32 @@ public class ExampleService {
 
 ### Code Quality
 
-- Always include XML documentation for public APIs
+- **Always include XML documentation comments** for:
+  - Public classes, interfaces, and enums
+  - Public methods and properties
+  - Complex private methods
+  - Service classes and database operations
 - Use nullable reference types (`enable` in project)
 - Prefer `async/await` for asynchronous operations
-- Use pattern matching and modern C# 12 features
+- Use pattern matching and modern C# 13 features
 - No use of `ConfigureAwait(false)` in MAUI apps (not needed)
+
+### XML Documentation Example
+
+```csharp
+/// <summary>
+/// Provides database operations for managing application records.
+/// </summary>
+public class DatabaseService {
+    /// <summary>
+    /// Retrieves all application records from the database.
+    /// </summary>
+    /// <returns>A list of all application records.</returns>
+    public async Task<List<ApplicationRecord>> GetItemsAsync() {
+        // Implementation
+    }
+}
+```
 
 ### Common Patterns
 
@@ -103,6 +126,45 @@ try {
     }
 } catch (Exception ex) {
     _logger.LogError(ex, "Unexpected error during processing");
+}
+```
+
+## Code Generation Requirements
+
+### Always Include in Generated Code
+
+1. **XML Documentation Comments**
+   - All public classes, methods, and properties
+   - Parameter descriptions using `<param>` tags
+   - Return value descriptions using `<returns>` tags
+   - Summary descriptions using `<summary>` tags
+
+2. **Code Examples**
+   - Include inline comments for complex logic
+   - Add example usage in XML documentation when appropriate
+
+3. **Error Handling**
+   - Include appropriate try-catch blocks
+   - Add XML documentation for exceptions using `<exception>` tags
+
+### Example
+
+```csharp
+/// <summary>
+/// Saves an application record to the database.
+/// If the record has an ID of 0, it will be inserted as a new record.
+/// Otherwise, the existing record will be updated.
+/// </summary>
+/// <param name="item">The application record to save.</param>
+/// <returns>The number of rows affected (1 for success, 0 for failure).</returns>
+/// <exception cref="SQLiteException">Thrown when database operation fails.</exception>
+public async Task<int> SaveItemAsync(ApplicationRecord item) {
+    await Init();
+    if (item.Id != 0) {
+        return await _database!.UpdateAsync(item);
+    } else {
+        return await _database!.InsertAsync(item);
+    }
 }
 ```
 

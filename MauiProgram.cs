@@ -1,3 +1,4 @@
+using ApplicationTracker.Services;
 using Microsoft.Extensions.Logging;
 using MudBlazor.Services;
 
@@ -13,7 +14,9 @@ public static class MauiProgram {
             });
 
         builder.Services.AddMauiBlazorWebView();
-        builder.Services.AddMudServices();   
+        builder.Services.AddMudServices();
+
+        builder.Services.AddSingleton<DatabaseService>();
 
 #if DEBUG
         builder.Services.AddBlazorWebViewDeveloperTools();
