@@ -1,22 +1,20 @@
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using ApplicationTracker.Models.Entity;
 using ApplicationTracker.Utilities.Enums;
+using SQLite;
 
 namespace ApplicationTracker.Models;
 
 /// <summary>
 /// Represents a job application record stored in the local SQLite database.
 /// </summary>
-[Table("ApplicationRecords")]
 public class ApplicationRecord : BaseEntity {
-    /// <summary>
-    /// Gets or sets the name of the company.
-    /// Required field - cannot be null or empty.
-    /// </summary>
-    [Required]
-    [MaxLength(200)]
-    public string CompanyName { get; set; } = string.Empty;
+	/// <summary>
+	/// Gets or sets the name of the company.
+	/// Required field - cannot be null or empty.
+	/// </summary>
+	[MaxLength(200)]
+	[NotNull]
+	public string CompanyName { get; set; } = string.Empty;
     /// <summary>
     /// Gets or sets the current status of the application.
     /// Defaults to Applied when a new record is created.
