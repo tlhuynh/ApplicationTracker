@@ -2,13 +2,27 @@
 @using ApplicationTracker.Models
 
 <MudPaper Class="pa-16 ma-2" Outlined="true" >
-    <MudDataGrid T="ApplicationRecord" MultiSelection="true" Items="@_applicationRecords" SortMode="SortMode.Multiple" Filterable="true"
-        QuickFilter="@QuickFilter" Hideable="true" SelectedItemsChanged="@SelectedItemsChanged" ReadOnly="@_readOnly" Bordered="true" >
+
+    <MudOverlay Visible="_isLoading" DarkBackground="true" ZIndex="9999">
+        <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
+    </MudOverlay>
+
+    <MudDataGrid @ref="_applicationGrid" T="ApplicationRecord" Items="@_applicationRecords"
+               MultiSelection="true" SortMode="SortMode.Multiple" Filterable="true" ReadOnly="false"
+        Hideable="true" Bordered="true" EditMode="DataGridEditMode.Form" QuickFilter="@QuickFilter"
+        CommittedItemChanges="@CommittedItemChangesAsync">
         <ToolBarContent>
             <MudText Typo="Typo.h6">Applications</MudText>
             <MudSpacer />
             <MudTextField @bind-Value="_searchString" Placeholder="Search" Adornment="Adornment.Start" Immediate="true"
-                AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+                AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0">
+            </MudTextField>
+            <MudSpacer />
+            <MudButtonGroup Class="ma-0 pa-0" Color="Color.Success" Variant="Variant.Filled">
+                <MudButton OnClick="NewRecordAsync" Disabled="_isLoading">
+                    Add New Record
+                </MudButton>
+            </MudButtonGroup>
         </ToolBarContent>
         <Columns>
             <SelectColumn T="ApplicationRecord" />
@@ -19,7 +33,7 @@
             <PropertyColumn Property="x => x.Notes" Title="Notes" Sortable="false" Filterable="false" />
         </Columns>
         <PagerContent>
-            <MudDataGridPager T="ApplicationRecord"   />
+            <MudDataGridPager T="ApplicationRecord" />
         </PagerContent>
     </MudDataGrid>
 </MudPaper>

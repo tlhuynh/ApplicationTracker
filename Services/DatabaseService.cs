@@ -41,7 +41,7 @@ public class DatabaseService {
     /// </summary>
     /// <param name="id">The unique identifier of the application record.</param>
     /// <returns>The application record with the specified ID, or null if not found.</returns>
-    public async Task<ApplicationRecord> GetApplicationRecordAsync(int id) {
+    public async Task<ApplicationRecord?> GetApplicationRecordAsync(int id) {
         await Init();
         return await _database!.Table<ApplicationRecord>().Where(i => i.Id == id).FirstOrDefaultAsync();
     }
@@ -52,15 +52,21 @@ public class DatabaseService {
     /// Otherwise, the existing record will be updated.
     /// </summary>
     /// <param name="item">The application record to save.</param>
-    /// <returns>The number of rows affected (1 for success, 0 for failure).</returns>
+    /// <returns>The ID of the saved application record.</returns>
     public async Task<int> SaveApplicationRecordAsync(ApplicationRecord item) {
         await Init();
-        if (item.Id != 0) {
-            return await _database!.UpdateAsync(item);
-        } else {
-            return await _database!.InsertAsync(item);
-        }
-    }
+		// TODO ensure the EntityBase field is filled properly (CreatedAt, UpdatedAt)
+
+		if (item.Id == 0) {
+			// Insert new record
+			await _database!.InsertAsync(item);
+		} else {
+			// Update existing record
+			await _database!.UpdateAsync(item);
+		}
+
+		return item.Id;
+	}
 
     /// <summary>
     /// Deletes an application record from the database.
