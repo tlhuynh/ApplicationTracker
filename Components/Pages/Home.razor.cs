@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using ApplicationTracker.Models;
 using ApplicationTracker.Services;
+using ApplicationTracker.Utilities.Enums;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
 using SQLite;
@@ -83,6 +84,7 @@ public partial class Home {
 		}
 
 		_isLoading = true;
+		bool isNewRecord = item.Id == 0;
 		try {
 			// Save to database
 			int savedId = await Database.SaveApplicationRecordAsync(item);
@@ -92,7 +94,7 @@ public partial class Home {
 				?? throw new InvalidOperationException($"Failed to retrieve record with ID {savedId}");
 
 			// Update UI collection
-			if (item.Id == 0) {
+			if (isNewRecord) {
 				_applicationRecords.Add(savedItem);
 			} else {
 				UpdateExistingRecord(item, savedItem);
@@ -128,4 +130,61 @@ public partial class Home {
 			Snackbar.Add("Record was modified during save. Changes saved to database.", Severity.Warning);
 		}
 	}
+
+	/// <summary>
+	/// Handles moving an application to the next step in the process.
+	/// </summary>
+	/// <param name="item"></param>
+	private async Task NextStep(ApplicationRecord item) {
+		_isLoading = true;
+		try {
+			switch (item.Status) {
+				case ApplicationStatus.Applied:
+					item.Status = ApplicationStatus.Interviewing;
+					await Database.SaveApplicationRecordAsync(item);
+					Snackbar.Add($"Moved application for {item.CompanyName} to Interviewing", Severity.Info);
+					break;
+				case ApplicationStatus.Interviewing:
+					item.Status = ApplicationStatus.Offered;
+					await Database.SaveApplicationRecordAsync(item);
+					Snackbar.Add($"Moved application for {item.CompanyName} to Offered", Severity.Info);
+					break;
+				default:
+					Snackbar.Add($"Unknown status for {item.CompanyName}.", Severity.Error);
+					break;
+			}
+		} catch (SQLiteException ex) {
+			Console.Error.WriteLine($"Database error: {ex.Message}");
+			Snackbar.Add("Database error occurred. Please try again.", Severity.Error);
+		} catch (Exception ex) {
+			Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+			Snackbar.Add("An unexpected error occurred while updating status.", Severity.Error);
+		} finally {
+			_isLoading = false;
+		}
+	}
+
+	/// <summary>
+	/// Handles rejecting an application.
+	/// </summary>
+	/// <param name="item"></param>
+	private async Task Reject(ApplicationRecord item) {
+		try {
+			item.Status = ApplicationStatus.Rejected;
+			await Database.SaveApplicationRecordAsync(item);
+			Snackbar.Add($"Rejected application for {item.CompanyName}", Severity.Error);
+		} catch (SQLiteException ex) {
+			Console.Error.WriteLine($"Database error: {ex.Message}");
+			Snackbar.Add("Database error occurred. Please try again.", Severity.Error);
+			return;
+		} catch (Exception ex) {
+			Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+			Snackbar.Add("An unexpected error occurred while updating status.", Severity.Error);
+			return;
+		}		
+	}
+
+
+
+
 }
