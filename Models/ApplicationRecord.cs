@@ -16,7 +16,7 @@ public class ApplicationRecord : BaseEntity {
     /// </summary>
     [Required]
     [MaxLength(200)]
-    public required string CompanyName { get; set; } = string.Empty;
+    public string CompanyName { get; set; } = string.Empty;
     /// <summary>
     /// Gets or sets the current status of the application.
     /// Defaults to Applied when a new record is created.

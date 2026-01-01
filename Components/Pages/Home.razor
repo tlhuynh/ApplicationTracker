@@ -1,12 +1,26 @@
 @page "/"
+@using ApplicationTracker.Models
 
-<MudPaper Class="pa-16 ma-2" Outlined="true">
-  <MudText Typo="Typo.h3" Class="mb-4">Home</MudText>
-
-  <MudDivider></MudDivider>
-
+<MudPaper Class="pa-16 ma-2" Outlined="true" >
+    <MudDataGrid T="ApplicationRecord" MultiSelection="true" Items="@_applicationRecords" SortMode="SortMode.Multiple" Filterable="true"
+        QuickFilter="@QuickFilter" Hideable="true" SelectedItemsChanged="@SelectedItemsChanged" ReadOnly="@_readOnly" Bordered="true" >
+        <ToolBarContent>
+            <MudText Typo="Typo.h6">Applications</MudText>
+            <MudSpacer />
+            <MudTextField @bind-Value="_searchString" Placeholder="Search" Adornment="Adornment.Start" Immediate="true"
+                AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+        </ToolBarContent>
+        <Columns>
+            <SelectColumn T="ApplicationRecord" />
+            <PropertyColumn Property="x => x.CompanyName" Title="Company Name" />
+            <PropertyColumn Property="x => x.AppliedDate" Title="Date Applied" />
+            <PropertyColumn Property="x => x.Status" Title="Status" />
+            <PropertyColumn Property="x => x.PostingURL" Title="Job Link" Sortable="false" Filterable="false" />
+            <PropertyColumn Property="x => x.Notes" Title="Notes" Sortable="false" Filterable="false" />
+        </Columns>
+        <PagerContent>
+            <MudDataGridPager T="ApplicationRecord"   />
+        </PagerContent>
+    </MudDataGrid>
 </MudPaper>
 
-@code {
-
-}
