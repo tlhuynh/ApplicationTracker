@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using ApplicationTracker.Components.Dialogs;
 using ApplicationTracker.Models;
 using ApplicationTracker.Services;
 using ApplicationTracker.Utilities.Enums;
@@ -14,6 +15,9 @@ public partial class Home {
 
 	[Inject]
 	private ISnackbar Snackbar { get; set; } = null!;
+
+	[Inject]
+	private IDialogService DialogService { get; set; } = null!;
 
 	private ObservableCollection<ApplicationRecord> _applicationRecords = [];
 	private string _searchString = string.Empty;
@@ -179,11 +183,9 @@ public partial class Home {
 		} catch (SQLiteException ex) {
 			Console.Error.WriteLine($"Database error: {ex.Message}");
 			Snackbar.Add("Database error occurred. Please try again.", Severity.Error);
-			return;
 		} catch (Exception ex) {
 			Console.Error.WriteLine($"Unexpected error: {ex.Message}");
 			Snackbar.Add("An unexpected error occurred while updating status.", Severity.Error);
-			return;
 		}		
 	}
 
@@ -202,11 +204,9 @@ public partial class Home {
 		} catch (SQLiteException ex) {
 			Console.Error.WriteLine($"Database error: {ex.Message}");
 			Snackbar.Add("Database error occurred. Please try again.", Severity.Error);
-			return;
 		} catch (Exception ex) {
 			Console.Error.WriteLine($"Unexpected error: {ex.Message}");
 			Snackbar.Add("An unexpected error occurred while removing record.", Severity.Error);
-			return;
 		}
 	}
 
@@ -250,6 +250,36 @@ public partial class Home {
 		if (!item.PostingURL.StartsWith("http://", StringComparison.OrdinalIgnoreCase) &&
 			!item.PostingURL.StartsWith("https://", StringComparison.OrdinalIgnoreCase)) {
 			item.PostingURL = "https://" + item.PostingURL;
+		}
+	}
+
+	/// <summary>
+	/// Handles opening the notes dialog for the specified application record.
+	/// </summary>
+	/// <param name="item"></param>
+	private async Task OpenNotesDialogAsync(ApplicationRecord item) {
+		DialogParameters parameters = new DialogParameters<NotesDialog> {{nameof(item.Notes), item.Notes}};
+		DialogOptions options = new() {
+			MaxWidth = MaxWidth.ExtraLarge,
+			BackdropClick = false
+		};
+
+		IDialogReference dialog = await DialogService.ShowAsync<NotesDialog>("Notes", parameters, options);
+		DialogResult? result = await dialog.Result;
+
+		if (result != null && !result.Canceled) {
+			// Update notes			
+			try {
+				item.Notes = result.Data as string;
+				await Database.SaveApplicationRecordAsync(item);
+				Snackbar.Add("Notes updated successfully!", Severity.Success);
+			} catch (SQLiteException ex) {
+				Console.Error.WriteLine($"Database error: {ex.Message}");
+				Snackbar.Add("Database error occurred. Please try again.", Severity.Error);
+			} catch (Exception ex) {
+				Console.Error.WriteLine($"An error occurred while saving notes: {ex.Message}");
+				Snackbar.Add("An error occurred while saving notes.", Severity.Error);
+			}
 		}
 	}
 }

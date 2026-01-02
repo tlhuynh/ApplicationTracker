@@ -65,8 +65,8 @@
                 </EditTemplate>
             </TemplateColumn>
             <TemplateColumn Title="Link" Sortable="false" Filterable="false"
-                HeaderStyle="width: 5%;"
-                CellStyle="width: 5%;">
+                      HeaderStyle="width: 5%; text-align: center;"
+                      CellStyle="width: 5%; text-align: center;">
                 <CellTemplate>
                     <MudIconButton Icon="@Icons.Material.Filled.OpenInBrowser"
                                     Size="Size.Medium"
@@ -88,11 +88,16 @@
                         AdornmentIcon="@Icons.Material.Filled.Link" />
                 </EditTemplate>
             </TemplateColumn>
-        
-            <PropertyColumn Property="x => x.Notes" Title="Notes" Required="false"
-                Sortable="false" Filterable="false"
-                HeaderStyle="width: 10%;"
-                CellStyle="width: 10%;" />
+
+            <TemplateColumn Title="Notes" Sortable="false" Filterable="false"
+                HeaderStyle="width: 10%; text-align: center;" CellStyle="width: 10%; text-align: center;">
+                <CellTemplate>
+                    <MudIconButton Icon="@Icons.Material.Filled.Notes"
+                        Size="Size.Medium"
+                        Color="@(string.IsNullOrEmpty(context.Item.Notes) ? Color.Default : Color.Info)"
+                        OnClick="@(() => OpenNotesDialogAsync(context.Item))" />
+                </CellTemplate>
+            </TemplateColumn>
 
             <TemplateColumn Editable="false"
                 HeaderStyle="width: 10%;"
@@ -108,4 +113,3 @@
         </PagerContent>
     </MudDataGrid>
 </MudPaper>
-
