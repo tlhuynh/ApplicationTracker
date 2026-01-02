@@ -27,18 +27,21 @@
         </ToolBarContent>
         <Columns>       
             <PropertyColumn Property="x => x.CompanyName" Title="Company Name" />
-            <PropertyColumn Property="x => x.AppliedDate" Title="Date Applied" Format="MM-dd-yyyy" />
-            <TemplateColumn CellClass="d-flex justify-center" Title="Status" Editable="true"
-                Filterable="true" Sortable="true" SortBy="@(x => $"{x.Status}")" >
+            <PropertyColumn Property="x => x.AppliedDate" Title="Date Applied" Format="MM-dd-yyyy"
+                HeaderStyle="width: 15%;"
+                CellStyle="width: 15%;" />
+            <TemplateColumn Title="Status" Editable="true" Filterable="true" Sortable="true" SortBy="@(x => $"{x.Status}")"
+                HeaderStyle="width: 15%;"
+                CellStyle="width: 15%;">
                 <CellTemplate>
                     <MudStack Row Spacing="2" AlignItems="AlignItems.Center">
-                        <MudText Typo="Typo.body1" Style="min-width: 120px; text-align: center; display: inline-block;">
+                        <MudText Typo="Typo.body1" Style="min-width: 100px;">
                             @context.Item.Status.ToString()
                         </MudText>
                         @if (context.Item.Status != ApplicationStatus.Rejected
                             && context.Item.Status != ApplicationStatus.Offered
                             && context.Item.Status != ApplicationStatus.Withdrawn) {
-                            <MudDivider Vertical="true" />
+                            <MudDivider Vertical="true" FlexItem="true" />
                             <MudIconButton Icon="@Icons.Material.Filled.Check"
                                            Size="@Size.Small"
                                            Variant="@Variant.Filled"
@@ -61,17 +64,42 @@
                     </MudSelect>
                 </EditTemplate>
             </TemplateColumn>
-
-            @*TODO To update postingURL and Notes. Check OneNote for details*@
-            <PropertyColumn Property="x => x.PostingURL" Title="Job Link" Required="false"
-                Sortable="false" Filterable="false" />
-            <PropertyColumn Property="x => x.Notes" Title="Notes" Required="false"
-                Sortable="false" Filterable="false" />
-
-            <TemplateColumn CellClass="d-flex justify-center" Editable="false">
+            <TemplateColumn Title="Link" Sortable="false" Filterable="false"
+                HeaderStyle="width: 5%;"
+                CellStyle="width: 5%;">
                 <CellTemplate>
-                    <MudIconButton Size="@Size.Small" Icon="@Icons.Material.Outlined.Edit" OnClick="@context.Actions.StartEditingItemAsync" />
-                    <MudIconButton Size="@Size.Small" Icon="@Icons.Material.Outlined.Delete" OnClick="@(() => Delete(context.Item))" />
+                    <MudIconButton Icon="@Icons.Material.Filled.OpenInBrowser"
+                                    Size="Size.Medium"
+                                    Href="@context.Item.PostingURL"
+                                    Target="_blank"
+                                    Disabled="@(string.IsNullOrEmpty(context.Item.PostingURL))"
+                                    Color="Color.Primary" />
+                </CellTemplate>
+                <EditTemplate>
+                    <MudTextField @bind-Value="context.Item.PostingURL"
+                        Label="Job Posting URL"
+                        Variant="Variant.Outlined"
+                        InputType="InputType.Url"
+                        Validation="@(new Func<string, string>(ValidateUrl))"
+                        Immediate="true"
+                        Placeholder="https://example.com/job"
+                        HelperText="Enter the URL to the job posting"
+                        Adornment="Adornment.Start"
+                        AdornmentIcon="@Icons.Material.Filled.Link" />
+                </EditTemplate>
+            </TemplateColumn>
+        
+            <PropertyColumn Property="x => x.Notes" Title="Notes" Required="false"
+                Sortable="false" Filterable="false"
+                HeaderStyle="width: 10%;"
+                CellStyle="width: 10%;" />
+
+            <TemplateColumn Editable="false"
+                HeaderStyle="width: 10%;"
+                CellStyle="width: 10%;">
+                <CellTemplate>
+                    <MudIconButton Size="@Size.Medium" Icon="@Icons.Material.Outlined.Edit" OnClick="@context.Actions.StartEditingItemAsync" />
+                    <MudIconButton Size="@Size.Medium" Icon="@Icons.Material.Outlined.Delete" OnClick="@(() => Delete(context.Item))" />
                 </CellTemplate>        
             </TemplateColumn>
         </Columns>

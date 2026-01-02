@@ -75,6 +75,7 @@ public class DatabaseService {
     /// <returns>The number of rows affected (1 for success, 0 for failure).</returns>
     public async Task<int> DeleteApplicationRecordAsync(ApplicationRecord item) {
         await Init();
-        return await _database!.DeleteAsync(item);
+		// TODO ensure related data is handled properly before deletion (if any) also set isDeleted in EntityBase instead of hard delete
+		return await _database!.DeleteAsync(item);
     }
 }

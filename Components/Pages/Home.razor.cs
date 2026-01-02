@@ -84,8 +84,11 @@ public partial class Home {
 		}
 
 		_isLoading = true;
-		bool isNewRecord = item.Id == 0;
 		try {
+			bool isNewRecord = item.Id == 0;
+			// Format URL before saving
+			FormatUrl(item);
+
 			// Save to database
 			int savedId = await Database.SaveApplicationRecordAsync(item);
 
@@ -204,6 +207,49 @@ public partial class Home {
 			Console.Error.WriteLine($"Unexpected error: {ex.Message}");
 			Snackbar.Add("An unexpected error occurred while removing record.", Severity.Error);
 			return;
+		}
+	}
+
+	/// <summary>
+	/// Validates that the provided URL is in a valid format.
+	/// </summary>
+	/// <param name="url">The URL to validate.</param>
+	/// <returns>An error message if invalid, null if valid.</returns>
+	private string ValidateUrl(string? url) {
+		// Allow empty/null for optional field
+		if (string.IsNullOrWhiteSpace(url)) {
+			return string.Empty;
+		}
+
+		// Try to parse as absolute URI
+		if (!Uri.TryCreate(url, UriKind.Absolute, out Uri? uri)) {
+			return "Please enter a valid URL (e.g., https://example.com)";
+		}
+
+		// Ensure it's http or https
+		if (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps) {
+			return "URL must start with http:// or https://";
+		}
+
+		return string.Empty;
+	}
+
+	/// <summary>
+	/// Auto-formats URL by adding https:// if protocol is missing.
+	/// </summary>
+	/// <param name="item">The application record to format.</param>
+	private void FormatUrl(ApplicationRecord item) {
+		if (string.IsNullOrWhiteSpace(item.PostingURL)) {
+			return;
+		}
+
+		// Trim whitespace
+		item.PostingURL = item.PostingURL.Trim();
+
+		// Add https:// if no protocol specified
+		if (!item.PostingURL.StartsWith("http://", StringComparison.OrdinalIgnoreCase) &&
+			!item.PostingURL.StartsWith("https://", StringComparison.OrdinalIgnoreCase)) {
+			item.PostingURL = "https://" + item.PostingURL;
 		}
 	}
 }
