@@ -184,7 +184,26 @@ public partial class Home {
 		}		
 	}
 
-
-
-
+	/// <summary>
+	/// Handles deletes the specified application record from the database and removes it from the local collection.
+	/// </summary>
+	/// <remarks>Displays a notification indicating the result of the operation. If a database or unexpected error
+	/// occurs, an error message is shown to the user.</remarks>
+	/// <param name="item">The application record to delete. Cannot be null.</param>
+	/// <returns>A task that represents the asynchronous delete operation.</returns>
+	private async Task Delete(ApplicationRecord item) {
+		try {
+			await Database.DeleteApplicationRecordAsync(item);
+			_applicationRecords.Remove(item);
+			Snackbar.Add($"Removed application for {item.CompanyName}", Severity.Warning);
+		} catch (SQLiteException ex) {
+			Console.Error.WriteLine($"Database error: {ex.Message}");
+			Snackbar.Add("Database error occurred. Please try again.", Severity.Error);
+			return;
+		} catch (Exception ex) {
+			Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+			Snackbar.Add("An unexpected error occurred while removing record.", Severity.Error);
+			return;
+		}
+	}
 }

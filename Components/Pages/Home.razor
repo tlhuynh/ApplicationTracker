@@ -28,7 +28,8 @@
         <Columns>       
             <PropertyColumn Property="x => x.CompanyName" Title="Company Name" />
             <PropertyColumn Property="x => x.AppliedDate" Title="Date Applied" Format="MM-dd-yyyy" />
-            <TemplateColumn CellClass="d-flex justify-center" Title="Status" Filterable="true" Sortable="true" SortBy="@(x => $"{x.Status}")" >
+            <TemplateColumn CellClass="d-flex justify-center" Title="Status" Editable="true"
+                Filterable="true" Sortable="true" SortBy="@(x => $"{x.Status}")" >
                 <CellTemplate>
                     <MudStack Row Spacing="2" AlignItems="AlignItems.Center">
                         <MudText Typo="Typo.body1" Style="min-width: 120px; text-align: center; display: inline-block;">
@@ -61,20 +62,18 @@
                 </EditTemplate>
             </TemplateColumn>
 
-
-
-
-
-
-
-
-
-
-
+            @*TODO To update postingURL and Notes. Check OneNote for details*@
             <PropertyColumn Property="x => x.PostingURL" Title="Job Link" Required="false"
                 Sortable="false" Filterable="false" />
             <PropertyColumn Property="x => x.Notes" Title="Notes" Required="false"
                 Sortable="false" Filterable="false" />
+
+            <TemplateColumn CellClass="d-flex justify-center" Editable="false">
+                <CellTemplate>
+                    <MudIconButton Size="@Size.Small" Icon="@Icons.Material.Outlined.Edit" OnClick="@context.Actions.StartEditingItemAsync" />
+                    <MudIconButton Size="@Size.Small" Icon="@Icons.Material.Outlined.Delete" OnClick="@(() => Delete(context.Item))" />
+                </CellTemplate>        
+            </TemplateColumn>
         </Columns>
         <PagerContent>
             <MudDataGridPager T="ApplicationRecord" />
