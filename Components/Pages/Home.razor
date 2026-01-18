@@ -1,11 +1,11 @@
 @page "/"
 @using ApplicationTracker.Components.DataGrids
 
-<MudPaper Class="pa-16 ma-2" Outlined="true" >
+<MudPaper Class="ma-3" Outlined="true" >
 	<ApplicationDataGrid @bind-IsLoading="_isLoading"></ApplicationDataGrid>
 </MudPaper>
 
-@*Loading mask*@
+@*Loading Mask*@
 <MudOverlay @bind-Visible="_isLoading" DarkBackground="true" ZIndex="9999">
 	<MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
 </MudOverlay>

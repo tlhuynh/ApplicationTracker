@@ -291,5 +291,55 @@ public partial class ApplicationDataGrid : ComponentBase {
 			}
 		}
 	}
+
+	/// <summary>
+	/// Handles row click event for mobile DataGrid.
+	/// Opens the application details dialog.
+	/// </summary>
+	/// <param name="args">The row click event arguments containing the clicked item.</param>
+	private async Task OnRowClick(DataGridRowClickEventArgs<ApplicationRecord> args) {
+		ApplicationRecord item = args.Item;
+
+		DialogParameters<ApplicationDetailsDialog> parameters = new() {
+			{ x => x.Application, item }
+		};
+		DialogOptions options = new() {
+			MaxWidth = MaxWidth.Small,
+			FullWidth = true,
+			BackdropClick = false
+		};
+
+		IDialogReference dialog = await DialogService.ShowAsync<ApplicationDetailsDialog>(
+			item.CompanyName, parameters, options);
+		DialogResult? result = await dialog.Result;
+
+		if (result != null && !result.Canceled && result.Data is ApplicationDetailsDialog.DialogAction action) {
+			switch (action) {
+				case ApplicationDetailsDialog.DialogAction.NextStep:
+					await NextStep(item);
+					break;
+				case ApplicationDetailsDialog.DialogAction.Reject:
+					await Reject(item);
+					break;
+				case ApplicationDetailsDialog.DialogAction.Delete:
+					await Delete(item);
+					break;
+				case ApplicationDetailsDialog.DialogAction.Edit:
+					await OpenEditDialogAsync(item);
+					break;
+			}
+		}
+	}
+
+	/// <summary>
+	/// Opens the edit dialog for the specified application record (mobile view).
+	/// </summary>
+	/// <param name="item">The application record to edit.</param>
+	private async Task OpenEditDialogAsync(ApplicationRecord item) {
+		// Use the desktop DataGrid's edit functionality
+		if (_applicationGrid is not null) {
+			await _applicationGrid.SetEditingItemAsync(item);
+		}
+	}
 }
 
