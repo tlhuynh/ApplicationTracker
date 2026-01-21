@@ -24,7 +24,7 @@ public class ApplicationRecord : BaseEntity {
     /// Gets or sets the date and time when the application was submitted.
     /// Defaults to the current date and time when a new record is created.
     /// </summary>
-    public DateTime AppliedDate { get; set; } = DateTime.UtcNow;
+    public DateTime? AppliedDate { get; set; } = DateTime.UtcNow;
     /// <summary>
     /// Gets or sets the URL of the job posting.
     /// Optional field - can be null if not available.
@@ -37,4 +37,22 @@ public class ApplicationRecord : BaseEntity {
     /// </summary>
     [MaxLength(5000)]
     public string? Notes { get; set; }
+
+    /// <summary>
+    /// Creates a deep copy of this ApplicationRecord instance.
+    /// </summary>
+    public ApplicationRecord Clone() => new() {
+        Id = Id,
+        CreatedAt = CreatedAt,
+        LastModified = LastModified,
+        UserId = UserId,
+        ServerId = ServerId,
+        NeedsSync = NeedsSync,
+        IsDeleted = IsDeleted,
+        CompanyName = CompanyName,
+        Status = Status,
+        AppliedDate = AppliedDate,
+        PostingURL = PostingURL,
+        Notes = Notes
+    };
 }

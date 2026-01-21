@@ -1,0 +1,76 @@
+@using System.ComponentModel.DataAnnotations
+@using ApplicationTracker.Models
+@using ApplicationTracker.Utilities.Enums
+
+<MudDialog>
+	<TitleContent>
+		<MudText Typo="Typo.h5">New Application</MudText>
+	</TitleContent>
+	<DialogContent>
+		<MudForm @ref="_form" @bind-IsValid="_isValid">
+			<MudStack Spacing="3">
+				<MudTextField @bind-Value="_application.CompanyName"
+				              Label="Company Name"
+				              Variant="Variant.Outlined"
+				              Required="true"
+				              RequiredError="Company name is required"/>
+
+				<MudSelect @bind-Value="_application.Status"
+				           Label="Status"
+				           Variant="Variant.Outlined"
+				           Clearable="false"
+				           Modal="true">
+					@foreach (ApplicationStatus status in Enum.GetValues<ApplicationStatus>()) {
+						<MudSelectItem Value="status">@status</MudSelectItem>
+					}
+				</MudSelect>
+
+				<MudDatePicker @bind-Date="_application.AppliedDate"
+				               Label="Date Applied"
+				               Variant="Variant.Outlined"
+				               DateFormat="MM/dd/yyyy"/>
+
+				<MudTextField @bind-Value="_application.PostingURL"
+				              Label="Posting URL"
+				              Variant="Variant.Outlined"
+				              Placeholder="https://example.com/job-posting"
+				              Validation="@(new UrlAttribute() { ErrorMessage = "Invalid URL" })"/>
+
+				<MudTextField @bind-Value="_application.Notes"
+				              Label="Notes"
+				              Variant="Variant.Outlined"
+				              Lines="5"
+				              Placeholder="Add notes about this application..."/>
+			</MudStack>
+		</MudForm>
+	</DialogContent>
+	<DialogActions>
+		<MudButton OnClick="@Cancel" Color="Color.Default">Cancel</MudButton>
+		<MudButton OnClick="@Submit"
+		           Color="Color.Primary"
+		           Variant="Variant.Filled"
+		           Disabled="@(!_isValid)">
+			Save
+		</MudButton>
+	</DialogActions>
+</MudDialog>
+
+@code {
+	[CascadingParameter]
+	private IMudDialogInstance MudDialog { get; set; } = null!;
+
+	private MudForm _form = null!;
+	private bool _isValid;
+	private ApplicationRecord _application = new();
+
+	private void Cancel() {
+		MudDialog.Cancel();
+	}
+
+	private async Task Submit() {
+		await _form.Validate();
+		if (_isValid) {
+			MudDialog.Close(DialogResult.Ok(_application));
+		}
+	}
+}

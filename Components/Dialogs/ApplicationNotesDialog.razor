@@ -1,0 +1,61 @@
+<MudDialog>
+	<TitleContent>
+		<MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+			<MudText Typo="Typo.h6">
+				<MudIcon Icon="@Icons.Material.Filled.Notes" Class="mr-2"/>
+				Notes
+			</MudText>
+			@if (!_isEditingNotes) {
+				<MudIconButton Icon="@Icons.Material.Filled.Edit"
+				               OnClick="@StartEdit"
+				               Size="Size.Small"
+				               Color="Color.Primary"/>
+			}
+		</MudStack>
+	</TitleContent>
+	<DialogContent>
+		<MudTextField @bind-Value="Notes"
+		              Label="Notes" Variant="Variant.Outlined" Lines="10"
+		              Placeholder="Add notes about this application..."
+		              HelperText="Document interview details, follow-ups, or any important information"
+		              ReadOnly="@(!_isEditingNotes)"/>
+	</DialogContent>
+	<DialogActions>
+		<MudButton OnClick="@(() => MudDialog.Cancel())" Color="Color.Default">
+			@(_isEditingNotes ? "Cancel" : "Close")
+		</MudButton>
+		@if (_isEditingNotes) {
+			<MudButton OnClick="@(() => MudDialog.Close(DialogResult.Ok(Notes)))" Color="Color.Primary"
+			           Variant="Variant.Filled">
+				Save
+			</MudButton>
+		}
+	</DialogActions>
+</MudDialog>
+
+@code {
+	/// <summary>
+	/// An instance of this dialog
+	/// </summary>
+	[CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; } = null!;
+
+	/// <summary>
+	/// The notes content of the selected application record
+	/// </summary>
+	[Parameter]
+    public string Notes { get; set; } = string.Empty;
+
+	/// <summary>
+	/// Determine whether the dialog is in edit mode
+	/// </summary>
+	private bool _isEditingNotes;
+
+	/// <summary>
+	/// Handles the event when the edit button is clicked
+	/// </summary>
+	private void StartEdit() {
+		_isEditingNotes = true;
+		MudDialog.StateHasChanged();
+	}
+}
