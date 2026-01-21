@@ -22,7 +22,7 @@
         <Nullable>enable</Nullable>
 
         <!-- Display name -->
-        <ApplicationTitle>ApplicationTracker</ApplicationTitle>
+        <ApplicationTitle>Applications Tracker</ApplicationTitle>
 
         <!-- App Identifier -->
         <ApplicationId>com.companyname.applicationtracker</ApplicationId>
