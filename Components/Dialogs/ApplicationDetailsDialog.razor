@@ -1,0 +1,143 @@
+@using System.ComponentModel.DataAnnotations
+@using ApplicationTracker.Models
+@using ApplicationTracker.Utilities.Enums
+
+<MudDialog>
+	<TitleContent>
+		<MudText Typo="Typo.h4">Details</MudText>
+	</TitleContent>
+	<DialogContent>
+		<MudStack Spacing="3">
+			@*Company Name*@
+			<MudTextField @bind-Value="Application.CompanyName" Typo="Typo.h6"
+			              Label="Company Name" Variant="Variant.Text"
+			              ReadOnly="@(!_isEditing)"/>
+			@*Status*@
+			@if (_isEditing) {
+				<MudSelect @bind-Value="Application.Status" Variant="Variant.Outlined"
+				           Label="Status" ReadOnly="@(!_isEditing)"
+				           Clearable="false" Modal="true">
+					@foreach (ApplicationStatus status in Enum.GetValues<ApplicationStatus>()) {
+						<MudSelectItem Value="status">@status</MudSelectItem>
+					}
+				</MudSelect>
+			} else {
+				<MudField Label="Status" Variant="Variant.Outlined">
+					<MudText>@Application.Status.ToString()</MudText>
+				</MudField>
+			}
+			@*Applied Date*@
+			<MudDatePicker @bind-Date="Application.AppliedDate"
+			               Label="Date Applied"
+			               Variant="Variant.Outlined"
+			               DateFormat="MM/dd/yyyy"
+			               ReadOnly="@(!_isEditing)"/>
+			@*URL*@
+			@if (_isEditing) {
+				<MudTextField @bind-Value="Application.PostingURL" Label="Posting URL"
+				              Lines="1" Variant="Variant.Outlined"
+				              Placeholder="Add post URL for this application..."
+				              Validation="@(new UrlAttribute() { ErrorMessage = "Invalid URL" })"
+				              ReadOnly="false"/>
+			} else {
+				<MudField Label="Posting URL" Variant="Variant.Outlined">
+					@if (!string.IsNullOrEmpty(Application.PostingURL)) {
+						<MudLink Href="@Application.PostingURL" Target="_blank" Color="Color.Primary" Class="d-inline-flex align-center">
+							@Application.PostingURL
+							<MudIcon Icon="@Icons.Material.Filled.OpenInBrowser" Size="Size.Small" Class="mr-2"/>
+						</MudLink>
+					}
+				</MudField>
+			}
+			@*notes*@
+			<MudTextField @bind-Value="Application.Notes"
+			              Label="Notes" Variant="Variant.Outlined" Lines="15"
+			              Placeholder="Add notes about this application..."
+			              HelperText="Document interview details, follow-ups, or any important information"
+			              ReadOnly="@(!_isEditing)"/>
+		</MudStack>
+	</DialogContent>
+	<DialogActions>
+		@if (_isEditing) {
+			<MudButton OnClick="@CancelEdit">Cancel</MudButton>
+			<MudButton OnClick="@SaveEdit" Variant="Variant.Filled"
+			           Color="Color.Primary">Save</MudButton>
+		} else {
+			<MudButton OnClick="@StartEdit">Edit</MudButton>
+			<MudButton OnClick="@CloseDialog">Close</MudButton>
+		}
+	</DialogActions>
+</MudDialog>
+
+@code {
+	/// <summary>
+	/// An instance of this dialog
+	/// </summary>
+	[CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; } = null!;
+
+	/// <summary>
+	/// The application record with details to display
+	/// </summary>
+	[Parameter]
+    public ApplicationRecord Application { get; set; } = null!;
+
+	/// <summary>
+	/// Contains original details of the application record
+	/// </summary>
+	private ApplicationRecord _originalModel = null!;
+
+	/// <summary>
+	/// Determine whether the dialog is in edit mode
+	/// </summary>
+	private bool _isEditing;
+
+	/// <summary>
+	/// Determine whether details is edited
+	/// </summary>
+	private bool _isEdited;
+
+	/// <summary>
+	/// Event handler for when the parameter is set.
+	/// Override to set original model
+	/// </summary>
+	protected override void OnParametersSet() {
+		base.OnParametersSet();
+		_originalModel = Application.Clone();
+	}
+
+	/// <summary>
+	/// Event handler for when the edit button is clicked
+	/// </summary>
+	private void StartEdit() {
+		_isEditing = true;
+	}
+
+	/// <summary>
+	/// Event handler for when the cancel edit button is clicked
+	/// </summary>
+	private void CancelEdit() {
+		_isEditing = false;
+		Application = _originalModel.Clone();
+	}
+
+	/// <summary>
+	/// Event handler for when the save edit button is clicked
+	/// </summary>
+	private void SaveEdit() {
+		_isEditing = false;
+		_isEdited = true;
+		_originalModel = Application.Clone();
+	}
+
+	/// <summary>
+	/// Event handler for when the close dialog button is clicked
+	/// </summary>
+	private void CloseDialog() {
+		if (_isEdited) {
+			MudDialog.Close(DialogResult.Ok(Application));
+		} else {
+			MudDialog.Cancel();
+		}
+	}
+}

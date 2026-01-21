@@ -1,3 +1,4 @@
+
 # EditorConfig is awesome: https://EditorConfig.org
 
 # top-most EditorConfig file
@@ -90,6 +91,11 @@ xaml_wrap_attributes_at_first_line_length = true
 indent_size = 4
 # Disable auto-formatting issues for Razor files
 dotnet_diagnostic.IDE0055.severity = none
+# Open braces on same line (K&R style)
+csharp_new_line_before_open_brace = none
+csharp_new_line_before_else = false
+csharp_new_line_before_catch = false
+csharp_new_line_before_finally = false
 
 ###############################
 # HTML files
@@ -215,9 +221,7 @@ csharp_prefer_simple_using_statement = true:suggestion
 csharp_style_namespace_declarations = file_scoped:warning
 csharp_style_prefer_method_group_conversion = true:silent
 csharp_style_prefer_top_level_statements = true:silent
-
-= true:suggestion
-csharp_style_pattern_local_over_anonymous_function = true:suggestion
+csharp_style_prefer_local_over_anonymous_function = true:suggestion
 csharp_style_inlined_variable_declaration = true:suggestion
 csharp_style_deconstructed_variable_declaration = true:suggestion
 csharp_style_prefer_index_operator = true:suggestion
@@ -405,14 +409,24 @@ dotnet_diagnostic.IDE0058.severity = none
 
 # IDE0060: Remove unused parameter
 dotnet_diagnostic.IDE0060.severity = warning
+
+# IDE0044: Make field readonly (relaxed for Blazor @ref fields)
+dotnet_diagnostic.IDE0044.severity = suggestion
+
+###############################
+# C# 12+ Features
+###############################
 csharp_style_prefer_primary_constructors = true:suggestion
 csharp_prefer_system_threading_lock = true:suggestion
 csharp_prefer_simple_default_expression = true:suggestion
-csharp_style_prefer_local_over_anonymous_function = true:suggestion
 csharp_style_prefer_implicitly_typed_lambda_expression = true:suggestion
 csharp_prefer_static_anonymous_function = true:suggestion
 csharp_style_prefer_readonly_struct = true:suggestion
 csharp_style_prefer_readonly_struct_member = true:suggestion
+
+###############################
+# Experimental/Whitespace Rules
+###############################
 csharp_style_allow_embedded_statements_on_same_line_experimental = true:silent
 csharp_style_allow_blank_lines_between_consecutive_braces_experimental = true:silent
 csharp_style_allow_blank_line_after_colon_in_constructor_initializer_experimental = true:silent
