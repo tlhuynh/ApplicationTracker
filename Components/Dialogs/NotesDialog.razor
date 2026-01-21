@@ -5,11 +5,12 @@
 				<MudIcon Icon="@Icons.Material.Filled.Notes" Class="mr-2"/>
 				Notes
 			</MudText>
-			<MudIconButton Icon="@(_isEditingNotes ? Icons.Material.Filled.Visibility : Icons.Material.Filled.Edit)"
-			               OnClick="@(() => _isEditingNotes = !_isEditingNotes)"
-			               Size="Size.Small"
-			               Color="Color.Primary"
-			               Title="@(_isEditingNotes ? "View mode" : "Edit mode")"/>
+			@if (!_isEditingNotes) {
+				<MudIconButton Icon="@Icons.Material.Filled.Edit"
+				               OnClick="@StartEdit"
+				               Size="Size.Small"
+				               Color="Color.Primary"/>
+			}
 		</MudStack>
 	</TitleContent>
 	<DialogContent>
@@ -33,11 +34,28 @@
 </MudDialog>
 
 @code {
+	/// <summary>
+	/// An instance of this dialog
+	/// </summary>
 	[CascadingParameter]
     private IMudDialogInstance MudDialog { get; set; } = null!;
 
+	/// <summary>
+	/// The notes content of the selected application record
+	/// </summary>
 	[Parameter]
     public string Notes { get; set; } = string.Empty;
 
+	/// <summary>
+	/// Determine whether the dialog is in edit mode
+	/// </summary>
 	private bool _isEditingNotes;
+
+	/// <summary>
+	/// Handles the event when the edit button is clicked
+	/// </summary>
+	private void StartEdit() {
+		_isEditingNotes = true;
+		MudDialog.StateHasChanged();
+	}
 }

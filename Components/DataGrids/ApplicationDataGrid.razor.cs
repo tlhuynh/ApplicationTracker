@@ -115,7 +115,7 @@ public partial class ApplicationDataGrid : ComponentBase {
 			// Save to database
 			int savedId = await Database.SaveApplicationRecordAsync(item);
 			// Fetch the saved/updated record
-			ApplicationRecord? savedItem = await Database.GetApplicationRecordAsync(savedId)
+			ApplicationRecord savedItem = await Database.GetApplicationRecordAsync(savedId)
 				?? throw new InvalidOperationException($"Failed to retrieve record with ID {savedId}");
 
 			// Update UI collection
