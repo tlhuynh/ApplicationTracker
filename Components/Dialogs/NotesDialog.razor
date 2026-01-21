@@ -1,40 +1,43 @@
 <MudDialog>
-    <TitleContent>
-        <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
-            <MudText Typo="Typo.h6">
-                <MudIcon Icon="@Icons.Material.Filled.Notes" Class="mr-2" />Notes</MudText>
-            <MudIconButton Icon="@(_isEditingNotes ? Icons.Material.Filled.Visibility : Icons.Material.Filled.Edit)"
-                           OnClick="@(() => _isEditingNotes = !_isEditingNotes)"
-                           Size="Size.Small"
-                           Color="Color.Primary"
-                           Title="@(_isEditingNotes ? "View mode" : "Edit mode")" />
-        </MudStack>
-    </TitleContent>
-    <DialogContent>
-        <MudTextField @bind-Value="Notes"
-            Label="Notes" Variant="Variant.Outlined" Lines="10"
-            Placeholder="Add notes about this application..."
-            HelperText="Document interview details, follow-ups, or any important information"
-            ReadOnly="@(!_isEditingNotes)" />
-    </DialogContent>
-    <DialogActions>
-        <MudButton OnClick="() => MudDialog.Cancel()" Color="Color.Default">
-            @(_isEditingNotes ? "Cancel" : "Close")
-        </MudButton>
-        @if (_isEditingNotes) {
-            <MudButton OnClick="() => MudDialog.Close(DialogResult.Ok(Notes))" Color="Color.Primary" Variant="Variant.Filled">
-                Save
-            </MudButton>
-        }
-    </DialogActions>
+	<TitleContent>
+		<MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+			<MudText Typo="Typo.h6">
+				<MudIcon Icon="@Icons.Material.Filled.Notes" Class="mr-2"/>
+				Notes
+			</MudText>
+			<MudIconButton Icon="@(_isEditingNotes ? Icons.Material.Filled.Visibility : Icons.Material.Filled.Edit)"
+			               OnClick="@(() => _isEditingNotes = !_isEditingNotes)"
+			               Size="Size.Small"
+			               Color="Color.Primary"
+			               Title="@(_isEditingNotes ? "View mode" : "Edit mode")"/>
+		</MudStack>
+	</TitleContent>
+	<DialogContent>
+		<MudTextField @bind-Value="Notes"
+		              Label="Notes" Variant="Variant.Outlined" Lines="10"
+		              Placeholder="Add notes about this application..."
+		              HelperText="Document interview details, follow-ups, or any important information"
+		              ReadOnly="@(!_isEditingNotes)"/>
+	</DialogContent>
+	<DialogActions>
+		<MudButton OnClick="@(() => MudDialog.Cancel())" Color="Color.Default">
+			@(_isEditingNotes ? "Cancel" : "Close")
+		</MudButton>
+		@if (_isEditingNotes) {
+			<MudButton OnClick="@(() => MudDialog.Close(DialogResult.Ok(Notes)))" Color="Color.Primary"
+			           Variant="Variant.Filled">
+				Save
+			</MudButton>
+		}
+	</DialogActions>
 </MudDialog>
 
 @code {
-  [CascadingParameter]
-  private IMudDialogInstance MudDialog { get; set; }
+	[CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; } = null!;
 
-  [Parameter]
-  public string Notes { get; set; } = string.Empty;
+	[Parameter]
+    public string Notes { get; set; } = string.Empty;
 
-  private bool _isEditingNotes = false;
+	private bool _isEditingNotes;
 }

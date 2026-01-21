@@ -37,4 +37,22 @@ public class ApplicationRecord : BaseEntity {
     /// </summary>
     [MaxLength(5000)]
     public string? Notes { get; set; }
+
+    /// <summary>
+    /// Creates a deep copy of this ApplicationRecord instance.
+    /// </summary>
+    public ApplicationRecord Clone() => new() {
+        Id = Id,
+        CreatedAt = CreatedAt,
+        LastModified = LastModified,
+        UserId = UserId,
+        ServerId = ServerId,
+        NeedsSync = NeedsSync,
+        IsDeleted = IsDeleted,
+        CompanyName = CompanyName,
+        Status = Status,
+        AppliedDate = AppliedDate,
+        PostingURL = PostingURL,
+        Notes = Notes
+    };
 }

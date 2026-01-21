@@ -73,7 +73,6 @@ public partial class ApplicationDataGrid : ComponentBase {
 
 	/// <summary>
 	/// Handles the creation of a new application record.
-	/// Opens the DataGrid in edit mode for a new record.
 	/// </summary>
 	/// <returns>A task representing the asynchronous operation.</returns>
 	private async Task NewRecordAsync() {
@@ -83,6 +82,17 @@ public partial class ApplicationDataGrid : ComponentBase {
 
 		ApplicationRecord record = new();
 		await _applicationGrid.SetEditingItemAsync(record);
+	}
+
+	/// <summary>
+	/// Handles the creation of a new application record.
+	/// Opens a custom dialog for mobile view.
+	/// </summary>
+	private async Task MobileNewRecordAsync() {
+		// TODO fix this
+		ApplicationRecord record = new();
+
+
 	}
 
 	/// <summary>
@@ -304,42 +314,17 @@ public partial class ApplicationDataGrid : ComponentBase {
 			{ x => x.Application, item }
 		};
 		DialogOptions options = new() {
-			MaxWidth = MaxWidth.Small,
-			FullWidth = true,
-			BackdropClick = false
+			MaxWidth = MaxWidth.ExtraLarge,
+			FullScreen = true,
+			BackdropClick = false,
+			CloseButton = true
 		};
 
 		IDialogReference dialog = await DialogService.ShowAsync<ApplicationDetailsDialog>(
-			item.CompanyName, parameters, options);
+			null, parameters, options);
 		DialogResult? result = await dialog.Result;
 
-		if (result != null && !result.Canceled && result.Data is ApplicationDetailsDialog.DialogAction action) {
-			switch (action) {
-				case ApplicationDetailsDialog.DialogAction.NextStep:
-					await NextStep(item);
-					break;
-				case ApplicationDetailsDialog.DialogAction.Reject:
-					await Reject(item);
-					break;
-				case ApplicationDetailsDialog.DialogAction.Delete:
-					await Delete(item);
-					break;
-				case ApplicationDetailsDialog.DialogAction.Edit:
-					await OpenEditDialogAsync(item);
-					break;
-			}
-		}
-	}
-
-	/// <summary>
-	/// Opens the edit dialog for the specified application record (mobile view).
-	/// </summary>
-	/// <param name="item">The application record to edit.</param>
-	private async Task OpenEditDialogAsync(ApplicationRecord item) {
-		// Use the desktop DataGrid's edit functionality
-		if (_applicationGrid is not null) {
-			await _applicationGrid.SetEditingItemAsync(item);
-		}
+		// TODO: If result return modification was made then pull the latest from db
 	}
 }
 

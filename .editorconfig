@@ -91,6 +91,11 @@ xaml_wrap_attributes_at_first_line_length = true
 indent_size = 4
 # Disable auto-formatting issues for Razor files
 dotnet_diagnostic.IDE0055.severity = none
+# Open braces on same line (K&R style)
+csharp_new_line_before_open_brace = none
+csharp_new_line_before_else = false
+csharp_new_line_before_catch = false
+csharp_new_line_before_finally = false
 
 ###############################
 # HTML files

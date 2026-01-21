@@ -7,16 +7,16 @@
 	             SortMode="SortMode.Multiple" Filterable="true" ReadOnly="true"
 	             Bordered="true" QuickFilter="@QuickFilter"
 	             Breakpoint="Breakpoint.None"
-	             RowClick="@OnRowClick">
+	             RowClick="@OnRowClick" Hover="true" >
 		<ToolBarContent>
 			<MudTextField @bind-Value="_searchString" Placeholder="Search" Adornment="Adornment.Start" Immediate="true"
 			              AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0">
 			</MudTextField>
 			<MudSpacer/>
-			<MudIconButton Icon="@Icons.Material.Filled.AddBox" OnClick="NewRecordAsync" Disabled="IsLoading"/>
+			<MudIconButton Icon="@Icons.Material.Filled.AddBox" OnClick="@MobileNewRecordAsync" Disabled="IsLoading"/>
 		</ToolBarContent>
 		<Columns>
-			<PropertyColumn Property="x => x.CompanyName" Title="Company Name" Filterable="true" Sortable="true"
+			<PropertyColumn Property="x => x.CompanyName" Title="Company" Filterable="true" Sortable="true"
 			                SortBy="@(x => $"{x.CompanyName}")"/>
 		</Columns>
 		<PagerContent>
@@ -39,7 +39,7 @@
 			</MudTextField>
 			<MudSpacer/>
 			<MudButtonGroup Class="ma-0 pa-0" Color="Color.Success" Variant="Variant.Filled">
-				<MudButton OnClick="NewRecordAsync" Disabled="IsLoading">
+				<MudButton OnClick="@NewRecordAsync" Disabled="IsLoading">
 					Add New Record
 				</MudButton>
 			</MudButtonGroup>
