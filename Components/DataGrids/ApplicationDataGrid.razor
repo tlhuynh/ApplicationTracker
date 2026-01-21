@@ -46,9 +46,19 @@
 		</ToolBarContent>
 		<Columns>
 			<PropertyColumn Property="x => x.CompanyName" Title="Company Name"/>
-			<PropertyColumn Property="x => x.AppliedDate" Title="Date Applied" Format="MM-dd-yyyy"
+			<TemplateColumn Title="Date Applied" Editable="true" Filterable="true" Sortable="true"
+			                SortBy="@(x => $"{x.AppliedDate}")"
 			                HeaderStyle="width: 15%;"
-			                CellStyle="width: 15%;"/>
+			                CellStyle="width: 15%;">
+				<CellTemplate>
+					<MudDatePicker @bind-Date="context.Item.AppliedDate" Label="Date Applied"
+					               Variant="Variant.Outlined" DateFormat="MM/dd/yyyy" ReadOnly="true" />
+				</CellTemplate>
+				<EditTemplate>
+					<MudDatePicker @bind-Date="context.Item.AppliedDate" Label="Date Applied"
+					               Variant="Variant.Outlined" DateFormat="MM/dd/yyyy"/>
+				</EditTemplate>
+			</TemplateColumn>
 			<TemplateColumn Title="Status" Editable="true" Filterable="true" Sortable="true"
 			                SortBy="@(x => $"{x.Status}")"
 			                HeaderStyle="width: 15%;"
@@ -117,7 +127,7 @@
 					<MudIconButton Icon="@Icons.Material.Filled.Notes"
 					               Size="Size.Medium"
 					               Color="@(string.IsNullOrEmpty(context.Item.Notes) ? Color.Default : Color.Info)"
-					               OnClick="@(() => OpenNotesDialogAsync(context.Item))"/>
+					               OnClick="@(() => OpenApplicationNotesDialogAsync(context.Item))"/>
 				</CellTemplate>
 			</TemplateColumn>
 

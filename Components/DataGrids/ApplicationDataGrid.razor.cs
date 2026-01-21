@@ -54,6 +54,12 @@ public partial class ApplicationDataGrid : ComponentBase {
 		return false;
 	};
 
+	protected DialogOptions FullScreenDialogOptions = new() {
+		MaxWidth = MaxWidth.ExtraLarge,
+		FullScreen = true,
+		BackdropClick = false
+	};
+
 	/// <summary>
 	/// Called when the component is initialized.
 	/// Retrieves application records from the database.
@@ -89,10 +95,13 @@ public partial class ApplicationDataGrid : ComponentBase {
 	/// Opens a custom dialog for mobile view.
 	/// </summary>
 	private async Task MobileNewRecordAsync() {
-		// TODO fix this
-		ApplicationRecord record = new();
+		IDialogReference dialog = await DialogService.ShowAsync<MobileNewApplicationDialog>(null, FullScreenDialogOptions);
+		DialogResult? result = await dialog.Result;
 
-
+		if (result != null && !result.Canceled) {
+			ApplicationRecord newRecord = (result.Data as ApplicationRecord)!;
+			await CommittedItemChangesAsync(newRecord);
+		}
 	}
 
 	/// <summary>
@@ -278,14 +287,14 @@ public partial class ApplicationDataGrid : ComponentBase {
 	/// Handles opening the notes dialog for the specified application record.
 	/// </summary>
 	/// <param name="item"></param>
-	private async Task OpenNotesDialogAsync(ApplicationRecord item) {
-		DialogParameters parameters = new DialogParameters<NotesDialog> {{nameof(item.Notes), item.Notes}};
+	private async Task OpenApplicationNotesDialogAsync(ApplicationRecord item) {
+		DialogParameters parameters = new DialogParameters<ApplicationNotesDialog> {{nameof(item.Notes), item.Notes}};
 		DialogOptions options = new() {
 			MaxWidth = MaxWidth.ExtraLarge,
 			BackdropClick = false
 		};
 
-		IDialogReference dialog = await DialogService.ShowAsync<NotesDialog>("Notes", parameters, options);
+		IDialogReference dialog = await DialogService.ShowAsync<ApplicationNotesDialog>("Notes", parameters, options);
 		DialogResult? result = await dialog.Result;
 
 		if (result != null && !result.Canceled) {
@@ -315,14 +324,9 @@ public partial class ApplicationDataGrid : ComponentBase {
 		DialogParameters<ApplicationDetailsDialog> parameters = new() {
 			{ x => x.Application, item }
 		};
-		DialogOptions options = new() {
-			MaxWidth = MaxWidth.ExtraLarge,
-			FullScreen = true,
-			BackdropClick = false
-		};
 
 		IDialogReference dialog = await DialogService.ShowAsync<ApplicationDetailsDialog>(
-			null, parameters, options);
+			null, parameters, FullScreenDialogOptions);
 		DialogResult? result = await dialog.Result;
 
 		if (result != null && !result.Canceled) {

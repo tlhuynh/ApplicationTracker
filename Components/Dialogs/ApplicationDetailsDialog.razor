@@ -27,9 +27,11 @@
 				</MudField>
 			}
 			@*Applied Date*@
-			<MudTextField @bind-Value="Application.AppliedDate" Label="Date Applied"
-			              Format="yyyy-MM-dd" Variant="Variant.Outlined"
-			              ReadOnly="@(!_isEditing)" InputType="InputType.Date"/>
+			<MudDatePicker @bind-Date="Application.AppliedDate"
+			               Label="Date Applied"
+			               Variant="Variant.Outlined"
+			               DateFormat="MM/dd/yyyy"
+			               ReadOnly="@(!_isEditing)"/>
 			@*URL*@
 			@if (_isEditing) {
 				<MudTextField @bind-Value="Application.PostingURL" Label="Posting URL"
