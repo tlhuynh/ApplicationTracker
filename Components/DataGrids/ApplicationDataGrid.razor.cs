@@ -114,7 +114,6 @@ public partial class ApplicationDataGrid : ComponentBase {
 
 			// Save to database
 			int savedId = await Database.SaveApplicationRecordAsync(item);
-			await Task.Delay(2000);
 			// Fetch the saved/updated record
 			ApplicationRecord? savedItem = await Database.GetApplicationRecordAsync(savedId)
 				?? throw new InvalidOperationException($"Failed to retrieve record with ID {savedId}");
@@ -148,7 +147,10 @@ public partial class ApplicationDataGrid : ComponentBase {
 	/// <param name="oldItem">The original item to replace.</param>
 	/// <param name="newItem">The updated item from the database.</param>
 	private void UpdateExistingRecord(ApplicationRecord oldItem, ApplicationRecord newItem) {
-		int index = _applicationRecords.IndexOf(oldItem);
+		int index = _applicationRecords
+			.Select((r, i) => (Record: r, Index: i))
+			.FirstOrDefault(x => x.Record.Id == oldItem.Id).Index;
+
 		if (index >= 0) {
 			_applicationRecords[index] = newItem;
 		} else {
@@ -316,15 +318,17 @@ public partial class ApplicationDataGrid : ComponentBase {
 		DialogOptions options = new() {
 			MaxWidth = MaxWidth.ExtraLarge,
 			FullScreen = true,
-			BackdropClick = false,
-			CloseButton = true
+			BackdropClick = false
 		};
 
 		IDialogReference dialog = await DialogService.ShowAsync<ApplicationDetailsDialog>(
 			null, parameters, options);
 		DialogResult? result = await dialog.Result;
 
-		// TODO: If result return modification was made then pull the latest from db
+		if (result != null && !result.Canceled) {
+			item = (result.Data as ApplicationRecord)!;
+			await CommittedItemChangesAsync(item);
+		}
 	}
 }
 

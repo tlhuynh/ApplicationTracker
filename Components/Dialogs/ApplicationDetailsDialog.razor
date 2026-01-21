@@ -3,15 +3,18 @@
 @using ApplicationTracker.Utilities.Enums
 
 <MudDialog>
+	<TitleContent>
+		<MudText Typo="Typo.h4">Details</MudText>
+	</TitleContent>
 	<DialogContent>
 		<MudStack Spacing="3">
 			@*Company Name*@
-			<MudTextField @bind-Value="_editModel.CompanyName" Typo="Typo.h4"
+			<MudTextField @bind-Value="Application.CompanyName" Typo="Typo.h6"
 			              Label="Company Name" Variant="Variant.Text"
 			              ReadOnly="@(!_isEditing)"/>
 			@*Status*@
 			@if (_isEditing) {
-				<MudSelect @bind-Value="_editModel.Status" Variant="Variant.Outlined"
+				<MudSelect @bind-Value="Application.Status" Variant="Variant.Outlined"
 				           Label="Status" ReadOnly="@(!_isEditing)"
 				           Clearable="false" Modal="true">
 					@foreach (ApplicationStatus status in Enum.GetValues<ApplicationStatus>()) {
@@ -20,32 +23,32 @@
 				</MudSelect>
 			} else {
 				<MudField Label="Status" Variant="Variant.Outlined">
-					<MudText>@_editModel.Status.ToString()</MudText>
+					<MudText>@Application.Status.ToString()</MudText>
 				</MudField>
 			}
 			@*Applied Date*@
-			<MudTextField @bind-Value="_editModel.AppliedDate" Label="Date Applied"
+			<MudTextField @bind-Value="Application.AppliedDate" Label="Date Applied"
 			              Format="yyyy-MM-dd" Variant="Variant.Outlined"
 			              ReadOnly="@(!_isEditing)" InputType="InputType.Date"/>
 			@*URL*@
 			@if (_isEditing) {
-				<MudTextField @bind-Value="_editModel.PostingURL" Label="Posting URL"
+				<MudTextField @bind-Value="Application.PostingURL" Label="Posting URL"
 				              Lines="1" Variant="Variant.Outlined"
 				              Placeholder="Add post URL for this application..."
 				              Validation="@(new UrlAttribute() { ErrorMessage = "Invalid URL" })"
 				              ReadOnly="false"/>
 			} else {
 				<MudField Label="Posting URL" Variant="Variant.Outlined">
-					@if (!string.IsNullOrEmpty(_editModel.PostingURL)) {
-						<MudLink Href="@_editModel.PostingURL" Target="_blank" Color="Color.Primary" Class="d-inline-flex align-center">
-							@_editModel.PostingURL
+					@if (!string.IsNullOrEmpty(Application.PostingURL)) {
+						<MudLink Href="@Application.PostingURL" Target="_blank" Color="Color.Primary" Class="d-inline-flex align-center">
+							@Application.PostingURL
 							<MudIcon Icon="@Icons.Material.Filled.OpenInBrowser" Size="Size.Small" Class="mr-2"/>
 						</MudLink>
 					}
 				</MudField>
 			}
 			@*notes*@
-			<MudTextField @bind-Value="_editModel.Notes"
+			<MudTextField @bind-Value="Application.Notes"
 			              Label="Notes" Variant="Variant.Outlined" Lines="15"
 			              Placeholder="Add notes about this application..."
 			              HelperText="Document interview details, follow-ups, or any important information"
@@ -53,16 +56,12 @@
 		</MudStack>
 	</DialogContent>
 	<DialogActions>
-		@if (!_isEditing) {
-			<MudIconButton Icon="@Icons.Material.Filled.Edit"
-			               OnClick="@(() => _isEditing = true)"/>
+		@if (_isEditing) {
+			<MudButton OnClick="@SaveEdit" Color="Color.Primary">Save</MudButton>
+			<MudButton OnClick="@CancelEdit">Cancel</MudButton>
 		} else {
-			<MudStack Row="true">
-				<MudIconButton Icon="@Icons.Material.Filled.Cancel"
-				               OnClick="@CancelEdit"></MudIconButton>
-				<MudIconButton Icon="@Icons.Material.Filled.Save"
-				               OnClick="@SaveEdit"></MudIconButton>
-			</MudStack>
+			<MudButton OnClick="@StartEdit">Edit</MudButton>
+			<MudButton OnClick="@CloseDialog">Close</MudButton>
 		}
 	</DialogActions>
 </MudDialog>
@@ -74,8 +73,6 @@
 
 	private ApplicationRecord _originalModel = null!;
 
-	private ApplicationRecord _editModel = null!;
-
 	private bool _isEditing;
 
 	private bool _isEdited;
@@ -83,21 +80,28 @@
 	protected override void OnParametersSet() {
 		base.OnParametersSet();
 		_originalModel = Application.Clone();
-		_editModel = Application.Clone();
+	}
+
+	private void StartEdit() {
+		_isEditing = true;
 	}
 
 	private void CancelEdit() {
 		_isEditing = false;
-		_editModel = _originalModel.Clone();
+		Application = _originalModel.Clone();
 	}
 
 	private void SaveEdit() {
 		_isEditing = false;
 		_isEdited = true;
-		Application = _editModel;
+		_originalModel = Application.Clone();
 	}
 
-	// TODO
-	// move the edit,cancel,save to the top
-	// and add a regular close button at the bottom, remove option to close using x
+	private void CloseDialog() {
+		if (_isEdited) {
+			MudDialog.Close(DialogResult.Ok(Application));
+		} else {
+			MudDialog.Cancel();
+		}
+	}
 }
