@@ -4,9 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-ApplicationTracker is a cross-platform .NET MAUI Blazor Hybrid application for tracking job applications. It uses MudBlazor for Material Design UI components and SQLite for local data persistence.
+ApplicationTracker is a cross-platform .NET MAUI Blazor Hybrid application for tracking job applications. It uses MudBlazor for Material Design UI components and SQLite for local data persistence. The project includes a backend API for future data synchronization.
 
-**Tech Stack:** .NET 10 Preview, MAUI, Blazor Hybrid, MudBlazor, SQLite, C# 13
+**Tech Stack:** .NET 10 Preview, MAUI, Blazor Hybrid, ASP.NET Core Web API, MudBlazor, SQLite, C# 13
 
 **Target Platforms:** Android, iOS, macOS (Catalyst), Windows
 
@@ -19,25 +19,55 @@ dotnet workload restore
 # Restore dependencies
 dotnet restore
 
-# Build for specific platforms
-dotnet build -f net10.0-android
-dotnet build -f net10.0-ios
-dotnet build -f net10.0-maccatalyst
-dotnet build -f net10.0-windows10.0.19041.0
+# Build MAUI app for specific platforms
+dotnet build src/clients/ApplicationTracker.Maui -f net10.0-android
+dotnet build src/clients/ApplicationTracker.Maui -f net10.0-ios
+dotnet build src/clients/ApplicationTracker.Maui -f net10.0-maccatalyst
+dotnet build src/clients/ApplicationTracker.Maui -f net10.0-windows10.0.19041.0
+
+# Build and run the API
+dotnet run --project src/backend/ApplicationTracker.Api
 ```
 
 ## Architecture
 
+### Project Structure
+
+```
+src/
+├── backend/
+│   ├── ApplicationTracker.Api/           # ASP.NET Core Web API
+│   ├── ApplicationTracker.Application/   # Business logic, services
+│   ├── ApplicationTracker.Core/          # Domain entities, interfaces
+│   └── ApplicationTracker.Infrastructure/# Data access, external services
+├── clients/
+│   └── ApplicationTracker.Maui/          # .NET MAUI Blazor app
+└── shared/
+    └── ApplicationTracker.Shared/        # DTOs shared between API and clients
+```
+
+### Project References
+
+```
+Api → Application, Infrastructure
+Infrastructure → Core, Application
+Application → Core
+Maui → Shared
+```
+
 ### Key Patterns
 
-- **Dependency Injection**: Services registered in `MauiProgram.cs` as singletons (e.g., `DatabaseService`)
+- **Clean Architecture**: Backend follows layered architecture (Core → Application → Infrastructure → Api)
+- **Dependency Injection**: Services registered in `MauiProgram.cs` and API's `Program.cs`
 - **MVVM with Blazor**: Components use code-behind pattern (`.razor` + `.razor.cs`)
 - **Async Data Access**: All database operations are async via `SQLiteAsyncConnection`
 - **Lazy Initialization**: Database connection initialized on first use via `Init()` pattern
 
-### Directory Structure
+### MAUI App Structure
 
-- `Components/` - Blazor components (Pages, Layout, Dialogs)
+Located in `src/clients/ApplicationTracker.Maui/`:
+
+- `Components/` - Blazor components (Pages, Layout, Dialogs, DataGrids)
 - `Models/` - Data entities inheriting from `BaseEntity`
 - `Services/` - Business logic and data access (`DatabaseService`)
 - `Utilities/` - Constants and enums
@@ -77,4 +107,4 @@ public class ExampleService {
 
 - **Framework**: xUnit (preferred)
 - **Pattern**: AAA (Arrange, Act, Assert)
-- No test project currently exists in the solution
+- Test projects go in the `tests/` directory
