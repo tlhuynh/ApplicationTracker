@@ -22,7 +22,7 @@
         <Nullable>enable</Nullable>
 
         <!-- Display name -->
-        <ApplicationTitle>ApplicationTracker</ApplicationTitle>
+        <ApplicationTitle>Applications Tracker</ApplicationTitle>
 
         <!-- App Identifier -->
         <ApplicationId>com.companyname.applicationtracker</ApplicationId>
@@ -69,6 +69,10 @@
         <PackageReference Include="MudBlazor" Version="8.15.0" />
         <PackageReference Include="sqlite-net-pcl" Version="1.9.172" />
         <PackageReference Include="SQLitePCLRaw.bundle_green" Version="2.1.11" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\shared\ApplicationTracker.Shared\ApplicationTracker.Shared.csproj" />
     </ItemGroup>
 
 </Project>

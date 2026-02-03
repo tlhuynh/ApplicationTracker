@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="456" height="456" viewBox="0 0 456 456" version="1.1" xmlns="http://www.w3.org/2000/svg">
+    <!-- Document -->
+    <path d="M 128 48 L 280 48 L 328 96 L 328 348 L 128 348 Z"
+          fill="#FFFFFF" />
+    <!-- Document fold -->
+    <path d="M 280 48 L 280 96 L 328 96 Z"
+          fill="#E0E0E0" />
+    <!-- Document lines -->
+    <rect x="160" y="136" width="136" height="14" rx="4" fill="#BDBDBD" />
+    <rect x="160" y="170" width="136" height="14" rx="4" fill="#BDBDBD" />
+    <rect x="160" y="204" width="100" height="14" rx="4" fill="#BDBDBD" />
+    <!-- Checkmark circle -->
+    <circle cx="300" cy="284" r="56" fill="#4CAF50" />
+    <!-- Checkmark -->
+    <path d="M 272 284 L 290 302 L 328 264"
+          fill="none"
+          stroke="#FFFFFF"
+          stroke-width="10"
+          stroke-linecap="round"
+          stroke-linejoin="round" />
+    <!-- App name text -->
+    <text x="228" y="408"
+          font-family="Segoe UI, Arial, sans-serif"
+          font-size="28"
+          font-weight="600"
+          fill="#FFFFFF"
+          text-anchor="middle">
+        Application Tracker
+    </text>
+</svg>
