@@ -2,7 +2,7 @@
 
 ## Project Context
 
-This is a .NET MAUI Blazor Hybrid application targeting .NET 8 with cross-platform support for Android, iOS, macOS (Catalyst), and Windows.
+This is a .NET MAUI Blazor Hybrid application targeting .NET 10 with cross-platform support for Android, iOS, macOS (Catalyst), and Windows.
 
 ## Code Style Requirements
 
@@ -203,7 +203,7 @@ When providing code examples, explanations, or solutions, **always include a "Re
 
 ### Related Resources
 - [MAUI Community Toolkit](https://github.com/CommunityToolkit/Maui)
-- [C# 12 What's New](https://learn.microsoft.com/dotnet/csharp/whats-new/csharp-12)
+- [C# 13 What's New](https://learn.microsoft.com/dotnet/csharp/whats-new/csharp-13)
 ```
 
 ## Avoid
