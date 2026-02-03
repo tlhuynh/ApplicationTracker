@@ -408,3 +408,31 @@ FodyWeavers.xsd
 *.backup
 *.bak
 *.old
+
+###############################
+# Environment / Secrets
+###############################
+.env
+.env.*
+!.env.example
+appsettings.Local.json
+secrets.json
+
+###############################
+# SQLite databases
+###############################
+*.db
+*.sqlite
+*.sqlite3
+
+###############################
+# Frontend (React/Angular)
+###############################
+.angular/
+.next/
+dist/
+build/
+coverage/
+.turbo/
+.parcel-cache/
+*.tsbuildinfo
