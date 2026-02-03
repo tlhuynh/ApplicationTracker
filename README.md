@@ -1,12 +1,13 @@
 # Application Tracker
 
-A cross-platform application tracker built with .NET MAUI Blazor and MudBlazor.
+A cross-platform job application tracker built with .NET MAUI Blazor and MudBlazor, with a backend API for data synchronization.
 
 ## Technologies
 
 - **.NET 10 Preview**
 - **.NET MAUI** - Cross-platform UI framework
 - **Blazor Hybrid** - Web UI components within MAUI
+- **ASP.NET Core Web API** - Backend REST API
 - **MudBlazor** - Material Design component library
 - **C# 13** - Latest C# features
 
@@ -16,6 +17,7 @@ A cross-platform application tracker built with .NET MAUI Blazor and MudBlazor.
 - iOS
 - macOS (Catalyst)
 - Windows
+- Web (planned)
 
 ## Prerequisites
 
@@ -41,13 +43,6 @@ cd ApplicationTracker
 ```
 
 ### 2. Install Workloads
-
-**On Windows:**
-```powershell
-dotnet workload restore
-```
-
-**On macOS:**
 ```bash
 dotnet workload restore
 ```
@@ -66,51 +61,78 @@ dotnet restore
 
 **Command Line:**
 ```bash
-# Build
-dotnet build
+# Build MAUI app for specific platform
+dotnet build src/clients/ApplicationTracker.Maui -f net10.0-android
+dotnet build src/clients/ApplicationTracker.Maui -f net10.0-ios
+dotnet build src/clients/ApplicationTracker.Maui -f net10.0-maccatalyst
+dotnet build src/clients/ApplicationTracker.Maui -f net10.0-windows10.0.19041.0
 
-# Run on specific platform
-dotnet build -f net10.0-android
-dotnet build -f net10.0-ios
-dotnet build -f net10.0-maccatalyst
-dotnet build -f net10.0-windows10.0.19041.0  # Windows only
+# Run the API
+dotnet run --project src/backend/ApplicationTracker.Api
 ```
 
 ## Project Structure
 
 ```
 ApplicationTracker/
-├── Components/              # Blazor components
-│   ├── Layout/             # Layout components (MainLayout, NavMenu)
-│   └── Pages/              # Page components (Home, Counter, Weather)
-├── Platforms/              # Platform-specific code
-│   ├── Android/
-│   ├── iOS/
-│   ├── MacCatalyst/
-│   └── Windows/
-├── Resources/              # App resources
-│   ├── AppIcon/           # Application icon
-│   ├── Fonts/             # Custom fonts
-│   ├── Images/            # Images
-│   └── Splash/            # Splash screen
-├── wwwroot/               # Static web assets
-│   ├── css/
-│   └── index.html         # Blazor host page
-├── App.xaml               # Application entry point
-├── MainPage.xaml          # Main MAUI page with BlazorWebView
-├── MauiProgram.cs         # App configuration & DI
-├── global.json            # SDK version pinning
-└── .editorconfig          # Code formatting rules
+├── src/
+│   ├── backend/                            # Backend services
+│   │   ├── ApplicationTracker.Api/         # ASP.NET Core Web API
+│   │   ├── ApplicationTracker.Application/ # Business logic, services
+│   │   ├── ApplicationTracker.Core/        # Domain entities, interfaces
+│   │   └── ApplicationTracker.Infrastructure/ # Data access, external services
+│   ├── clients/
+│   │   ├── ApplicationTracker.Maui/        # .NET MAUI Blazor app
+│   │   │   ├── Components/                 # Blazor components
+│   │   │   │   ├── Layout/                 # Layout components
+│   │   │   │   ├── Pages/                  # Page components
+│   │   │   │   ├── Dialogs/                # Dialog components
+│   │   │   │   └── DataGrids/              # Data grid components
+│   │   │   ├── Models/                     # Data models
+│   │   │   ├── Services/                   # App services
+│   │   │   ├── Platforms/                  # Platform-specific code
+│   │   │   ├── Resources/                  # App resources
+│   │   │   └── wwwroot/                    # Static web assets
+│   │   └── ApplicationTracker.Web/         # Web frontend (planned)
+│   └── shared/
+│       └── ApplicationTracker.Shared/      # Shared DTOs and models
+├── tests/                                  # Test projects
+├── ApplicationTracker.sln
+├── Directory.Build.props
+├── global.json
+└── .editorconfig
+```
+
+## Architecture
+
+The solution follows Clean Architecture principles:
+
+| Layer | Project | Responsibility |
+|-------|---------|----------------|
+| **Core** | `ApplicationTracker.Core` | Domain entities, interfaces (no dependencies) |
+| **Application** | `ApplicationTracker.Application` | Business logic, use cases, DTOs |
+| **Infrastructure** | `ApplicationTracker.Infrastructure` | Data access, external services |
+| **API** | `ApplicationTracker.Api` | REST endpoints, authentication |
+| **Shared** | `ApplicationTracker.Shared` | DTOs shared between API and clients |
+
+### Project References
+
+```
+Api → Application, Infrastructure
+Infrastructure → Core, Application
+Application → Core
+Maui → Shared
 ```
 
 ## MudBlazor Components
 
 This project uses [MudBlazor](https://mudblazor.com/) for Material Design UI components.
-See [MudBlazor Documentation](https://mudblazor.com/components) for more
+See [MudBlazor Documentation](https://mudblazor.com/components) for available components.
 
 ## Resources
 
 - [.NET MAUI Documentation](https://learn.microsoft.com/dotnet/maui/)
 - [Blazor Hybrid Documentation](https://learn.microsoft.com/aspnet/core/blazor/hybrid/)
+- [ASP.NET Core Web API](https://learn.microsoft.com/aspnet/core/web-api/)
 - [MudBlazor Documentation](https://mudblazor.com/)
 - [.NET 10 Preview](https://dotnet.microsoft.com/download/dotnet/10.0)
