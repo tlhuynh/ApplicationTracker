@@ -2,7 +2,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ApplicationTracker.Core\ApplicationTracker.Core.csproj" />
-    <ProjectReference Include="..\ApplicationTracker.Application\ApplicationTracker.Application.csproj" />
   </ItemGroup>
 
   <PropertyGroup>

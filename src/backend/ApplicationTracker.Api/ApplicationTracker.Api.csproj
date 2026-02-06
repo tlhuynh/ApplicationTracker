@@ -11,8 +11,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ApplicationTracker.Application\ApplicationTracker.Application.csproj" />
+    <ProjectReference Include="..\ApplicationTracker.Core\ApplicationTracker.Core.csproj" />
     <ProjectReference Include="..\ApplicationTracker.Infrastructure\ApplicationTracker.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\shared\ApplicationTracker.Shared\ApplicationTracker.Shared.csproj" />
   </ItemGroup>
 
 </Project>
