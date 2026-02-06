@@ -1,4 +1,4 @@
-namespace ApplicationTracker.Utilities.Enums;
+namespace ApplicationTracker.Core.Enums;
 
 /// <summary>
 /// Represents the status of a job application.

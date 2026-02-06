@@ -1,6 +1,6 @@
 @using System.ComponentModel.DataAnnotations
 @using ApplicationTracker.Models
-@using ApplicationTracker.Utilities.Enums
+@using ApplicationTracker.Core.Enums
 
 <MudDialog>
 	<TitleContent>
@@ -34,16 +34,16 @@
 			               ReadOnly="@(!_isEditing)"/>
 			@*URL*@
 			@if (_isEditing) {
-				<MudTextField @bind-Value="Application.PostingURL" Label="Posting URL"
+				<MudTextField @bind-Value="Application.PostingUrl" Label="Posting URL"
 				              Lines="1" Variant="Variant.Outlined"
 				              Placeholder="Add post URL for this application..."
 				              Validation="@(new UrlAttribute() { ErrorMessage = "Invalid URL" })"
 				              ReadOnly="false"/>
 			} else {
 				<MudField Label="Posting URL" Variant="Variant.Outlined">
-					@if (!string.IsNullOrEmpty(Application.PostingURL)) {
-						<MudLink Href="@Application.PostingURL" Target="_blank" Color="Color.Primary" Class="d-inline-flex align-center">
-							@Application.PostingURL
+					@if (!string.IsNullOrEmpty(Application.PostingUrl)) {
+						<MudLink Href="@Application.PostingUrl" Target="_blank" Color="Color.Primary" Class="d-inline-flex align-center">
+							@Application.PostingUrl
 							<MudIcon Icon="@Icons.Material.Filled.OpenInBrowser" Size="Size.Small" Class="mr-2"/>
 						</MudLink>
 					}

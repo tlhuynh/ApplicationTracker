@@ -1,6 +1,6 @@
 @using System.ComponentModel.DataAnnotations
 @using ApplicationTracker.Models
-@using ApplicationTracker.Utilities.Enums
+@using ApplicationTracker.Core.Enums
 
 <MudDialog>
 	<TitleContent>
@@ -30,7 +30,7 @@
 				               Variant="Variant.Outlined"
 				               DateFormat="MM/dd/yyyy"/>
 
-				<MudTextField @bind-Value="_application.PostingURL"
+				<MudTextField @bind-Value="_application.PostingUrl"
 				              Label="Posting URL"
 				              Variant="Variant.Outlined"
 				              Placeholder="https://example.com/job-posting"

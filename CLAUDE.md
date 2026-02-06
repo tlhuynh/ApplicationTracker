@@ -50,7 +50,8 @@ src/
 ```
 Api → Core, Infrastructure, Shared
 Infrastructure → Core
-Maui → Shared
+Shared → Core
+Maui → Shared (gets Core transitively)
 ```
 
 ### Key Patterns
