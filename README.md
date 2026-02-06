@@ -78,22 +78,20 @@ ApplicationTracker/
 ├── src/
 │   ├── backend/                            # Backend services
 │   │   ├── ApplicationTracker.Api/         # ASP.NET Core Web API
-│   │   ├── ApplicationTracker.Application/ # Business logic, services
 │   │   ├── ApplicationTracker.Core/        # Domain entities, interfaces
 │   │   └── ApplicationTracker.Infrastructure/ # Data access, external services
 │   ├── clients/
-│   │   ├── ApplicationTracker.Maui/        # .NET MAUI Blazor app
-│   │   │   ├── Components/                 # Blazor components
-│   │   │   │   ├── Layout/                 # Layout components
-│   │   │   │   ├── Pages/                  # Page components
-│   │   │   │   ├── Dialogs/                # Dialog components
-│   │   │   │   └── DataGrids/              # Data grid components
-│   │   │   ├── Models/                     # Data models
-│   │   │   ├── Services/                   # App services
-│   │   │   ├── Platforms/                  # Platform-specific code
-│   │   │   ├── Resources/                  # App resources
-│   │   │   └── wwwroot/                    # Static web assets
-│   │   └── ApplicationTracker.Web/         # Web frontend (planned)
+│   │   └── ApplicationTracker.Maui/        # .NET MAUI Blazor app
+│   │       ├── Components/                 # Blazor components
+│   │       │   ├── Layout/                 # Layout components
+│   │       │   ├── Pages/                  # Page components
+│   │       │   ├── Dialogs/                # Dialog components
+│   │       │   └── DataGrids/              # Data grid components
+│   │       ├── Models/                     # Data models
+│   │       ├── Services/                   # App services
+│   │       ├── Platforms/                  # Platform-specific code
+│   │       ├── Resources/                  # App resources
+│   │       └── wwwroot/                    # Static web assets
 │   └── shared/
 │       └── ApplicationTracker.Shared/      # Shared DTOs and models
 ├── tests/                                  # Test projects
@@ -110,7 +108,6 @@ The solution follows Clean Architecture principles:
 | Layer | Project | Responsibility |
 |-------|---------|----------------|
 | **Core** | `ApplicationTracker.Core` | Domain entities, interfaces (no dependencies) |
-| **Application** | `ApplicationTracker.Application` | Business logic, use cases, DTOs |
 | **Infrastructure** | `ApplicationTracker.Infrastructure` | Data access, external services |
 | **API** | `ApplicationTracker.Api` | REST endpoints, authentication |
 | **Shared** | `ApplicationTracker.Shared` | DTOs shared between API and clients |
@@ -118,9 +115,8 @@ The solution follows Clean Architecture principles:
 ### Project References
 
 ```
-Api → Application, Infrastructure
-Infrastructure → Core, Application
-Application → Core
+Api → Core, Infrastructure, Shared
+Infrastructure → Core
 Maui → Shared
 ```
 

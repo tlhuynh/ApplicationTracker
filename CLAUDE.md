@@ -37,7 +37,6 @@ dotnet run --project src/backend/ApplicationTracker.Api
 src/
 ├── backend/
 │   ├── ApplicationTracker.Api/           # ASP.NET Core Web API
-│   ├── ApplicationTracker.Application/   # Business logic, services
 │   ├── ApplicationTracker.Core/          # Domain entities, interfaces
 │   └── ApplicationTracker.Infrastructure/# Data access, external services
 ├── clients/
@@ -49,9 +48,8 @@ src/
 ### Project References
 
 ```
-Api → Application, Infrastructure
-Infrastructure → Core, Application
-Application → Core
+Api → Core, Infrastructure, Shared
+Infrastructure → Core
 Maui → Shared
 ```
 
