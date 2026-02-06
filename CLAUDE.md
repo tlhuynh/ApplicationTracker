@@ -112,3 +112,4 @@ public class ExampleService {
 
 - When discussing tools, frameworks, or concepts, include links to official documentation when available
 - Prioritize Microsoft Learn, MDN, and other primary sources over third-party articles
+- **Generate changes with explanations** — present file changes for the user to review and apply, rather than applying directly, unless the user explicitly asks otherwise
