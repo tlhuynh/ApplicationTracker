@@ -107,3 +107,8 @@ public class ExampleService {
 - **Framework**: xUnit (preferred)
 - **Pattern**: AAA (Arrange, Act, Assert)
 - Test projects go in the `tests/` directory
+
+## Response Guidelines
+
+- When discussing tools, frameworks, or concepts, include links to official documentation when available
+- Prioritize Microsoft Learn, MDN, and other primary sources over third-party articles
