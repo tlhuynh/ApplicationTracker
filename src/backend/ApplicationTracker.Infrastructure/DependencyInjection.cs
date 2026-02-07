@@ -1,4 +1,4 @@
-﻿using ApplicationTracker.Core.Interfaces;
+﻿using ApplicationTracker.Core.Interfaces.Repositories;
 using ApplicationTracker.Infrastructure.Data;
 using ApplicationTracker.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -16,6 +16,7 @@ public static class DependencyInjection {
 		services.AddDbContext<ApplicationDbContext>(options =>
 			options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
 
+		// Register DI for repositories
 		services.AddScoped<IApplicationRecordRepository, ApplicationRecordRepository>();
 
 		return services;

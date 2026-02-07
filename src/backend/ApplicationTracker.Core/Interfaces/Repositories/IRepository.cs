@@ -1,6 +1,6 @@
 ﻿using ApplicationTracker.Core.Entities.Base;
 
-namespace ApplicationTracker.Core.Interfaces;
+namespace ApplicationTracker.Core.Interfaces.Repositories;
 
 /// <summary>
 /// Generic repository interface for CRUD operations on domain entities.

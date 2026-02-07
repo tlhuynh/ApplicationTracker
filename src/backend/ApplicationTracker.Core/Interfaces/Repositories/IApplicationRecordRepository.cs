@@ -1,6 +1,6 @@
 ﻿using ApplicationTracker.Core.Entities;
 
-namespace ApplicationTracker.Core.Interfaces;
+namespace ApplicationTracker.Core.Interfaces.Repositories;
 
 /// <summary>
 /// Repository interface for application record operations.
