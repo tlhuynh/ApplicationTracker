@@ -1,5 +1,5 @@
 ﻿using ApplicationTracker.Core.Entities.Base;
-using ApplicationTracker.Core.Interfaces;
+using ApplicationTracker.Core.Interfaces.Repositories;
 using ApplicationTracker.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
