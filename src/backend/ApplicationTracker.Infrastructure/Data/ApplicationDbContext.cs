@@ -27,6 +27,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 					entry.Entity.LastModified = DateTime.UtcNow;
 					break;
 				case EntityState.Deleted:
+					entry.State = EntityState.Modified;
 					entry.Entity.LastModified = DateTime.UtcNow;
 					entry.Entity.IsDeleted = true;
 					break;
@@ -36,8 +37,6 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 					break;
 			}
 		}
-
-		// TODO check Claude why didn't generate code for deleted and detached/unchanged
 
 		return base.SaveChangesAsync(cancellationToken);
 	}
