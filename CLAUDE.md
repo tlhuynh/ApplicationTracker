@@ -29,6 +29,19 @@ dotnet build src/clients/ApplicationTracker.Maui -f net10.0-windows10.0.19041.0
 dotnet run --project src/backend/ApplicationTracker.Api
 ```
 
+## Backend Setup
+
+- SQL Server 2022 runs via Docker (`docker-compose.yml` at project root)
+- SA password stored in `.env` (gitignored); `.env.example` checked in as template
+- Real connection string stored via `dotnet user-secrets` (not in appsettings)
+- `appsettings.Development.json` has a placeholder password (`<see-user-secrets>`)
+- EF Core migrations live in `ApplicationTracker.Infrastructure`, startup project is `ApplicationTracker.Api`
+
+```bash
+# Apply EF Core migrations
+dotnet ef database update --project src/backend/ApplicationTracker.Infrastructure --startup-project src/backend/ApplicationTracker.Api
+```
+
 ## Architecture
 
 ### Project Structure
@@ -61,6 +74,11 @@ Maui → Shared (gets Core transitively)
 - **MVVM with Blazor**: Components use code-behind pattern (`.razor` + `.razor.cs`)
 - **Async Data Access**: All database operations are async via `SQLiteAsyncConnection`
 - **Lazy Initialization**: Database connection initialized on first use via `Init()` pattern
+- **MVC Controllers**: API uses traditional `[ApiController]` controllers, not Minimal APIs
+- **Service Location**: Service implementations live in **Api project** (not Infrastructure) — keeps Infrastructure focused on data access
+- **Interface Organization**: Core interfaces organized into subfolders: `Interfaces/Repositories/`, `Interfaces/Services/`
+- **Manual Mapping**: Extension methods in `Shared/Mappings/` (no AutoMapper)
+- **Request Validation**: DataAnnotations on request DTOs
 
 ### MAUI App Structure
 
@@ -86,6 +104,12 @@ Located in `src/clients/ApplicationTracker.Maui/`:
 - **Public members**: `PascalCase`
 - **Interfaces**: `IPascalCase` with 'I' prefix
 - **No `ConfigureAwait(false)`** - not needed in MAUI apps
+- **XML doc comments** (`/// <summary>`) on classes, methods, and properties
+- **Primary constructors** for DI injection (C# 12+ syntax)
+- **Target-typed `new()`** when type is clear from context (C# 9+)
+- **Collection expressions** `[]` for collection initialization (C# 12+)
+- **Route constraints** `{id:int}` on API endpoints with route parameters
+- **`/// <inheritdoc />`** on interface implementation methods instead of repeating docs
 
 ### Example
 
@@ -105,7 +129,9 @@ public class ExampleService {
 ## Testing
 
 - **Framework**: xUnit (preferred)
+- **Mocking**: Moq
 - **Pattern**: AAA (Arrange, Act, Assert)
+- **Scope**: Unit tests for service and controller layers
 - Test projects go in the `tests/` directory
 
 ## Response Guidelines
@@ -113,3 +139,4 @@ public class ExampleService {
 - When discussing tools, frameworks, or concepts, include links to official documentation when available
 - Prioritize Microsoft Learn, MDN, and other primary sources over third-party articles
 - **Generate changes with explanations** — present file changes for the user to review and apply, rather than applying directly, unless the user explicitly asks otherwise
+- For file edits: ask "Should I make this change, or would you like to handle it?"
