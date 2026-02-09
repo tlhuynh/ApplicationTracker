@@ -1,18 +1,26 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>82b4f7eb-8939-415e-83d0-eaf91273e6ea</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.1" />
+    <PackageReference Include="ClosedXML" Version="0.105.0" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.2" />
+	<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.2">
+	  <PrivateAssets>all</PrivateAssets>
+	  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+	</PackageReference>
+	<PackageReference Include="Scalar.AspNetCore" Version="2.12.36" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ApplicationTracker.Application\ApplicationTracker.Application.csproj" />
+    <ProjectReference Include="..\ApplicationTracker.Core\ApplicationTracker.Core.csproj" />
     <ProjectReference Include="..\ApplicationTracker.Infrastructure\ApplicationTracker.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\shared\ApplicationTracker.Shared\ApplicationTracker.Shared.csproj" />
   </ItemGroup>
 
 </Project>

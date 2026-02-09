@@ -1,5 +1,5 @@
+using ApplicationTracker.Core.Enums;
 using ApplicationTracker.Models.Entity;
-using ApplicationTracker.Utilities.Enums;
 using SQLite;
 
 namespace ApplicationTracker.Models;
@@ -30,7 +30,7 @@ public class ApplicationRecord : BaseEntity {
     /// Optional field - can be null if not available.
     /// </summary>
     [MaxLength(2000)]
-    public string? PostingURL { get; set; }
+    public string? PostingUrl { get; set; }
     /// <summary>
     /// Gets or sets additional notes about the application.
     /// Optional field - can be null if no notes are provided.
@@ -52,7 +52,7 @@ public class ApplicationRecord : BaseEntity {
         CompanyName = CompanyName,
         Status = Status,
         AppliedDate = AppliedDate,
-        PostingURL = PostingURL,
+        PostingUrl = PostingUrl,
         Notes = Notes
     };
 }
