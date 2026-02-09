@@ -1,19 +1,30 @@
 # Application Tracker
 
-A cross-platform job application tracker built with .NET MAUI Blazor and MudBlazor, with a backend API for data synchronization.
+A full-stack .NET project for tracking job applications, built as a learning playground to explore modern technologies.
 
 ## Technologies
 
-- **.NET 10 Preview**
-- **.NET MAUI** - Cross-platform UI framework
-- **Blazor Hybrid** - Web UI components within MAUI
-- **ASP.NET Core Web API** - Backend REST API
-- **MudBlazor** - Material Design component library
-- **[Scalar](https://github.com/scalar/scalar)** - Interactive API documentation UI
-- **[ClosedXML](https://github.com/ClosedXML/ClosedXML)** - Excel file parsing for bulk imports
-- **[xUnit](https://xunit.net/)** - Unit testing framework
-- **[Moq](https://github.com/devlooped/moq)** - Mocking library for tests
-- **C# 13** - Latest C# features
+### Frameworks & Language
+- [.NET 10](https://dotnet.microsoft.com/download/dotnet/10.0) / **C# 13**
+- [.NET MAUI](https://learn.microsoft.com/dotnet/maui/) - Cross-platform native UI
+- [Blazor Hybrid](https://learn.microsoft.com/aspnet/core/blazor/hybrid/) - Web UI components within MAUI
+- [ASP.NET Core Web API](https://learn.microsoft.com/aspnet/core/web-api/) - Backend REST API
+
+### Component Libraries
+- [MudBlazor](https://mudblazor.com/) - Material Design component library
+
+### Data & Infrastructure
+- [Entity Framework Core](https://learn.microsoft.com/ef/core/) - ORM for backend data access
+- [SQL Server 2022](https://learn.microsoft.com/sql/sql-server/) - Backend database (Docker)
+- [SQLite](https://www.sqlite.org/) - Local MAUI app storage
+- [ClosedXML](https://github.com/ClosedXML/ClosedXML) - Excel file parsing for bulk imports
+
+### API Documentation
+- [Scalar](https://github.com/scalar/scalar) - Interactive API reference UI
+
+### Testing
+- [xUnit](https://xunit.net/) - Unit testing framework
+- [Moq](https://github.com/devlooped/moq) - Mocking library
 
 ## Platforms
 
@@ -27,14 +38,14 @@ A cross-platform job application tracker built with .NET MAUI Blazor and MudBlaz
 
 ### Windows
 - [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
-- [Visual Studio 2022 (17.12+)](https://visualstudio.microsoft.com/) with:
+- [Visual Studio 2022 (17.12+)](https://visualstudio.microsoft.com/) or [JetBrains Rider](https://www.jetbrains.com/rider/) with:
   - .NET MAUI workload
   - Android SDK
   - Windows SDK
 
 ### macOS
 - [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
-- [Visual Studio 2022 for Mac](https://visualstudio.microsoft.com/vs/mac/) or [VS Code](https://code.visualstudio.com/)
+- [JetBrains Rider](https://www.jetbrains.com/rider/) or [VS Code](https://code.visualstudio.com/)
 - [Xcode 15+](https://developer.apple.com/xcode/) (for iOS/macOS development)
 - Command Line Tools: `xcode-select --install`
 
@@ -58,9 +69,9 @@ dotnet restore
 
 ### 4. Run the Application
 
-**Visual Studio (Windows/Mac):**
+**Visual Studio / Rider:**
 - Open `ApplicationTracker.sln`
-- Select target platform (Android/iOS/Windows/macOS)
+- Select run configuration (MAUI app, API, or Web)
 - Press `F5` or click Run
 
 **Command Line:**
@@ -126,7 +137,8 @@ The solution follows Clean Architecture principles:
 ```
 Api → Core, Infrastructure, Shared
 Infrastructure → Core
-Maui → Shared
+Shared → Core
+Maui → Shared (gets Core transitively)
 ```
 
 ## Testing
@@ -154,39 +166,16 @@ dotnet run --project src/backend/ApplicationTracker.Api
 # Then open https://localhost:{port}/scalar/v1
 ```
 
-## API Endpoints
-
-| Method | Route | Description |
-|--------|-------|-------------|
-| GET | `/api/applicationrecords` | List all records |
-| GET | `/api/applicationrecords/{id}` | Get record by ID |
-| POST | `/api/applicationrecords` | Create a record |
-| PUT | `/api/applicationrecords/{id}` | Update a record |
-| DELETE | `/api/applicationrecords/{id}` | Soft-delete a record |
-| POST | `/api/applicationrecords/import` | Bulk import from `.xlsx` file |
-
-### Excel Import
-
-Upload a `.xlsx` file to `POST /api/applicationrecords/import`. A template is available at `templates/ApplicationRecords_Import_Template.xlsx`.
-
-Expected columns:
-
-| CompanyName (required) | Status (required) | AppliedDate (optional) | PostingUrl (optional) | Notes (optional) |
-|---|---|---|---|---|
-
-Status values: `Applied`, `Interviewing`, `Offered`, `Rejected`, `Withdrawn`
-
-Invalid rows are skipped — the response includes a report of imported/failed counts and per-row errors.
-
-## MudBlazor Components
-
-This project uses [MudBlazor](https://mudblazor.com/) for Material Design UI components.
-See [MudBlazor Documentation](https://mudblazor.com/components) for available components.
 
 ## Resources
 
-- [.NET MAUI Documentation](https://learn.microsoft.com/dotnet/maui/)
-- [Blazor Hybrid Documentation](https://learn.microsoft.com/aspnet/core/blazor/hybrid/)
+- [.NET 10](https://dotnet.microsoft.com/download/dotnet/10.0)
 - [ASP.NET Core Web API](https://learn.microsoft.com/aspnet/core/web-api/)
-- [MudBlazor Documentation](https://mudblazor.com/)
-- [.NET 10 Preview](https://dotnet.microsoft.com/download/dotnet/10.0)
+- [Entity Framework Core](https://learn.microsoft.com/ef/core/)
+- [.NET MAUI](https://learn.microsoft.com/dotnet/maui/)
+- [Blazor Hybrid](https://learn.microsoft.com/aspnet/core/blazor/hybrid/)
+- [MudBlazor](https://mudblazor.com/docs)
+- [Scalar](https://github.com/scalar/scalar/tree/main/integrations/aspnetcore)
+- [ClosedXML](https://github.com/ClosedXML/ClosedXML/wiki)
+- [xUnit](https://xunit.net/docs/getting-started/v3/cmdline)
+- [Moq](https://github.com/devlooped/moq/wiki/Quickstart)

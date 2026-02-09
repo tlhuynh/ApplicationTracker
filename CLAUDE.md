@@ -4,11 +4,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-ApplicationTracker is a cross-platform .NET MAUI Blazor Hybrid application for tracking job applications. It uses MudBlazor for Material Design UI components and SQLite for local data persistence. The project includes a backend API for future data synchronization.
+ApplicationTracker is a full-stack .NET project for tracking job applications, built as a learning playground to explore modern technologies. The core focus is ASP.NET Core Web API with web frontends (React, Angular planned), alongside a .NET MAUI Blazor Hybrid app for mobile and desktop.
 
-**Tech Stack:** .NET 10 Preview, MAUI, Blazor Hybrid, ASP.NET Core Web API, MudBlazor, SQLite, Scalar, ClosedXML, C# 13
+**Tech Stack:** .NET 10, C# 13, ASP.NET Core Web API, EF Core, SQL Server, .NET MAUI, Blazor Hybrid, MudBlazor, SQLite, Scalar, ClosedXML
 
-**Target Platforms:** Android, iOS, macOS (Catalyst), Windows
+**Target Platforms:** Web (planned), Android, iOS, macOS (Catalyst), Windows
 
 ## Build Commands
 
