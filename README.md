@@ -94,7 +94,10 @@ ApplicationTracker/
 │   │       └── wwwroot/                    # Static web assets
 │   └── shared/
 │       └── ApplicationTracker.Shared/      # Shared DTOs and models
-├── tests/                                  # Test projects
+├── tests/
+│   └── ApplicationTracker.Api.Tests/      # Unit tests (xUnit + Moq)
+│       ├── Controllers/                   # Controller tests
+│       └── Services/                      # Service tests
 ├── ApplicationTracker.sln
 ├── Directory.Build.props
 ├── global.json
@@ -118,6 +121,22 @@ The solution follows Clean Architecture principles:
 Api → Core, Infrastructure, Shared
 Infrastructure → Core
 Maui → Shared
+```
+
+## Testing
+
+The project uses [xUnit](https://xunit.net/) with [Moq](https://github.com/devlooped/moq) for unit testing.
+
+| Test Project | Tests For | Approach |
+|---|---|---|
+| `ApplicationTracker.Api.Tests` | Controllers, Services | Mock dependencies with Moq |
+
+```bash
+# Run all tests
+dotnet test
+
+# Run a specific test project
+dotnet test tests/ApplicationTracker.Api.Tests
 ```
 
 ## MudBlazor Components
