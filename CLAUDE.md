@@ -134,6 +134,28 @@ public class ExampleService {
 - **Scope**: Unit tests for service and controller layers
 - Test projects go in the `tests/` directory
 
+### Test Projects
+
+| Project | Tests For | Mocks |
+|---------|-----------|-------|
+| `ApplicationTracker.Api.Tests` | Controllers, Services | `IApplicationRecordRepository`, `IApplicationRecordService` |
+
+### Test Commands
+
+```bash
+# Run all tests
+dotnet test
+
+# Run specific test project
+dotnet test tests/ApplicationTracker.Api.Tests
+```
+
+### Test Boundaries
+
+- **Service tests** mock the repository layer — verify orchestration logic and correct repository calls via `Verify()`
+- **Controller tests** mock the service layer — verify HTTP status codes and response shapes
+- **Soft-delete, timestamps, validation (400s)** are infrastructure/framework concerns — need integration tests (not yet implemented)
+
 ## Response Guidelines
 
 - When discussing tools, frameworks, or concepts, include links to official documentation when available
