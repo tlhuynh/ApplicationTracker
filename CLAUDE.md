@@ -79,6 +79,8 @@ Maui → Shared (gets Core transitively)
 - **Interface Organization**: Core interfaces organized into subfolders: `Interfaces/Repositories/`, `Interfaces/Services/`
 - **Manual Mapping**: Extension methods in `Shared/Mappings/` (no AutoMapper)
 - **Request Validation**: DataAnnotations on request DTOs
+- **Excel Import**: ClosedXML for parsing `.xlsx` uploads; service returns domain models, controller maps to DTOs
+- **Domain Models**: Non-entity result types live in `Core/Models/` (e.g., `ExcelImportResult`)
 
 ### MAUI App Structure
 
@@ -138,7 +140,7 @@ public class ExampleService {
 
 | Project | Tests For | Mocks |
 |---------|-----------|-------|
-| `ApplicationTracker.Api.Tests` | Controllers, Services | `IApplicationRecordRepository`, `IApplicationRecordService` |
+| `ApplicationTracker.Api.Tests` | Controllers, Services | `IApplicationRecordRepository`, `IApplicationRecordService`, `IExcelImportService` |
 
 ### Test Commands
 

@@ -10,6 +10,7 @@ builder.Services.AddInfrastructure(builder.Configuration);
 
 // Register DI for services
 builder.Services.AddScoped<IApplicationRecordService, ApplicationRecordService>();
+builder.Services.AddScoped<IExcelImportService, ExcelImportService>();
 
 WebApplication app = builder.Build();
 
