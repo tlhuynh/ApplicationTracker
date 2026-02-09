@@ -6,9 +6,9 @@ A full-stack .NET project for tracking job applications, built as a learning pla
 
 ### Frameworks & Language
 - [.NET 10](https://dotnet.microsoft.com/download/dotnet/10.0) / **C# 13**
+- [ASP.NET Core Web API](https://learn.microsoft.com/aspnet/core/web-api/) - Backend REST API
 - [.NET MAUI](https://learn.microsoft.com/dotnet/maui/) - Cross-platform native UI
 - [Blazor Hybrid](https://learn.microsoft.com/aspnet/core/blazor/hybrid/) - Web UI components within MAUI
-- [ASP.NET Core Web API](https://learn.microsoft.com/aspnet/core/web-api/) - Backend REST API
 
 ### Component Libraries
 - [MudBlazor](https://mudblazor.com/) - Material Design component library
@@ -27,12 +27,12 @@ A full-stack .NET project for tracking job applications, built as a learning pla
 - [Moq](https://github.com/devlooped/moq) - Mocking library
 
 ## Platforms
-
-- Android
-- iOS
-- macOS (Catalyst)
-- Windows
 - Web (planned)
+- Mobile/Desktop
+	- Windows
+	- macOS (Catalyst)
+	- iOS	
+  - Android
 
 ## Prerequisites
 
