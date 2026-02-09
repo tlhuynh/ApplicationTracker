@@ -9,6 +9,9 @@ A cross-platform job application tracker built with .NET MAUI Blazor and MudBlaz
 - **Blazor Hybrid** - Web UI components within MAUI
 - **ASP.NET Core Web API** - Backend REST API
 - **MudBlazor** - Material Design component library
+- **[ClosedXML](https://github.com/ClosedXML/ClosedXML)** - Excel file parsing for bulk imports
+- **[xUnit](https://xunit.net/)** - Unit testing framework
+- **[Moq](https://github.com/devlooped/moq)** - Mocking library for tests
 - **C# 13** - Latest C# features
 
 ## Platforms
@@ -98,6 +101,8 @@ ApplicationTracker/
 │   └── ApplicationTracker.Api.Tests/      # Unit tests (xUnit + Moq)
 │       ├── Controllers/                   # Controller tests
 │       └── Services/                      # Service tests
+├── templates/                               # Static files (import templates)
+│   └── ApplicationRecords_Import_Template.xlsx
 ├── ApplicationTracker.sln
 ├── Directory.Build.props
 ├── global.json
@@ -112,7 +117,7 @@ The solution follows Clean Architecture principles:
 |-------|---------|----------------|
 | **Core** | `ApplicationTracker.Core` | Domain entities, interfaces (no dependencies) |
 | **Infrastructure** | `ApplicationTracker.Infrastructure` | Data access, external services |
-| **API** | `ApplicationTracker.Api` | REST endpoints, authentication |
+| **API** | `ApplicationTracker.Api` | REST endpoints, services, Excel import |
 | **Shared** | `ApplicationTracker.Shared` | DTOs shared between API and clients |
 
 ### Project References
@@ -138,6 +143,30 @@ dotnet test
 # Run a specific test project
 dotnet test tests/ApplicationTracker.Api.Tests
 ```
+
+## API Endpoints
+
+| Method | Route | Description |
+|--------|-------|-------------|
+| GET | `/api/applicationrecords` | List all records |
+| GET | `/api/applicationrecords/{id}` | Get record by ID |
+| POST | `/api/applicationrecords` | Create a record |
+| PUT | `/api/applicationrecords/{id}` | Update a record |
+| DELETE | `/api/applicationrecords/{id}` | Soft-delete a record |
+| POST | `/api/applicationrecords/import` | Bulk import from `.xlsx` file |
+
+### Excel Import
+
+Upload a `.xlsx` file to `POST /api/applicationrecords/import`. A template is available at `templates/ApplicationRecords_Import_Template.xlsx`.
+
+Expected columns:
+
+| CompanyName (required) | Status (required) | AppliedDate (optional) | PostingUrl (optional) | Notes (optional) |
+|---|---|---|---|---|
+
+Status values: `Applied`, `Interviewing`, `Offered`, `Rejected`, `Withdrawn`
+
+Invalid rows are skipped — the response includes a report of imported/failed counts and per-row errors.
 
 ## MudBlazor Components
 
