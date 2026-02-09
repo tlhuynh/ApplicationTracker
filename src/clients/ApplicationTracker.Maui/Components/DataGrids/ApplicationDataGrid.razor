@@ -1,5 +1,5 @@
 ﻿@using ApplicationTracker.Models
-@using ApplicationTracker.Utilities.Enums
+@using ApplicationTracker.Core.Enums
 
 @*Mobile DataGrid*@
 <MudHidden Breakpoint="Breakpoint.SmAndDown" Invert="true">
@@ -102,13 +102,13 @@
 				<CellTemplate>
 					<MudIconButton Icon="@Icons.Material.Filled.OpenInBrowser"
 					               Size="Size.Medium"
-					               Href="@context.Item.PostingURL"
+					               Href="@context.Item.PostingUrl"
 					               Target="_blank"
-					               Disabled="@(string.IsNullOrEmpty(context.Item.PostingURL))"
+					               Disabled="@(string.IsNullOrEmpty(context.Item.PostingUrl))"
 					               Color="Color.Primary"/>
 				</CellTemplate>
 				<EditTemplate>
-					<MudTextField @bind-Value="context.Item.PostingURL"
+					<MudTextField @bind-Value="context.Item.PostingUrl"
 					              Label="Job Posting URL"
 					              Variant="Variant.Outlined"
 					              InputType="InputType.Url"

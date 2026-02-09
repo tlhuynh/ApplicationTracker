@@ -2,7 +2,7 @@
 using ApplicationTracker.Components.Dialogs;
 using ApplicationTracker.Models;
 using ApplicationTracker.Services;
-using ApplicationTracker.Utilities.Enums;
+using ApplicationTracker.Core.Enums;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
 using SQLite;
@@ -269,17 +269,17 @@ public partial class ApplicationDataGrid : ComponentBase {
 	/// </summary>
 	/// <param name="item">The application record to format.</param>
 	private void FormatUrl(ApplicationRecord item) {
-		if (string.IsNullOrWhiteSpace(item.PostingURL)) {
+		if (string.IsNullOrWhiteSpace(item.PostingUrl)) {
 			return;
 		}
 
 		// Trim whitespace
-		item.PostingURL = item.PostingURL.Trim();
+		item.PostingUrl = item.PostingUrl.Trim();
 
 		// Add https:// if no protocol specified
-		if (!item.PostingURL.StartsWith("http://", StringComparison.OrdinalIgnoreCase) &&
-			!item.PostingURL.StartsWith("https://", StringComparison.OrdinalIgnoreCase)) {
-			item.PostingURL = "https://" + item.PostingURL;
+		if (!item.PostingUrl.StartsWith("http://", StringComparison.OrdinalIgnoreCase) &&
+			!item.PostingUrl.StartsWith("https://", StringComparison.OrdinalIgnoreCase)) {
+			item.PostingUrl = "https://" + item.PostingUrl;
 		}
 	}
 

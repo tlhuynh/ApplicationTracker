@@ -441,3 +441,8 @@ coverage/
 .turbo/
 .parcel-cache/
 *.tsbuildinfo
+
+###############################
+# Windows NUL device artifact
+###############################
+nul
