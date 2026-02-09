@@ -9,6 +9,7 @@ A cross-platform job application tracker built with .NET MAUI Blazor and MudBlaz
 - **Blazor Hybrid** - Web UI components within MAUI
 - **ASP.NET Core Web API** - Backend REST API
 - **MudBlazor** - Material Design component library
+- **[Scalar](https://github.com/scalar/scalar)** - Interactive API documentation UI
 - **[ClosedXML](https://github.com/ClosedXML/ClosedXML)** - Excel file parsing for bulk imports
 - **[xUnit](https://xunit.net/)** - Unit testing framework
 - **[Moq](https://github.com/devlooped/moq)** - Mocking library for tests
@@ -142,6 +143,15 @@ dotnet test
 
 # Run a specific test project
 dotnet test tests/ApplicationTracker.Api.Tests
+```
+
+## API Documentation
+
+When running in Development, the interactive Scalar API reference is available at `/scalar/v1`.
+
+```bash
+dotnet run --project src/backend/ApplicationTracker.Api
+# Then open https://localhost:{port}/scalar/v1
 ```
 
 ## API Endpoints
