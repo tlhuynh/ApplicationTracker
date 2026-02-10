@@ -96,7 +96,9 @@ Located in `src/clients/ApplicationTracker.Maui/`:
 
 `BaseEntity` provides common fields: `Id`, `CreatedAt`, `LastModified`, `UserId`, `ServerId`, `NeedsSync`, `IsDeleted` - designed for future server sync capability.
 
-## Code Style (Enforced by .editorconfig)
+## Code Style
+
+### C# (Enforced by .editorconfig)
 
 - **Use explicit types** - no `var` keyword
 - **K&R brace style** - opening braces on same line
@@ -128,7 +130,50 @@ public class ExampleService {
 }
 ```
 
+### TypeScript / React
+
+- **TypeScript** — strict mode, no `any` unless unavoidable
+- **K&R brace style** — opening braces on same line (consistent with C#)
+- **2-space indentation** for TS, TSX, CSS, JSON
+- **Single quotes** for strings, **backticks** for interpolation
+- **Semicolons** required
+- **Functional components** only — no class components
+- **Function declarations** for components, **arrow functions** for handlers and helpers
+- **Named exports** preferred over default exports
+- **`interface`** over `type` for object shapes
+- **`camelCase`** for variables, functions, props
+- **`PascalCase`** for components, interfaces, type aliases
+- **CSS Modules** for component styling (`.module.css`)
+- **JSDoc comments** on exported functions and components when intent isn't obvious
+
+#### Example
+
+```tsx
+import styles from './ApplicationList.module.css';
+
+interface ApplicationListProps {
+	title: string;
+	count: number;
+}
+
+export function ApplicationList({ title, count }: ApplicationListProps) {
+	const handleClick = () => {
+		console.log('clicked');
+	};
+
+	return (
+		<div className={styles.container}>
+			<h2>{title}</h2>
+			<span>{count}</span>
+			<button onClick={handleClick}>Refresh</button>
+		</div>
+	);
+}
+```
+
 ## Testing
+
+### Backend (.NET)
 
 - **Framework**: xUnit (preferred)
 - **Mocking**: Moq
@@ -136,27 +181,38 @@ public class ExampleService {
 - **Scope**: Unit tests for service and controller layers
 - Test projects go in the `tests/` directory
 
-### Test Projects
-
 | Project | Tests For | Mocks |
 |---------|-----------|-------|
 | `ApplicationTracker.Api.Tests` | Controllers, Services | `IApplicationRecordRepository`, `IApplicationRecordService`, `IExcelImportService` |
 
-### Test Commands
-
 ```bash
-# Run all tests
+# Run all .NET tests
 dotnet test
 
 # Run specific test project
 dotnet test tests/ApplicationTracker.Api.Tests
 ```
 
-### Test Boundaries
+#### Test Boundaries
 
 - **Service tests** mock the repository layer — verify orchestration logic and correct repository calls via `Verify()`
 - **Controller tests** mock the service layer — verify HTTP status codes and response shapes
 - **Soft-delete, timestamps, validation (400s)** are infrastructure/framework concerns — need integration tests (not yet implemented)
+
+### Frontend (React)
+
+- **Test Runner**: [Vitest](https://vitest.dev/) — fast, Vite-native
+- **Component Testing**: [React Testing Library](https://testing-library.com/docs/react-testing-library/intro/) — test from the user's perspective (render, click, assert on DOM)
+- **API Mocking**: [MSW (Mock Service Worker)](https://mswjs.io/) — intercept network requests at the service worker level
+- **E2E**: [Playwright](https://playwright.dev/) — full browser automation (future)
+- **Pattern**: AAA (Arrange, Act, Assert) — consistent with backend
+
+#### What to test
+
+- **Components**: renders with given props, conditional rendering (loading/error/empty states), user interactions (click → state change → UI update)
+- **Hooks**: custom hooks with `renderHook` from React Testing Library
+- **API integration**: components that fetch data, mocked with MSW
+- **Forms**: validation, submission, error display
 
 ## Response Guidelines
 
