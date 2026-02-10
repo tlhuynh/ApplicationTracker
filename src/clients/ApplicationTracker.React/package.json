@@ -8,9 +8,10 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "format": "prettier --write src/",
+    "format": "prettier --write \"src/\" \"*.{ts,js,cjs,mjs}\"",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+		"generate-types": "npx openapi-typescript http://localhost:5021/openapi/v1.json -o src/types/api.d.ts"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.18",
