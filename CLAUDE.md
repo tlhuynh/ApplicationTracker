@@ -6,9 +6,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ApplicationTracker is a full-stack .NET project for tracking job applications, built as a learning playground to explore modern technologies. The core focus is ASP.NET Core Web API with web frontends (React, Angular planned), alongside a .NET MAUI Blazor Hybrid app for mobile and desktop.
 
-**Tech Stack:** .NET 10, C# 13, ASP.NET Core Web API, EF Core, SQL Server, .NET MAUI, Blazor Hybrid, MudBlazor, SQLite, Scalar, ClosedXML
+**Tech Stack:** .NET 10, C# 13, ASP.NET Core Web API, EF Core, SQL Server, .NET MAUI, Blazor Hybrid, MudBlazor, SQLite, Scalar, ClosedXML, React, Vite, Vitest
 
-**Target Platforms:** Web (planned), Android, iOS, macOS (Catalyst), Windows
+**Target Platforms:** Web (React), Android, iOS, macOS (Catalyst), Windows
 
 ## Build Commands
 
@@ -27,6 +27,16 @@ dotnet build src/clients/ApplicationTracker.Maui -f net10.0-windows10.0.19041.0
 
 # Build and run the API (Scalar UI at /scalar/v1 in Development)
 dotnet run --project src/backend/ApplicationTracker.Api
+```
+
+```bash
+# React client (from src/clients/ApplicationTracker.React/)
+npm run dev        # Start dev server
+npm run build      # Type-check and build for production
+npm run lint       # Run ESLint
+npm run format     # Run Prettier
+npm test           # Run tests once
+npm run test:watch # Run tests in watch mode
 ```
 
 ## Backend Setup
@@ -53,7 +63,8 @@ src/
 │   ├── ApplicationTracker.Core/          # Domain entities, interfaces
 │   └── ApplicationTracker.Infrastructure/# Data access, external services
 ├── clients/
-│   └── ApplicationTracker.Maui/          # .NET MAUI Blazor app
+│   ├── ApplicationTracker.Maui/          # .NET MAUI Blazor app
+│   └── ApplicationTracker.React/         # React SPA (Vite + TypeScript)
 └── shared/
     └── ApplicationTracker.Shared/        # DTOs shared between API and clients
 ```
@@ -91,6 +102,16 @@ Located in `src/clients/ApplicationTracker.Maui/`:
 - `Services/` - Business logic and data access (`DatabaseService`)
 - `Utilities/` - Constants and enums
 - `Platforms/` - Platform-specific code (Android, iOS, macOS, Windows)
+
+### React App Structure
+
+Located in `src/clients/ApplicationTracker.React/`:
+
+- `src/` - Application source code (components, tests colocated)
+- `public/` - Static assets served as-is
+- `vite.config.ts` - Vite + Vitest configuration
+- `eslint.config.js` - ESLint with TypeScript and React rules
+- `.prettierrc` - Prettier formatting config (singleQuote, printWidth 100)
 
 ### Entity Design
 
@@ -152,22 +173,22 @@ public class ExampleService {
 import styles from './ApplicationList.module.css';
 
 interface ApplicationListProps {
-	title: string;
-	count: number;
+  title: string;
+  count: number;
 }
 
 export function ApplicationList({ title, count }: ApplicationListProps) {
-	const handleClick = () => {
-		console.log('clicked');
-	};
+  const handleClick = () => {
+    console.log('clicked');
+  };
 
-	return (
-		<div className={styles.container}>
-			<h2>{title}</h2>
-			<span>{count}</span>
-			<button onClick={handleClick}>Refresh</button>
-		</div>
-	);
+  return (
+    <div className={styles.container}>
+      <h2>{title}</h2>
+      <span>{count}</span>
+      <button onClick={handleClick}>Refresh</button>
+    </div>
+  );
 }
 ```
 
@@ -213,6 +234,14 @@ dotnet test tests/ApplicationTracker.Api.Tests
 - **Hooks**: custom hooks with `renderHook` from React Testing Library
 - **API integration**: components that fetch data, mocked with MSW
 - **Forms**: validation, submission, error display
+
+```bash
+# Run React tests (from src/clients/ApplicationTracker.React/)
+npm test
+
+# Watch mode
+npm run test:watch
+```
 
 ## Response Guidelines
 
