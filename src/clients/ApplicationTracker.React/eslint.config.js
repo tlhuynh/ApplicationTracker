@@ -3,32 +3,38 @@ import globals from 'globals';
 import reactHooks from 'eslint-plugin-react-hooks';
 import reactRefresh from 'eslint-plugin-react-refresh';
 import tseslint from 'typescript-eslint';
-import {defineConfig, globalIgnores} from 'eslint/config';
+import { defineConfig, globalIgnores } from 'eslint/config';
 import eslintConfigPrettier from 'eslint-config-prettier';
 
 export default defineConfig([
-	globalIgnores(['dist']),
+  globalIgnores(['dist']),
+  {
+    files: ['**/*.{ts,tsx}'],
+    extends: [
+      js.configs.recommended,
+      tseslint.configs.recommended,
+      reactHooks.configs.flat.recommended,
+      reactRefresh.configs.vite,
+      eslintConfigPrettier,
+    ],
+    languageOptions: {
+      ecmaVersion: 2020,
+      globals: globals.browser,
+    },
+    rules: {
+      'no-restricted-exports': ['error', { restrictDefaultExports: { direct: true } }],
+    },
+  },
+  {
+    files: ['vite.config.ts'],
+    rules: {
+      'no-restricted-exports': 'off',
+    },
+  },
 	{
-		files: ['**/*.{ts,tsx}'],
-		extends: [
-			js.configs.recommended,
-			tseslint.configs.recommended,
-			reactHooks.configs.flat.recommended,
-			reactRefresh.configs.vite,
-			eslintConfigPrettier,
-		],
-		languageOptions: {
-			ecmaVersion: 2020,
-			globals: globals.browser,
-		},
+		files: ['src/components/ui/**/*.tsx'],
 		rules: {
-			'no-restricted-exports': ['error', {restrictDefaultExports: {direct: true}}],
+			'react-refresh/only-export-components': 'off',
 		},
 	},
-	{
-		files: ['vite.config.ts'],
-		rules: {
-			'no-restricted-exports': 'off',
-		},
-	},
-])
+]);
