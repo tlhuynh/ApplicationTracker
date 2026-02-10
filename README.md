@@ -9,9 +9,15 @@ A full-stack .NET project for tracking job applications, built as a learning pla
 - [ASP.NET Core Web API](https://learn.microsoft.com/aspnet/core/web-api/) - Backend REST API
 - [.NET MAUI](https://learn.microsoft.com/dotnet/maui/) - Cross-platform native UI
 - [Blazor Hybrid](https://learn.microsoft.com/aspnet/core/blazor/hybrid/) - Web UI components within MAUI
+- [React 19](https://react.dev/) - Web frontend SPA
+- [Vite](https://vite.dev/) - Frontend build tool and dev server
 
 ### Component Libraries
 - [MudBlazor](https://mudblazor.com/) - Material Design component library
+
+### Frontend Tooling
+- [Prettier](https://prettier.io/) - Code formatting
+- [ESLint](https://eslint.org/) - Linting for TypeScript/React
 
 ### Data & Infrastructure
 - [Entity Framework Core](https://learn.microsoft.com/ef/core/) - ORM for backend data access
@@ -25,9 +31,12 @@ A full-stack .NET project for tracking job applications, built as a learning pla
 ### Testing
 - [xUnit](https://xunit.net/) - Unit testing framework
 - [Moq](https://github.com/devlooped/moq) - Mocking library
+- [Vitest](https://vitest.dev/) - Frontend test runner
+- [React Testing Library](https://testing-library.com/docs/react-testing-library/intro/) - Component testing
+- [MSW](https://mswjs.io/) - API mocking (Mock Service Worker)
 
 ## Platforms
-- Web (planned)
+- Web (React)
 - Mobile/Desktop
 	- Windows
 	- macOS (Catalyst)
@@ -38,6 +47,7 @@ A full-stack .NET project for tracking job applications, built as a learning pla
 
 ### Windows
 - [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
+- [Node.js 22+](https://nodejs.org/) (for React client)
 - [Visual Studio 2022 (17.12+)](https://visualstudio.microsoft.com/) or [JetBrains Rider](https://www.jetbrains.com/rider/) with:
   - .NET MAUI workload
   - Android SDK
@@ -45,6 +55,7 @@ A full-stack .NET project for tracking job applications, built as a learning pla
 
 ### macOS
 - [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
+- [Node.js 22+](https://nodejs.org/) (for React client)
 - [JetBrains Rider](https://www.jetbrains.com/rider/) or [VS Code](https://code.visualstudio.com/)
 - [Xcode 15+](https://developer.apple.com/xcode/) (for iOS/macOS development)
 - Command Line Tools: `xcode-select --install`
@@ -67,7 +78,13 @@ dotnet workload restore
 dotnet restore
 ```
 
-### 4. Run the Application
+### 4. Install React Dependencies
+```bash
+cd src/clients/ApplicationTracker.React
+npm install
+```
+
+### 5. Run the Application
 
 **Visual Studio / Rider:**
 - Open `ApplicationTracker.sln`
@@ -84,6 +101,9 @@ dotnet build src/clients/ApplicationTracker.Maui -f net10.0-windows10.0.19041.0
 
 # Run the API
 dotnet run --project src/backend/ApplicationTracker.Api
+
+# Run the React client
+cd src/clients/ApplicationTracker.React && npm run dev
 ```
 
 ## Project Structure
@@ -96,6 +116,8 @@ ApplicationTracker/
 │   │   ├── ApplicationTracker.Core/        # Domain entities, interfaces
 │   │   └── ApplicationTracker.Infrastructure/ # Data access, external services
 │   ├── clients/
+│   │   ├── ApplicationTracker.React/        # React SPA (Vite + TypeScript)
+│   │   │   └── src/                         # Components, tests (colocated)
 │   │   └── ApplicationTracker.Maui/        # .NET MAUI Blazor app
 │   │       ├── Components/                 # Blazor components
 │   │       │   ├── Layout/                 # Layout components
@@ -143,18 +165,32 @@ Maui → Shared (gets Core transitively)
 
 ## Testing
 
-The project uses [xUnit](https://xunit.net/) with [Moq](https://github.com/devlooped/moq) for unit testing.
+### Backend
+
+The backend uses [xUnit](https://xunit.net/) with [Moq](https://github.com/devlooped/moq) for unit testing.
 
 | Test Project | Tests For | Approach |
 |---|---|---|
 | `ApplicationTracker.Api.Tests` | Controllers, Services | Mock dependencies with Moq |
 
 ```bash
-# Run all tests
+# Run all .NET tests
 dotnet test
 
 # Run a specific test project
 dotnet test tests/ApplicationTracker.Api.Tests
+```
+
+### Frontend (React)
+
+Tests are colocated with source files in `src/clients/ApplicationTracker.React/src/`.
+
+```bash
+# Run React tests (from src/clients/ApplicationTracker.React/)
+npm test
+
+# Watch mode
+npm run test:watch
 ```
 
 ## API Documentation
@@ -179,3 +215,8 @@ dotnet run --project src/backend/ApplicationTracker.Api
 - [ClosedXML](https://github.com/ClosedXML/ClosedXML/wiki)
 - [xUnit](https://xunit.net/docs/getting-started/v3/cmdline)
 - [Moq](https://github.com/devlooped/moq/wiki/Quickstart)
+- [React](https://react.dev/learn)
+- [Vite](https://vite.dev/guide/)
+- [Vitest](https://vitest.dev/guide/)
+- [React Testing Library](https://testing-library.com/docs/react-testing-library/intro/)
+- [Prettier](https://prettier.io/docs/)
