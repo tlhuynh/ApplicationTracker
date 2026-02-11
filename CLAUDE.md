@@ -31,12 +31,13 @@ dotnet run --project src/backend/ApplicationTracker.Api
 
 ```bash
 # React client (from src/clients/ApplicationTracker.React/)
-npm run dev        # Start dev server
-npm run build      # Type-check and build for production
-npm run lint       # Run ESLint
-npm run format     # Run Prettier
-npm test           # Run tests once
-npm run test:watch # Run tests in watch mode
+npm run dev            # Start dev server
+npm run build          # Type-check and build for production
+npm run lint           # Run ESLint
+npm run format         # Run Prettier
+npm test               # Run tests once
+npm run test:watch     # Run tests in watch mode
+npm run generate-types # Generate TypeScript types from OpenAPI spec (backend must be running)
 ```
 
 ## Backend Setup
@@ -107,11 +108,18 @@ Located in `src/clients/ApplicationTracker.Maui/`:
 
 Located in `src/clients/ApplicationTracker.React/`:
 
-- `src/` - Application source code (components, tests colocated)
-- `public/` - Static assets served as-is
-- `vite.config.ts` - Vite + Vitest configuration
+- `src/api/` - API client functions (hand-written fetch wrappers)
+- `src/components/` - App components (`AppSidebar.tsx`)
+- `src/components/ui/` - shadcn/ui generated components (ESLint-ignored)
+- `src/hooks/` - Custom hooks (shadcn-generated `use-mobile.ts`)
+- `src/lib/` - Utilities (`utils.ts` with `cn()` helper)
+- `src/pages/` - Route page components (`HomePage`, `NotFoundPage`)
+- `src/types/` - Generated TypeScript types from OpenAPI spec (`api.d.ts`)
+- `src/test/` - Test setup (`setup.ts` with JSDOM mocks)
+- `vite.config.ts` - Vite + Vitest + API proxy configuration
 - `eslint.config.js` - ESLint with TypeScript and React rules
-- `.prettierrc` - Prettier formatting config (singleQuote, printWidth 100)
+- `.prettierrc` - Prettier formatting config (singleQuote, printWidth 100, 2-space indent)
+- `components.json` - shadcn/ui configuration
 
 ### Entity Design
 
@@ -164,7 +172,7 @@ public class ExampleService {
 - **`interface`** over `type` for object shapes
 - **`camelCase`** for variables, functions, props
 - **`PascalCase`** for components, interfaces, type aliases
-- **CSS Modules** for component styling (`.module.css`)
+- **Tailwind CSS** for styling, **shadcn/ui** for pre-built components
 - **JSDoc comments** on exported functions and components when intent isn't obvious
 
 #### Example

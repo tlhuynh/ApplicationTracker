@@ -13,11 +13,14 @@ A full-stack .NET project for tracking job applications, built as a learning pla
 - [Vite](https://vite.dev/) - Frontend build tool and dev server
 
 ### Component Libraries
-- [MudBlazor](https://mudblazor.com/) - Material Design component library
+- [MudBlazor](https://mudblazor.com/) - Material Design component library (MAUI)
+- [shadcn/ui](https://ui.shadcn.com/) - Accessible UI components built on Radix UI (React)
+- [Tailwind CSS](https://tailwindcss.com/) - Utility-first CSS framework (React)
 
 ### Frontend Tooling
 - [Prettier](https://prettier.io/) - Code formatting
 - [ESLint](https://eslint.org/) - Linting for TypeScript/React
+- [openapi-typescript](https://openapi-ts.dev/) - TypeScript type generation from OpenAPI spec
 
 ### Data & Infrastructure
 - [Entity Framework Core](https://learn.microsoft.com/ef/core/) - ORM for backend data access
@@ -117,7 +120,14 @@ ApplicationTracker/
 │   │   └── ApplicationTracker.Infrastructure/ # Data access, external services
 │   ├── clients/
 │   │   ├── ApplicationTracker.React/        # React SPA (Vite + TypeScript)
-│   │   │   └── src/                         # Components, tests (colocated)
+│   │   │   └── src/
+│   │   │       ├── api/                     # API client (fetch functions)
+│   │   │       ├── components/              # App components + shadcn/ui
+│   │   │       ├── hooks/                   # Custom React hooks
+│   │   │       ├── lib/                     # Utilities
+│   │   │       ├── pages/                   # Route page components
+│   │   │       ├── test/                    # Test setup
+│   │   │       └── types/                   # Generated API types
 │   │   └── ApplicationTracker.Maui/        # .NET MAUI Blazor app
 │   │       ├── Components/                 # Blazor components
 │   │       │   ├── Layout/                 # Layout components
@@ -219,4 +229,8 @@ dotnet run --project src/backend/ApplicationTracker.Api
 - [Vite](https://vite.dev/guide/)
 - [Vitest](https://vitest.dev/guide/)
 - [React Testing Library](https://testing-library.com/docs/react-testing-library/intro/)
+- [MSW](https://mswjs.io/docs/)
+- [shadcn/ui](https://ui.shadcn.com/docs)
+- [Tailwind CSS](https://tailwindcss.com/docs)
+- [openapi-typescript](https://openapi-ts.dev/)
 - [Prettier](https://prettier.io/docs/)
