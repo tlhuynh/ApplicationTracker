@@ -7,7 +7,7 @@ import { defineConfig, globalIgnores } from 'eslint/config';
 import eslintConfigPrettier from 'eslint-config-prettier';
 
 export default defineConfig([
-  globalIgnores(['dist']),
+  globalIgnores(['dist', 'src/components/ui']),
   {
     files: ['**/*.{ts,tsx}'],
     extends: [
@@ -31,10 +31,4 @@ export default defineConfig([
       'no-restricted-exports': 'off',
     },
   },
-	{
-		files: ['src/components/ui/**/*.tsx'],
-		rules: {
-			'react-refresh/only-export-components': 'off',
-		},
-	},
 ]);
