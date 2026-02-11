@@ -6,9 +6,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ApplicationTracker is a full-stack .NET project for tracking job applications, built as a learning playground to explore modern technologies. The core focus is ASP.NET Core Web API with web frontends (React, Angular planned), alongside a .NET MAUI Blazor Hybrid app for mobile and desktop.
 
-**Tech Stack:** .NET 10, C# 13, ASP.NET Core Web API, EF Core, SQL Server, .NET MAUI, Blazor Hybrid, MudBlazor, SQLite, Scalar, ClosedXML
+**Tech Stack:** .NET 10, C# 13, ASP.NET Core Web API, EF Core, SQL Server, .NET MAUI, Blazor Hybrid, MudBlazor, SQLite, Scalar, ClosedXML, React, Vite, Vitest
 
-**Target Platforms:** Web (planned), Android, iOS, macOS (Catalyst), Windows
+**Target Platforms:** Web (React), Android, iOS, macOS (Catalyst), Windows
 
 ## Build Commands
 
@@ -27,6 +27,17 @@ dotnet build src/clients/ApplicationTracker.Maui -f net10.0-windows10.0.19041.0
 
 # Build and run the API (Scalar UI at /scalar/v1 in Development)
 dotnet run --project src/backend/ApplicationTracker.Api
+```
+
+```bash
+# React client (from src/clients/ApplicationTracker.React/)
+npm run dev            # Start dev server
+npm run build          # Type-check and build for production
+npm run lint           # Run ESLint
+npm run format         # Run Prettier
+npm test               # Run tests once
+npm run test:watch     # Run tests in watch mode
+npm run generate-types # Generate TypeScript types from OpenAPI spec (backend must be running)
 ```
 
 ## Backend Setup
@@ -53,7 +64,8 @@ src/
 │   ├── ApplicationTracker.Core/          # Domain entities, interfaces
 │   └── ApplicationTracker.Infrastructure/# Data access, external services
 ├── clients/
-│   └── ApplicationTracker.Maui/          # .NET MAUI Blazor app
+│   ├── ApplicationTracker.Maui/          # .NET MAUI Blazor app
+│   └── ApplicationTracker.React/         # React SPA (Vite + TypeScript)
 └── shared/
     └── ApplicationTracker.Shared/        # DTOs shared between API and clients
 ```
@@ -92,11 +104,30 @@ Located in `src/clients/ApplicationTracker.Maui/`:
 - `Utilities/` - Constants and enums
 - `Platforms/` - Platform-specific code (Android, iOS, macOS, Windows)
 
+### React App Structure
+
+Located in `src/clients/ApplicationTracker.React/`:
+
+- `src/api/` - API client functions (hand-written fetch wrappers)
+- `src/components/` - App components (`AppSidebar.tsx`)
+- `src/components/ui/` - shadcn/ui generated components (ESLint-ignored)
+- `src/hooks/` - Custom hooks (shadcn-generated `use-mobile.ts`)
+- `src/lib/` - Utilities (`utils.ts` with `cn()` helper)
+- `src/pages/` - Route page components (`HomePage`, `NotFoundPage`)
+- `src/types/` - Generated TypeScript types from OpenAPI spec (`api.d.ts`)
+- `src/test/` - Test setup (`setup.ts` with JSDOM mocks)
+- `vite.config.ts` - Vite + Vitest + API proxy configuration
+- `eslint.config.js` - ESLint with TypeScript and React rules
+- `.prettierrc` - Prettier formatting config (singleQuote, printWidth 100, 2-space indent)
+- `components.json` - shadcn/ui configuration
+
 ### Entity Design
 
 `BaseEntity` provides common fields: `Id`, `CreatedAt`, `LastModified`, `UserId`, `ServerId`, `NeedsSync`, `IsDeleted` - designed for future server sync capability.
 
-## Code Style (Enforced by .editorconfig)
+## Code Style
+
+### C# (Enforced by .editorconfig)
 
 - **Use explicit types** - no `var` keyword
 - **K&R brace style** - opening braces on same line
@@ -128,7 +159,50 @@ public class ExampleService {
 }
 ```
 
+### TypeScript / React
+
+- **TypeScript** — strict mode, no `any` unless unavoidable
+- **K&R brace style** — opening braces on same line (consistent with C#)
+- **2-space indentation** for TS, TSX, CSS, JSON
+- **Single quotes** for strings, **backticks** for interpolation
+- **Semicolons** required
+- **Functional components** only — no class components
+- **Function declarations** for components, **arrow functions** for handlers and helpers
+- **Named exports** preferred over default exports
+- **`interface`** over `type` for object shapes
+- **`camelCase`** for variables, functions, props
+- **`PascalCase`** for components, interfaces, type aliases
+- **Tailwind CSS** for styling, **shadcn/ui** for pre-built components
+- **JSDoc comments** on exported functions and components when intent isn't obvious
+
+#### Example
+
+```tsx
+import styles from './ApplicationList.module.css';
+
+interface ApplicationListProps {
+  title: string;
+  count: number;
+}
+
+export function ApplicationList({ title, count }: ApplicationListProps) {
+  const handleClick = () => {
+    console.log('clicked');
+  };
+
+  return (
+    <div className={styles.container}>
+      <h2>{title}</h2>
+      <span>{count}</span>
+      <button onClick={handleClick}>Refresh</button>
+    </div>
+  );
+}
+```
+
 ## Testing
+
+### Backend (.NET)
 
 - **Framework**: xUnit (preferred)
 - **Mocking**: Moq
@@ -136,27 +210,46 @@ public class ExampleService {
 - **Scope**: Unit tests for service and controller layers
 - Test projects go in the `tests/` directory
 
-### Test Projects
-
 | Project | Tests For | Mocks |
 |---------|-----------|-------|
 | `ApplicationTracker.Api.Tests` | Controllers, Services | `IApplicationRecordRepository`, `IApplicationRecordService`, `IExcelImportService` |
 
-### Test Commands
-
 ```bash
-# Run all tests
+# Run all .NET tests
 dotnet test
 
 # Run specific test project
 dotnet test tests/ApplicationTracker.Api.Tests
 ```
 
-### Test Boundaries
+#### Test Boundaries
 
 - **Service tests** mock the repository layer — verify orchestration logic and correct repository calls via `Verify()`
 - **Controller tests** mock the service layer — verify HTTP status codes and response shapes
 - **Soft-delete, timestamps, validation (400s)** are infrastructure/framework concerns — need integration tests (not yet implemented)
+
+### Frontend (React)
+
+- **Test Runner**: [Vitest](https://vitest.dev/) — fast, Vite-native
+- **Component Testing**: [React Testing Library](https://testing-library.com/docs/react-testing-library/intro/) — test from the user's perspective (render, click, assert on DOM)
+- **API Mocking**: [MSW (Mock Service Worker)](https://mswjs.io/) — intercept network requests at the service worker level
+- **E2E**: [Playwright](https://playwright.dev/) — full browser automation (future)
+- **Pattern**: AAA (Arrange, Act, Assert) — consistent with backend
+
+#### What to test
+
+- **Components**: renders with given props, conditional rendering (loading/error/empty states), user interactions (click → state change → UI update)
+- **Hooks**: custom hooks with `renderHook` from React Testing Library
+- **API integration**: components that fetch data, mocked with MSW
+- **Forms**: validation, submission, error display
+
+```bash
+# Run React tests (from src/clients/ApplicationTracker.React/)
+npm test
+
+# Watch mode
+npm run test:watch
+```
 
 ## Response Guidelines
 
