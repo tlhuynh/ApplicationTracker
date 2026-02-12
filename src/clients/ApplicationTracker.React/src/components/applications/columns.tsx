@@ -1,13 +1,6 @@
 ﻿import {type ColumnDef} from '@tanstack/react-table';
-import type {ApplicationRecord} from 'src/types/api';
-
-const STATUS_LABELS: Record<number, string> = {
-  0: 'Applied',
-  1: 'Interviewing',
-  2: 'Offered',
-  3: 'Rejected',
-  4: 'Withdrawn',
-};
+import type {ApplicationRecord} from 'src/api/applicationRecords';
+import { STATUS_OPTIONS } from '@/lib/constants';
 
 function formatDate(value: string | null | undefined): string {
   if (!value) return '';
@@ -27,7 +20,8 @@ export const columns: ColumnDef<ApplicationRecord>[] = [
   {
     accessorKey: "status",
     header: "Status",
-    cell: ({ getValue }) => STATUS_LABELS[getValue<number>() ?? 0],
+    cell: ({ getValue }) =>
+      STATUS_OPTIONS.find(o => o.value === getValue<number>())?.label,
   },
   {
     accessorKey: "postingUrl",
