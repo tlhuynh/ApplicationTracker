@@ -110,9 +110,10 @@ Located in `src/clients/ApplicationTracker.React/`:
 
 - `src/api/` - API client functions (hand-written fetch wrappers)
 - `src/components/` - App components (`AppSidebar.tsx`)
+- `src/components/applications/` - Application feature components (`ApplicationTable`, `ApplicationFormDialog`, `columns`)
 - `src/components/ui/` - shadcn/ui generated components (ESLint-ignored)
 - `src/hooks/` - Custom hooks (shadcn-generated `use-mobile.ts`)
-- `src/lib/` - Utilities (`utils.ts` with `cn()` helper)
+- `src/lib/` - Utilities (`utils.ts` with `cn()` helper) and constants (`constants.ts`)
 - `src/pages/` - Route page components (`HomePage`, `NotFoundPage`)
 - `src/types/` - Generated TypeScript types from OpenAPI spec (`api.d.ts`)
 - `src/test/` - Test setup (`setup.ts` with JSDOM mocks)

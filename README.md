@@ -11,6 +11,7 @@ A full-stack .NET project for tracking job applications, built as a learning pla
 - [Blazor Hybrid](https://learn.microsoft.com/aspnet/core/blazor/hybrid/) - Web UI components within MAUI
 - [React 19](https://react.dev/) - Web frontend SPA
 - [Vite](https://vite.dev/) - Frontend build tool and dev server
+- [TanStack Table](https://tanstack.com/table/latest) - Headless table library for React
 
 ### Component Libraries
 - [MudBlazor](https://mudblazor.com/) - Material Design component library (MAUI)
@@ -123,8 +124,10 @@ ApplicationTracker/
 │   │   │   └── src/
 │   │   │       ├── api/                     # API client (fetch functions)
 │   │   │       ├── components/              # App components + shadcn/ui
+│   │   │       │   ├── applications/        # Application feature components
+│   │   │       │   └── ui/                  # shadcn/ui generated components
 │   │   │       ├── hooks/                   # Custom React hooks
-│   │   │       ├── lib/                     # Utilities
+│   │   │       ├── lib/                     # Utilities and constants
 │   │   │       ├── pages/                   # Route page components
 │   │   │       ├── test/                    # Test setup
 │   │   │       └── types/                   # Generated API types
@@ -231,6 +234,7 @@ dotnet run --project src/backend/ApplicationTracker.Api
 - [React Testing Library](https://testing-library.com/docs/react-testing-library/intro/)
 - [MSW](https://mswjs.io/docs/)
 - [shadcn/ui](https://ui.shadcn.com/docs)
+- [TanStack Table](https://tanstack.com/table/latest/docs/introduction)
 - [Tailwind CSS](https://tailwindcss.com/docs)
 - [openapi-typescript](https://openapi-ts.dev/)
 - [Prettier](https://prettier.io/docs/)
