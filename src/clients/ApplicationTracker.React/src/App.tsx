@@ -13,6 +13,7 @@ export function App() {
           <header className="flex h-14 items-center gap-2 border-b px-4">
             <SidebarTrigger />
             <Separator orientation="vertical" className="h-4" />
+            <span className="text-lg font-semibold">Job Application Tracker</span>
           </header>
           <main className="flex-1 p-4">
             <Outlet />

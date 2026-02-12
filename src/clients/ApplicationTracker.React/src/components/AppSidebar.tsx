@@ -23,9 +23,6 @@ const navItems = [
 export function AppSidebar() {
   return (
     <Sidebar>
-      <SidebarHeader className="p-4">
-        <span className="text-lg font-semibold">Job Application Tracker</span>
-      </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel>Menu</SidebarGroupLabel>
