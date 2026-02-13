@@ -29,6 +29,11 @@ const EMPTY_FORM: CreateRequest = {
   notes: null,
 };
 
+
+/*
+* Prop for this component, basically the paramter
+* Parent component need to provide these data when using this component*
+* */
 interface ApplicationFormDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;

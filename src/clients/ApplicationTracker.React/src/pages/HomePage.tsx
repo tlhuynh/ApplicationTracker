@@ -11,12 +11,30 @@ import { ApplicationTable } from '@/components/applications/ApplicationTable';
 import { columns } from '@/components/applications/columns';
 import { Button } from '@/components/ui/button';
 
+
+
+/*
+* Page is where we put everything together
+*
+* Contains states (useState), make api calls(useEffect), and call components to display on the page
+* */
 export function HomePage() {
+  /*
+  * State variables for the page
+  * */
   const [applications, setApplications] = useState<ApplicationRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
 
+
+  /*
+  * useEffect for API calls
+  *
+  * this one is run on mount/init
+  * useEffect with an empty dependency array [] runs once after the first render,
+  * equivalent to Blazor's OnInitializedAsync
+  * */
   // Initial fetch on mount — setState calls are in async callbacks
   // (.then/.catch/.finally),
   // not synchronously in the effect body, which satisfies the React Compiler
@@ -29,6 +47,14 @@ export function HomePage() {
       .finally(() => setIsLoading(false));
   }, []);
 
+  /*
+  * The difference matters:
+  * useEffect is for side effects triggered by state/prop changes; regular functions
+  * are for side effects triggered by user actions
+  *
+  * Since this method is mainly used in handleCreate, which is fine with asyncm this can be rewritten to be
+  * an async method
+  * */
   // Refetch data — only called from event handlers (not effects)
   const refreshApplications = () => {
     setIsLoading(true);
@@ -43,7 +69,7 @@ export function HomePage() {
 
   const handleCreate = async (data: CreateRequest) => {
     await create(data);
-    refreshApplications();
+    refreshApplications(); // ASK ABOUT WHY not make this method async?
   };
 
   return (
