@@ -3,7 +3,7 @@ import type {ApplicationRecord} from 'src/api/applicationRecords';
 import {STATUS_OPTIONS} from '@/lib/constants';
 import {Button} from '@/components/ui/button';
 import {NotesCell} from '@/components/applications/NotesCell';
-import { ExternalLink } from 'lucide-react';
+import {ExternalLink} from 'lucide-react';
 
 /*
 * Notes: helper function to format date into local date. For angular we can probably use a pipe
@@ -49,11 +49,17 @@ export function createColumns({onEdit, onDelete}: ColumnActions): ColumnDef<Appl
       header: "Status",
       cell: ({getValue}) =>
         STATUS_OPTIONS.find(o => o.value === getValue<number>())?.label,
+      filterFn: (row, columnId, filterValue: string) => {
+        const status = row.getValue<number>(columnId);
+        const label = STATUS_OPTIONS.find(o => o.value === status)?.label ?? '';
+        return label.toLowerCase().includes(filterValue.toLowerCase());
+      },
     },
     {
       accessorKey: "postingUrl",
       header: "Job Url",
-      cell: ({ getValue }) => {
+      enableSorting: false,
+      cell: ({getValue}) => {
         const url = getValue<string | null>();
         if (!url) return null;
         return (
@@ -62,8 +68,8 @@ export function createColumns({onEdit, onDelete}: ColumnActions): ColumnDef<Appl
             target="_blank"
             rel="noopener noreferrer"
             className="text-muted-foreground hover:text-foreground"
-          >
-            <ExternalLink className="h-4 w-4" />
+            aria-label="Open job posting">
+            <ExternalLink className="h-4 w-4"/>
           </a>
         );
       },
@@ -71,11 +77,13 @@ export function createColumns({onEdit, onDelete}: ColumnActions): ColumnDef<Appl
     {
       accessorKey: "notes",
       header: "Notes",
+      enableSorting: false,
       cell: ({getValue}) => <NotesCell value={getValue<string | null>()}/>,
     },
     {
       id: 'actions',
       header: 'Actions',
+      enableSorting: false,
       cell: ({row}) => (
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={() => onEdit(row.original)}>

@@ -23,6 +23,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { Search } from 'lucide-react';
+import { Input } from '@/components/ui/input';
 
 /*
 * Page is where we put everything together
@@ -39,6 +41,7 @@ export function HomePage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingRecord, setEditingRecord] = useState<ApplicationRecord | null>(null);
   const [deletingRecord, setDeletingRecord] = useState<ApplicationRecord | null>(null);
+  const [searchFilter, setSearchFilter] = useState('');
 
   /*
   * useEffect for API calls
@@ -126,9 +129,21 @@ export function HomePage() {
         <Button onClick={() => setDialogOpen(true)}>New Application</Button>
       </div>
 
+      <div className="flex items-center gap-2 mb-4">
+        <Search className="h-4 w-4 text-muted-foreground" />
+        <Input
+          placeholder="Search applications..."
+          value={searchFilter}
+          onChange={(e) => setSearchFilter(e.target.value)}
+          className="max-w-sm" />
+      </div>
+
       {isLoading && <p className="text-muted-foreground">Loading...</p>}
       {error && <p className="text-destructive">{error}</p>}
-      {!isLoading && !error && <ApplicationTable columns={tableColumns} data={applications} />}
+      {!isLoading && !error && <ApplicationTable columns={tableColumns}
+                                                 data={applications}
+                                                 globalFilter={searchFilter}
+                                                 onGlobalFilterChange={setSearchFilter}/>}
       <ApplicationFormDialog
         open={dialogOpen}
         onOpenChange={handleDialogClose}

@@ -47,7 +47,7 @@ describe('ApplicationTable', () => {
     // First row
     expect(screen.getByText('Acme Corp')).toBeInTheDocument();
     expect(screen.getByText('Applied')).toBeInTheDocument();
-    expect(screen.getByText('Referred by a friend')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /View notes: Referred by a friend/ })).toBeInTheDocument();
 
     // Second row
     expect(screen.getByText('Globex Inc')).toBeInTheDocument();
@@ -57,7 +57,7 @@ describe('ApplicationTable', () => {
   it('renders job URL as a link that opens in a new tab', () => {
     render(<ApplicationTable columns={columns} data={mockApplications} />);
 
-    const link = screen.getByRole('link', { name: 'Link' });
+    const link = screen.getByRole('link', { name: 'Open job posting' });
     expect(link).toHaveAttribute('href', 'https://example.com/job1');
     expect(link).toHaveAttribute('target', '_blank');
   });
