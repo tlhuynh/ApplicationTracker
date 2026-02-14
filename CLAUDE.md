@@ -258,3 +258,5 @@ npm run test:watch
 - Prioritize Microsoft Learn, MDN, and other primary sources over third-party articles
 - **Generate changes with explanations** — present file changes for the user to review and apply, rather than applying directly, unless the user explicitly asks otherwise
 - For file edits: ask "Should I make this change, or would you like to handle it?"
+- **React concepts**: see `docs/react-concepts.md` for topics already covered — don't re-explain these from scratch
+- **Project context**: see `docs/windows-memory.md` for implementation progress, setup details, and troubleshooting notes
