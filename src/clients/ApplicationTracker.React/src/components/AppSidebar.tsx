@@ -9,7 +9,6 @@ import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
-  SidebarHeader,
 } from '@/components/ui/sidebar';
 
 const navItems = [
