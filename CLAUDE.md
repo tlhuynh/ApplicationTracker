@@ -109,11 +109,12 @@ Located in `src/clients/ApplicationTracker.Maui/`:
 Located in `src/clients/ApplicationTracker.React/`:
 
 - `src/api/` - API client functions (hand-written fetch wrappers)
-- `src/components/` - App components (`AppSidebar.tsx`)
+- `src/components/` - App components (`AppSidebar.tsx`, `ThemeProvider.tsx`, `ThemeToggle.tsx`)
+- `src/components/applications/` - Application feature components (`ApplicationTable`, `ApplicationFormDialog`, `applicationColumns`, `NotesCell`)
 - `src/components/ui/` - shadcn/ui generated components (ESLint-ignored)
-- `src/hooks/` - Custom hooks (shadcn-generated `use-mobile.ts`)
-- `src/lib/` - Utilities (`utils.ts` with `cn()` helper)
-- `src/pages/` - Route page components (`HomePage`, `NotFoundPage`)
+- `src/hooks/` - Custom hooks (`use-mobile.ts`, `use-theme.ts`)
+- `src/lib/` - Utilities (`utils.ts` with `cn()` helper) and constants (`constants.ts`)
+- `src/pages/` - Route page components (`HomePage`, `ImportPage`, `NotFoundPage`)
 - `src/types/` - Generated TypeScript types from OpenAPI spec (`api.d.ts`)
 - `src/test/` - Test setup (`setup.ts` with JSDOM mocks)
 - `vite.config.ts` - Vite + Vitest + API proxy configuration
@@ -257,3 +258,5 @@ npm run test:watch
 - Prioritize Microsoft Learn, MDN, and other primary sources over third-party articles
 - **Generate changes with explanations** — present file changes for the user to review and apply, rather than applying directly, unless the user explicitly asks otherwise
 - For file edits: ask "Should I make this change, or would you like to handle it?"
+- **React concepts**: see `docs/react-concepts.md` for topics already covered — don't re-explain these from scratch
+- **Project context**: see `docs/windows-memory.md` for implementation progress, setup details, and troubleshooting notes
