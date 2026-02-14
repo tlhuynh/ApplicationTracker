@@ -109,12 +109,12 @@ Located in `src/clients/ApplicationTracker.Maui/`:
 Located in `src/clients/ApplicationTracker.React/`:
 
 - `src/api/` - API client functions (hand-written fetch wrappers)
-- `src/components/` - App components (`AppSidebar.tsx`)
-- `src/components/applications/` - Application feature components (`ApplicationTable`, `ApplicationFormDialog`, `columns`)
+- `src/components/` - App components (`AppSidebar.tsx`, `ThemeProvider.tsx`, `ThemeToggle.tsx`)
+- `src/components/applications/` - Application feature components (`ApplicationTable`, `ApplicationFormDialog`, `applicationColumns`, `NotesCell`)
 - `src/components/ui/` - shadcn/ui generated components (ESLint-ignored)
-- `src/hooks/` - Custom hooks (shadcn-generated `use-mobile.ts`)
+- `src/hooks/` - Custom hooks (`use-mobile.ts`, `use-theme.ts`)
 - `src/lib/` - Utilities (`utils.ts` with `cn()` helper) and constants (`constants.ts`)
-- `src/pages/` - Route page components (`HomePage`, `NotFoundPage`)
+- `src/pages/` - Route page components (`HomePage`, `ImportPage`, `NotFoundPage`)
 - `src/types/` - Generated TypeScript types from OpenAPI spec (`api.d.ts`)
 - `src/test/` - Test setup (`setup.ts` with JSDOM mocks)
 - `vite.config.ts` - Vite + Vitest + API proxy configuration

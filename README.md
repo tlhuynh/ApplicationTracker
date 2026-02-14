@@ -17,6 +17,8 @@ A full-stack .NET project for tracking job applications, built as a learning pla
 - [MudBlazor](https://mudblazor.com/) - Material Design component library (MAUI)
 - [shadcn/ui](https://ui.shadcn.com/) - Accessible UI components built on Radix UI (React)
 - [Tailwind CSS](https://tailwindcss.com/) - Utility-first CSS framework (React)
+- [Lucide React](https://lucide.dev/) - Icon library (used by shadcn/ui)
+- [Sonner](https://sonner.emilkowal.dev/) - Toast notifications (React)
 
 ### Frontend Tooling
 - [Prettier](https://prettier.io/) - Code formatting
@@ -126,9 +128,9 @@ ApplicationTracker/
 │   │   │       ├── components/              # App components + shadcn/ui
 │   │   │       │   ├── applications/        # Application feature components
 │   │   │       │   └── ui/                  # shadcn/ui generated components
-│   │   │       ├── hooks/                   # Custom React hooks
+│   │   │       ├── hooks/                   # Custom React hooks (use-theme, use-mobile)
 │   │   │       ├── lib/                     # Utilities and constants
-│   │   │       ├── pages/                   # Route page components
+│   │   │       ├── pages/                   # Route page components (Home, Import, NotFound)
 │   │   │       ├── test/                    # Test setup
 │   │   │       └── types/                   # Generated API types
 │   │   └── ApplicationTracker.Maui/        # .NET MAUI Blazor app
@@ -216,6 +218,16 @@ dotnet run --project src/backend/ApplicationTracker.Api
 ```
 
 
+## Features (React Client)
+
+- **Dashboard** — view all application records in a sortable, filterable, paginated table
+- **CRUD** — create, edit, and delete applications via form dialogs
+- **Form validation** — client-side validation with red borders and error text
+- **Excel import** — upload `.xlsx` files to bulk import records, with error reporting
+- **Toast notifications** — success/error feedback via Sonner
+- **Dark/light theme** — toggle with system preference detection, persisted in localStorage
+- **Responsive sidebar** — collapsible navigation with Dashboard and Import pages
+
 ## Resources
 
 - [.NET 10](https://dotnet.microsoft.com/download/dotnet/10.0)
@@ -236,5 +248,7 @@ dotnet run --project src/backend/ApplicationTracker.Api
 - [shadcn/ui](https://ui.shadcn.com/docs)
 - [TanStack Table](https://tanstack.com/table/latest/docs/introduction)
 - [Tailwind CSS](https://tailwindcss.com/docs)
+- [Lucide Icons](https://lucide.dev/icons/)
+- [Sonner](https://sonner.emilkowal.dev/)
 - [openapi-typescript](https://openapi-ts.dev/)
 - [Prettier](https://prettier.io/docs/)
