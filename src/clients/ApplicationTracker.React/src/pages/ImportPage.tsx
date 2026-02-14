@@ -1,7 +1,6 @@
 ﻿import {useRef, useState} from 'react';
 import {type ExcelImportResult, importExcel} from '@/api/applicationRecords';
 import {Button} from '@/components/ui/button';
-import {Separator} from '@/components/ui/separator';
 import {
   Card,
   CardContent,
