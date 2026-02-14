@@ -1,4 +1,4 @@
-﻿import { ClipboardList } from 'lucide-react';
+﻿import { ClipboardList, FileUp } from 'lucide-react';
 import { NavLink } from 'react-router';
 import {
   Sidebar,
@@ -17,8 +17,12 @@ const navItems = [
     url: '/',
     icon: ClipboardList,
   },
+  {
+    title: 'Import',
+    url: '/import',
+    icon: FileUp,
+  },
 ];
-
 export function AppSidebar() {
   return (
     <Sidebar>
