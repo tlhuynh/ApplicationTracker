@@ -114,7 +114,7 @@ export function ApplicationFormDialog({
     }
     // Validate applied date is provided
     if (!form.appliedDate) {
-      errors.appliedDate = 'Applied date is required'; // TODO check if this need format check
+      errors.appliedDate = 'Applied date is required';
     }
     // Validate provided URL is valid
     if (form.postingUrl && !URL.canParse(form.postingUrl)) {
