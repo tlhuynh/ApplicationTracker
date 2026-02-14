@@ -52,13 +52,12 @@ export function ApplicationTable<TData, TValue>({
     <div className="rounded-md border">
       <Table>
         <TableHeader>
-          // .map() is equivalent of @foreach
-          // this code block is basically:
-          //  loop thru each header group, render a row
-          //  loop thru each header, render a table head
-          //
-          //  when rendering a table head, flexRender (TanStack Table utility) uses data from column config and provided
-          //  data to render value. This is the bridge to combine TanStack Table and react element
+          {/*.map() is equivalent of @foreach
+              this code block is basically:
+              loop thru each header group, render a row
+              loop thru each header, render a table head
+              when rendering a table head, flexRender (TanStack Table utility) uses data from column config and provided
+              data to render value. This is the bridge to combine TanStack Table and react element*/}
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow key={headerGroup.id}>
               {headerGroup.headers.map((header) => (
@@ -72,7 +71,7 @@ export function ApplicationTable<TData, TValue>({
           ))}
         </TableHeader>
         <TableBody>
-          // if there are rows, loop thru each and render, otherwise use fallback "No applications found"
+          {/*if there are rows, loop thru each and render, otherwise use fallback "No applications found"*/}
           {table.getRowModel().rows.length ? (
             table.getRowModel().rows.map((row) => (
               <TableRow key={row.id}>
