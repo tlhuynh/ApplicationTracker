@@ -22,7 +22,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\backend\ApplicationTracker.Api\ApplicationTracker.Api.csproj" />
 	<ProjectReference Include="..\..\src\backend\ApplicationTracker.Core\ApplicationTracker.Core.csproj" />
-	<ProjectReference Include="..\..\src\backend\ApplicationTracker.Shared\ApplicationTracker.Shared.csproj" />
+	<ProjectReference Include="..\..\src\shared\ApplicationTracker.Shared\ApplicationTracker.Shared.csproj" />
   </ItemGroup>
 
 </Project>
