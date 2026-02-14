@@ -4,14 +4,25 @@ import {
   type CreateRequest,
   create,
   getAll,
+  remove,
+  update,
 } from '@/api/applicationRecords';
 import { ApplicationFormDialog } from
     '@/components/applications/ApplicationFormDialog';
 import { ApplicationTable } from '@/components/applications/ApplicationTable';
-import { columns } from '@/components/applications/columns';
+import { createColumns } from '@/components/applications/applicationColumns';
 import { Button } from '@/components/ui/button';
-
-
+import { toast } from 'sonner';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 /*
 * Page is where we put everything together
@@ -26,7 +37,8 @@ export function HomePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
-
+  const [editingRecord, setEditingRecord] = useState<ApplicationRecord | null>(null);
+  const [deletingRecord, setDeletingRecord] = useState<ApplicationRecord | null>(null);
 
   /*
   * useEffect for API calls
@@ -69,7 +81,42 @@ export function HomePage() {
 
   const handleCreate = async (data: CreateRequest) => {
     await create(data);
-    refreshApplications(); // ASK ABOUT WHY not make this method async?
+    refreshApplications();
+  };
+
+  const handleEdit = (record: ApplicationRecord) => {
+    setEditingRecord(record);
+    setDialogOpen(true);
+  };
+
+  const handleUpdate = async (data: CreateRequest) => {
+    if (!editingRecord?.id) return;
+    await update(Number(editingRecord.id), data);
+    refreshApplications();
+  };
+
+  const handleDelete = (record: ApplicationRecord) => {
+    setDeletingRecord(record);
+  };
+
+  const confirmDelete = () => {
+    if (!deletingRecord?.id) return;
+    remove(Number(deletingRecord.id))
+      .then(refreshApplications)
+      .catch((err: unknown) => {
+        toast.error(err instanceof Error ? err.message : 'Failed to delete application');
+      })
+      .finally(() => setDeletingRecord(null));
+  };
+
+  const tableColumns = createColumns({
+    onEdit: handleEdit,
+    onDelete: handleDelete,
+  });
+
+  const handleDialogClose = (open: boolean) => {
+    setDialogOpen(open);
+    if (!open) setEditingRecord(null);
   };
 
   return (
@@ -81,11 +128,26 @@ export function HomePage() {
 
       {isLoading && <p className="text-muted-foreground">Loading...</p>}
       {error && <p className="text-destructive">{error}</p>}
-      {!isLoading && !error && <ApplicationTable columns={columns} data={applications} />}
+      {!isLoading && !error && <ApplicationTable columns={tableColumns} data={applications} />}
       <ApplicationFormDialog
         open={dialogOpen}
-        onOpenChange={setDialogOpen}
-        onSubmit={handleCreate} />
+        onOpenChange={handleDialogClose}
+        onSubmit={editingRecord ? handleUpdate : handleCreate}
+        initialData={editingRecord ?? undefined} />
+      <AlertDialog open={!!deletingRecord} onOpenChange={(open) => { if (!open) setDeletingRecord(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Application</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this application? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete}>Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

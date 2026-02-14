@@ -2,7 +2,7 @@
 import { describe, it, expect } from 'vitest';
 import { ApplicationTable } from './ApplicationTable';
 import type { ApplicationRecord } from '@/api/applicationRecords';
-import { columns } from './columns';
+import { createColumns } from './applicationColumns';
 
 // Sample data matching the ApplicationRecordDto shape
 const mockApplications: ApplicationRecord[] = [
@@ -23,6 +23,12 @@ const mockApplications: ApplicationRecord[] = [
     notes: null,
   },
 ];
+
+// Create columns
+const columns = createColumns({
+  onEdit: () => {},
+  onDelete: () => {},
+});
 
 describe('ApplicationTable', () => {
   it('renders all column headers', () => {
@@ -60,5 +66,15 @@ describe('ApplicationTable', () => {
     render(<ApplicationTable columns={columns} data={[]} />);
 
     expect(screen.getByText('No applications found.')).toBeInTheDocument();
+  });
+
+  it('renders edit and delete buttons for each row', () => {
+    render(<ApplicationTable columns={columns} data={mockApplications} />);
+
+    const editButtons = screen.getAllByRole('button', { name: 'Edit' });
+    const deleteButtons = screen.getAllByRole('button', { name: 'Delete' });
+
+    expect(editButtons).toHaveLength(2);
+    expect(deleteButtons).toHaveLength(2);
   });
 });

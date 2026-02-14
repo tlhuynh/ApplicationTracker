@@ -5,6 +5,13 @@ import { HomePage } from './HomePage';
 // vi.mock hoists to the top of the file, so it runs before any imports.
 vi.mock('@/api/applicationRecords', () => ({
   getAll: vi.fn(),
+  create: vi.fn(),
+  update: vi.fn(),
+  remove: vi.fn(),
+}));
+
+vi.mock('sonner', () => ({
+  toast: { error: vi.fn(), success: vi.fn() },
 }));
 
 // Import the mocked function so we can control its return value per test
