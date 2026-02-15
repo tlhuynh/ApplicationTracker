@@ -223,7 +223,7 @@ dotnet run --project src/backend/ApplicationTracker.Api
 - **Dashboard** — view all application records in a sortable, filterable, paginated table
 - **CRUD** — create, edit, and delete applications via form dialogs
 - **Form validation** — client-side validation with red borders and error text
-- **Excel import** — upload `.xlsx` files to bulk import records, with error reporting
+- **Excel import** — upload `.xlsx` files to bulk import records, with row-level validation (required fields, enum matching, date parsing, URL format), duplicate detection (by company + URL or company + date), and error reporting
 - **Toast notifications** — success/error feedback via Sonner
 - **Dark/light theme** — toggle with system preference detection, persisted in localStorage
 - **Responsive sidebar** — collapsible navigation with Dashboard and Import pages
