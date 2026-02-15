@@ -88,7 +88,19 @@ public class ExcelImportService(IApplicationRecordRepository repository) : IExce
 				notes = null;
 			}
 
-			ApplicationRecord entity = new() {
+			// Check for duplicate application in database
+		if (await repository.ExistsAsync(companyName, appliedDate, postingUrl)) {
+			errors.Add(new() {
+				RowNumber = rowNumber,
+				CompanyName = companyName,
+				ErrorMessage = "Duplicate application — a record with the same company and "
+					+ (postingUrl is not null ? "posting URL" : "applied date")
+					+ " already exists."
+			});
+			continue;
+		}
+
+		ApplicationRecord entity = new() {
 				CompanyName = companyName,
 				Status = status,
 				AppliedDate = appliedDate,
