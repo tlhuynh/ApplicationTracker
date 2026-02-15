@@ -24,6 +24,18 @@ This is a snapshot of the Claude Code memory from the Windows development machin
 - When testing SQL passwords in zsh (Mac), use single quotes to avoid `!` history expansion
 - VS Code mssql extension on Mac can confuse local and remote SQL containers — use `sqlcmd` CLI to verify connectivity
 
+## Excel Import Validation
+- CompanyName: required
+- Status: required, must match `ApplicationStatus` enum name (case-insensitive), numeric values rejected via `int.TryParse` guard
+- AppliedDate: required, parsed with `CultureInfo.InvariantCulture` + `DateTime.SpecifyKind(UTC)`
+- PostingUrl: optional, validated with `Uri.TryCreate(Absolute)` + HTTP/HTTPS scheme check
+- Notes: optional, no validation
+- Duplicate detection: CompanyName + PostingUrl when URL provided, CompanyName + AppliedDate fallback (DB check only, not within same import batch)
+- `IApplicationRecordRepository.ExistsAsync(companyName, appliedDate, postingUrl)` — checks DB for duplicates, strategy based on whether postingUrl is null
+- Base `Repository<T>._dbSet` is `protected` (changed from `private`) so derived repos can query directly
+- `Enum.TryParse` accepts numeric strings by default — always guard with `int.TryParse` when validating enum names
+- ClosedXML auto-converts date-like strings to Excel serial numbers — use `DataType = XLDataType.Text` in test helpers to prevent this
+
 ## Testing Notes
 - Soft-delete logic lives in `ApplicationDbContext.SaveChangesAsync` (Infrastructure), not the service layer — can't be tested with mocked repositories, needs EF Core integration tests
 - ASP.NET Core `[ApiController]` handles model validation (400 responses) before controller actions run — requires `WebApplicationFactory` integration tests to verify
@@ -32,7 +44,7 @@ This is a snapshot of the Claude Code memory from the Windows development machin
 ## Implementation Progress
 - Backend API: Controllers, services, repositories, EF Core — done
 - Excel import: ClosedXML service + endpoint (`POST /api/applicationrecords/import`) — done
-- Unit tests: `ApplicationTracker.Api.Tests` (xUnit + Moq, 23 tests) — done
+- Unit tests: `ApplicationTracker.Api.Tests` (xUnit + Moq, 28 tests) — done
 - Static import template at `templates/ApplicationRecords_Import_Template.xlsx`
 - Scalar API docs at `/scalar/v1` (Development environment only)
 - CORS configured in `Program.cs` for `http://localhost:5173` (Vite dev server)
