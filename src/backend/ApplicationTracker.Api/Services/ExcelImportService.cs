@@ -4,6 +4,7 @@ using ApplicationTracker.Core.Interfaces.Repositories;
 using ApplicationTracker.Core.Interfaces.Services;
 using ApplicationTracker.Core.Models;
 using ClosedXML.Excel;
+using System.Globalization;
 
 namespace ApplicationTracker.Api.Services;
 
@@ -26,6 +27,7 @@ public class ExcelImportService(IApplicationRecordRepository repository) : IExce
 			int rowNumber = row.RowNumber();
 			string companyName = row.Cell(1).GetString().Trim();
 			string statusText = row.Cell(2).GetString().Trim();
+			string appliedDateText = row.Cell(3).GetString().Trim();
 
 			// Validate CompanyName (required)
 			if (string.IsNullOrWhiteSpace(companyName)) {
@@ -35,8 +37,9 @@ public class ExcelImportService(IApplicationRecordRepository repository) : IExce
 				continue;
 			}
 
-			// Validate Status (required, must match enum)
-			if (!Enum.TryParse(statusText, ignoreCase: true, out ApplicationStatus status)) {
+			// Validate Status (required, must match enum, can't be numeric)
+			if (int.TryParse(statusText, out _) ||
+			    !Enum.TryParse(statusText, ignoreCase: true, out ApplicationStatus status)) {
 				errors.Add(new() {
 					RowNumber = rowNumber,
 					CompanyName = companyName,
@@ -46,26 +49,38 @@ public class ExcelImportService(IApplicationRecordRepository repository) : IExce
 				continue;
 			}
 
-			// Parse AppliedDate (optional)
-			DateTime? appliedDate = null;
-			string appliedDateText = row.Cell(3).GetString().Trim();
-			if (!string.IsNullOrWhiteSpace(appliedDateText)) {
-				if (DateTime.TryParse(appliedDateText, out DateTime parsed)) {
-					appliedDate = DateTime.SpecifyKind(parsed, DateTimeKind.Utc);
-				} else {
-					errors.Add(new() {
-						RowNumber = rowNumber,
-						CompanyName = companyName,
-						ErrorMessage = $"Invalid AppliedDate '{appliedDateText}'."
-					});
-					continue;
-				}
+			// Validate AppliedDate (required, culture-invariant parsing)
+			if (string.IsNullOrWhiteSpace(appliedDateText)) {
+				errors.Add(new() {
+					RowNumber = rowNumber, CompanyName = companyName, ErrorMessage = "AppliedDate is required."
+				});
+				continue;
 			}
+
+			if (!DateTime.TryParse(appliedDateText, CultureInfo.InvariantCulture, DateTimeStyles.None,
+				    out DateTime appliedDate)) {
+				errors.Add(new() {
+					RowNumber = rowNumber,
+					CompanyName = companyName,
+					ErrorMessage = $"Invalid AppliedDate '{appliedDateText}'."
+				});
+				continue;
+			}
+
+			appliedDate = DateTime.SpecifyKind(appliedDate, DateTimeKind.Utc);
 
 			// Read optional fields
 			string? postingUrl = row.Cell(4).GetString().Trim();
 			if (string.IsNullOrWhiteSpace(postingUrl)) {
 				postingUrl = null;
+			} else if (!Uri.TryCreate(postingUrl, UriKind.Absolute, out Uri? uri) ||
+			           (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps)) {
+				errors.Add(new() {
+					RowNumber = rowNumber,
+					CompanyName = companyName,
+					ErrorMessage = $"Invalid PostingUrl '{postingUrl}'. Must be a valid HTTP or HTTPS URL."
+				});
+				continue;
 			}
 
 			string? notes = row.Cell(5).GetString().Trim();

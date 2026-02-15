@@ -52,7 +52,7 @@ public class ExcelImportServiceTests {
 		// Arrange
 		await using MemoryStream stream = CreateExcelStream(
 			["Acme", "Applied", "2025-01-15", "https://acme.com", "Great place"],
-			["Globex", "Interviewing", "", "", ""]
+			["Globex", "Interviewing", "2025-01-15", "", ""]
 		);
 
 		// Act
@@ -116,7 +116,7 @@ public class ExcelImportServiceTests {
 			["Acme", "Applied", "2025-01-15", "", ""],
 			["", "Applied", "", "", ""],
 			["Globex", "BadStatus", "", "", ""],
-			["Initech", "Offered", "", "https://initech.com", "Nice"]
+			["Initech", "Offered", "2025-03-01", "https://initech.com", "Nice"]
 		);
 
 		// Act
@@ -144,6 +144,66 @@ public class ExcelImportServiceTests {
 		Assert.Equal(0, result.ImportedCount);
 		Assert.Equal(0, result.FailedCount);
 		Assert.Empty(result.Errors);
+		_repositoryMock.Verify(r => r.AddAsync(It.IsAny<ApplicationRecord>()), Times.Never);
+		_repositoryMock.Verify(r => r.SaveChangesAsync(), Times.Never);
+	}
+
+	[Fact]
+	public async Task ImportAsync_WithNumericStatus_SkipsRowAndReportsError() {
+		// Arrange
+		await using MemoryStream stream = CreateExcelStream(
+			["Acme", "1", "2025-01-15", "", ""]
+		);
+
+		// Act
+		ExcelImportResult result = await _service.ImportAsync(stream);
+
+		// Assert
+		Assert.Equal(1, result.TotalRows);
+		Assert.Equal(0, result.ImportedCount);
+		Assert.Equal(1, result.FailedCount);
+		Assert.Single(result.Errors);
+		Assert.Contains("Invalid Status '1'", result.Errors[0].ErrorMessage);
+		_repositoryMock.Verify(r => r.AddAsync(It.IsAny<ApplicationRecord>()), Times.Never);
+		_repositoryMock.Verify(r => r.SaveChangesAsync(), Times.Never);
+	}
+
+	[Fact]
+	public async Task ImportAsync_WithMissingAppliedDate_SkipsRowAndReportsError() {
+		// Arrange
+		await using MemoryStream stream = CreateExcelStream(
+			["Acme", "Applied", "", "", ""]
+		);
+
+		// Act
+		ExcelImportResult result = await _service.ImportAsync(stream);
+
+		// Assert
+		Assert.Equal(1, result.TotalRows);
+		Assert.Equal(0, result.ImportedCount);
+		Assert.Equal(1, result.FailedCount);
+		Assert.Single(result.Errors);
+		Assert.Contains("AppliedDate is required", result.Errors[0].ErrorMessage);
+		_repositoryMock.Verify(r => r.AddAsync(It.IsAny<ApplicationRecord>()), Times.Never);
+		_repositoryMock.Verify(r => r.SaveChangesAsync(), Times.Never);
+	}
+
+	[Fact]
+	public async Task ImportAsync_WithInvalidPostingUrl_SkipsRowAndReportsError() {
+		// Arrange
+		await using MemoryStream stream = CreateExcelStream(
+			["Acme", "Applied", "2025-01-15", "not-a-url", ""]
+		);
+
+		// Act
+		ExcelImportResult result = await _service.ImportAsync(stream);
+
+		// Assert
+		Assert.Equal(1, result.TotalRows);
+		Assert.Equal(0, result.ImportedCount);
+		Assert.Equal(1, result.FailedCount);
+		Assert.Single(result.Errors);
+		Assert.Contains("Invalid PostingUrl", result.Errors[0].ErrorMessage);
 		_repositoryMock.Verify(r => r.AddAsync(It.IsAny<ApplicationRecord>()), Times.Never);
 		_repositoryMock.Verify(r => r.SaveChangesAsync(), Times.Never);
 	}
