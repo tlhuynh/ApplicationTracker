@@ -10,7 +10,7 @@ namespace ApplicationTracker.Infrastructure.Repositories;
 /// </summary>
 public class Repository<T>(ApplicationDbContext context) : IRepository<T>
 	where T : BaseEntity {
-	private readonly DbSet<T> _dbSet = context.Set<T>();
+	protected readonly DbSet<T> _dbSet = context.Set<T>();
 
 	public async Task<T?> GetByIdAsync(int id) {
 		return await _dbSet.FindAsync(id);
