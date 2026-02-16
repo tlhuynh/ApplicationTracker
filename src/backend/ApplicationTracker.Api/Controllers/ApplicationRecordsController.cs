@@ -75,6 +75,21 @@ public class ApplicationRecordsController(
 	}
 
 	/// <summary>
+	/// Updates only the status of an existing application record.
+	/// </summary>
+	/// <param name="id">The identifier of the record to update.</param>
+	/// <param name="request">The patch request containing the new status.</param>
+	[HttpPatch("{id:int}/status")]
+	public async Task<ActionResult<ApplicationRecordDto>> PatchStatus(int id, PatchStatusRequest request) {
+		ApplicationRecord? updated = await service.UpdateStatusAsync(id, request.Status);
+		if (updated is null) {
+			return NotFound();
+		}
+
+		return Ok(updated.ToDto());
+	}
+
+	/// <summary>
 	/// Soft-deletes an application record.
 	/// </summary>
 	/// <param name="id">The identifier of the record to delete.</param>

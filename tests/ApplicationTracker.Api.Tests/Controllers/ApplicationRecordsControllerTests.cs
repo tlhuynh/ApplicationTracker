@@ -126,6 +126,44 @@ public class ApplicationRecordsControllerTests {
 	}
 
 	[Fact]
+	public async Task PatchStatus_WhenFound_ReturnsOkWithUpdatedDto() {
+		// Arrange
+		PatchStatusRequest request = new() { Status = ApplicationStatus.Interviewing };
+		ApplicationRecord updated = new() {
+			Id = 1,
+			CompanyName = "Acme",
+			Status = ApplicationStatus.Interviewing
+		};
+		_applicationRecordServiceMock
+			.Setup(s => s.UpdateStatusAsync(1, ApplicationStatus.Interviewing))
+			.ReturnsAsync(updated);
+
+		// Act
+		ActionResult<ApplicationRecordDto> result = await _controller.PatchStatus(1, request);
+
+		// Assert
+		OkObjectResult okResult = Assert.IsType<OkObjectResult>(result.Result);
+		ApplicationRecordDto dto = Assert.IsType<ApplicationRecordDto>(okResult.Value);
+		Assert.Equal("Acme", dto.CompanyName);
+		Assert.Equal(ApplicationStatus.Interviewing, dto.Status);
+	}
+
+	[Fact]
+	public async Task PatchStatus_WhenNotFound_ReturnsNotFound() {
+		// Arrange
+		PatchStatusRequest request = new() { Status = ApplicationStatus.Rejected };
+		_applicationRecordServiceMock
+			.Setup(s => s.UpdateStatusAsync(99, ApplicationStatus.Rejected))
+			.ReturnsAsync((ApplicationRecord?)null);
+
+		// Act
+		ActionResult<ApplicationRecordDto> result = await _controller.PatchStatus(99, request);
+
+		// Assert
+		Assert.IsType<NotFoundResult>(result.Result);
+	}
+
+	[Fact]
 	public async Task Delete_WhenFound_ReturnsNoContent() {
 		// Arrange
 		_applicationRecordServiceMock.Setup(s => s.DeleteAsync(1)).ReturnsAsync(true);
