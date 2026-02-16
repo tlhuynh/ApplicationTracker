@@ -32,11 +32,11 @@ interface ApplicationTableProps<TData, TValue> {
 }
 
 export function ApplicationTable<TData, TValue>({
-                                                  columns,
-                                                  data,
-                                                  globalFilter,
-                                                  onGlobalFilterChange,
-                                                }: ApplicationTableProps<TData, TValue>) {
+  columns,
+  data,
+  globalFilter,
+  onGlobalFilterChange,
+}: ApplicationTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
 
   /*
@@ -45,10 +45,6 @@ export function ApplicationTable<TData, TValue>({
   *
   * the table instance contains methos like getHeaderGroups(), getRowModel(), etc. to return specific data for you
   * to render
-  *
-  * ASK ABOUT WHY INCLUDE getCoreRowModel
-  *
-  *
   * */
   // On going issue https://github.com/TanStack/table/issues/5567
   // eslint-disable-next-line react-hooks/incompatible-library -- TanStack Table is not yet compatible with React Compiler
