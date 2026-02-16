@@ -4,6 +4,7 @@ import {
   type CreateRequest,
   create,
   getAll,
+  patchStatus,
   remove,
   update,
 } from '@/api/applicationRecords';
@@ -112,9 +113,19 @@ export function HomePage() {
       .finally(() => setDeletingRecord(null));
   };
 
+  const handleStatusChange = (record: ApplicationRecord, newStatus: number) => {
+    if (!record.id) return;
+    patchStatus(Number(record.id), newStatus)
+      .then(refreshApplications)
+      .catch((err: unknown) => {
+        toast.error(err instanceof Error ? err.message : 'Failed to update status');
+      });
+  };
+
   const tableColumns = createColumns({
     onEdit: handleEdit,
     onDelete: handleDelete,
+    onStatusChange: handleStatusChange,
   });
 
   const handleDialogClose = (open: boolean) => {

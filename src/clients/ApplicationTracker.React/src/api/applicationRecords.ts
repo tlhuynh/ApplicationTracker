@@ -60,6 +60,16 @@ export async function update(id: number, request: UpdateRequest): Promise<Applic
 	return handleResponse<ApplicationRecord>(response);
 }
 
+/** Updates only the status of an application record. */
+export async function patchStatus(id: number, status: number): Promise<ApplicationRecord> {
+  const response = await fetch(`${BASE_URL}/${id}/status`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ status }),
+  });
+  return handleResponse<ApplicationRecord>(response);
+}
+
 /** Soft-deletes an application record by its ID. */
 export async function remove(id: number): Promise<void> {
 	const response = await fetch(`${BASE_URL}/${id}`, {method: 'DELETE'});

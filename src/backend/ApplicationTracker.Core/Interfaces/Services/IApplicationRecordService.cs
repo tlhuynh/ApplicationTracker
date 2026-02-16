@@ -1,4 +1,5 @@
 ﻿using ApplicationTracker.Core.Entities;
+using ApplicationTracker.Core.Enums;
 
 namespace ApplicationTracker.Core.Interfaces.Services;
 
@@ -33,6 +34,14 @@ public interface IApplicationRecordService {
 	/// <param name="updatedFields">An entity containing the new field values.</param>
 	/// <returns>The updated entity if found; otherwise, <c>null</c>.</returns>
 	Task<ApplicationRecord?> UpdateAsync(int id, ApplicationRecord updatedFields);
+
+	/// <summary>
+	/// Updates only the status of an existing application record.
+	/// </summary>
+	/// <param name="id">The identifier of the record to update.</param>
+	/// <param name="status">The new status value.</param>
+	/// <returns>The updated entity if found; otherwise, <c>null</c>.</returns>
+	Task<ApplicationRecord?> UpdateStatusAsync(int id, ApplicationStatus status);
 
 	/// <summary>
 	/// Soft-deletes an application record.

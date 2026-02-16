@@ -1,4 +1,5 @@
 ﻿using ApplicationTracker.Core.Entities;
+  using ApplicationTracker.Core.Enums;
   using ApplicationTracker.Core.Interfaces.Repositories;
   using ApplicationTracker.Core.Interfaces.Services;
 
@@ -39,6 +40,19 @@
           existing.PostingUrl = updatedFields.PostingUrl;
           existing.Notes = updatedFields.Notes;
 
+          repository.Update(existing);
+          await repository.SaveChangesAsync();
+          return existing;
+      }
+
+      /// <inheritdoc />
+      public async Task<ApplicationRecord?> UpdateStatusAsync(int id, ApplicationStatus status) {
+          ApplicationRecord? existing = await repository.GetByIdAsync(id);
+          if (existing is null) {
+              return null;
+          }
+
+          existing.Status = status;
           repository.Update(existing);
           await repository.SaveChangesAsync();
           return existing;

@@ -44,7 +44,8 @@ This is a snapshot of the Claude Code memory from the Windows development machin
 ## Implementation Progress
 - Backend API: Controllers, services, repositories, EF Core — done
 - Excel import: ClosedXML service + endpoint (`POST /api/applicationrecords/import`) — done
-- Unit tests: `ApplicationTracker.Api.Tests` (xUnit + Moq, 28 tests) — done
+- Unit tests: `ApplicationTracker.Api.Tests` (xUnit + Moq, 32 tests) — done
+- PATCH status endpoint: `PATCH /api/applicationrecords/{id}/status` — `PatchStatusRequest` DTO, `UpdateStatusAsync` service method, frontend `patchStatus()` API function
 - Static import template at `templates/ApplicationRecords_Import_Template.xlsx`
 - Scalar API docs at `/scalar/v1` (Development environment only)
 - CORS configured in `Program.cs` for `http://localhost:5173` (Vite dev server)

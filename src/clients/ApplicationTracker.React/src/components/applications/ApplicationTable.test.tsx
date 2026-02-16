@@ -1,5 +1,6 @@
 ﻿import { render, screen } from '@testing-library/react';
-import { describe, it, expect } from 'vitest';
+import userEvent from '@testing-library/user-event';
+import { describe, it, expect, vi } from 'vitest';
 import { ApplicationTable } from './ApplicationTable';
 import type { ApplicationRecord } from '@/api/applicationRecords';
 import { createColumns } from './applicationColumns';
@@ -28,6 +29,7 @@ const mockApplications: ApplicationRecord[] = [
 const columns = createColumns({
   onEdit: () => {},
   onDelete: () => {},
+  onStatusChange: () => {},
 });
 
 describe('ApplicationTable', () => {
@@ -76,5 +78,70 @@ describe('ApplicationTable', () => {
 
     expect(editButtons).toHaveLength(2);
     expect(deleteButtons).toHaveLength(2);
+  });
+
+  it('calls onStatusChange with next status when advance button is clicked', async () => {
+    const onStatusChange = vi.fn();
+    const cols = createColumns({
+      onEdit: () => {},
+      onDelete: () => {},
+      onStatusChange,
+    });
+
+    render(<ApplicationTable columns={cols} data={mockApplications} />);
+
+    // First row has status 0 (Applied) — advancing should pass status 1
+    const advanceButtons = screen.getAllByRole('button', { name: 'Advance status' });
+    await userEvent.click(advanceButtons[0]);
+
+    expect(onStatusChange).toHaveBeenCalledWith(mockApplications[0], 1);
+  });
+
+  it('calls onStatusChange with Rejected (3) when reject button is clicked', async () => {
+    const onStatusChange = vi.fn();
+    const cols = createColumns({
+      onEdit: () => {},
+      onDelete: () => {},
+      onStatusChange,
+    });
+
+    render(<ApplicationTable columns={cols} data={mockApplications} />);
+
+    const rejectButtons = screen.getAllByRole('button', { name: 'Reject application' });
+    await userEvent.click(rejectButtons[0]);
+
+    expect(onStatusChange).toHaveBeenCalledWith(mockApplications[0], 3);
+  });
+
+  it('disables both status buttons when status is Rejected', () => {
+    const rejectedData: ApplicationRecord[] = [
+      { id: 3, companyName: 'Rejected Co', status: 3, appliedDate: null, postingUrl: null, notes: null },
+    ];
+    const cols = createColumns({
+      onEdit: () => {},
+      onDelete: () => {},
+      onStatusChange: () => {},
+    });
+
+    render(<ApplicationTable columns={cols} data={rejectedData} />);
+
+    expect(screen.getByRole('button', { name: 'Advance status' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Reject application' })).toBeDisabled();
+  });
+
+  it('disables advance button but enables reject when status is Offered', () => {
+    const offeredData: ApplicationRecord[] = [
+      { id: 4, companyName: 'Offered Co', status: 2, appliedDate: null, postingUrl: null, notes: null },
+    ];
+    const cols = createColumns({
+      onEdit: () => {},
+      onDelete: () => {},
+      onStatusChange: () => {},
+    });
+
+    render(<ApplicationTable columns={cols} data={offeredData} />);
+
+    expect(screen.getByRole('button', { name: 'Advance status' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Reject application' })).toBeEnabled();
   });
 });

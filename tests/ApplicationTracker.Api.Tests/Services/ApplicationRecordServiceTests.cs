@@ -116,6 +116,43 @@ public class ApplicationRecordServiceTests {
 	}
 
 	[Fact]
+	public async Task UpdateStatusAsync_WhenFound_UpdatesOnlyStatus() {
+		// Arrange
+		ApplicationRecord existing = new() {
+			Id = 1,
+			CompanyName = "Acme",
+			Status = ApplicationStatus.Applied,
+			Notes = "Original notes"
+		};
+		_repositoryMock.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(existing);
+
+		// Act
+		ApplicationRecord? result = await _service.UpdateStatusAsync(1, ApplicationStatus.Interviewing);
+
+		// Assert
+		Assert.NotNull(result);
+		Assert.Equal(ApplicationStatus.Interviewing, result.Status);
+		Assert.Equal("Acme", result.CompanyName);
+		Assert.Equal("Original notes", result.Notes);
+		_repositoryMock.Verify(r => r.Update(existing), Times.Once);
+		_repositoryMock.Verify(r => r.SaveChangesAsync(), Times.Once);
+	}
+
+	[Fact]
+	public async Task UpdateStatusAsync_WhenNotFound_ReturnsNull() {
+		// Arrange
+		_repositoryMock.Setup(r => r.GetByIdAsync(99)).ReturnsAsync((ApplicationRecord?)null);
+
+		// Act
+		ApplicationRecord? result = await _service.UpdateStatusAsync(99, ApplicationStatus.Rejected);
+
+		// Assert
+		Assert.Null(result);
+		_repositoryMock.Verify(r => r.Update(It.IsAny<ApplicationRecord>()), Times.Never);
+		_repositoryMock.Verify(r => r.SaveChangesAsync(), Times.Never);
+	}
+
+	[Fact]
 	public async Task DeleteAsync_WhenFound_DeletesAndReturnsTrue() {
 		// Arrange
 		ApplicationRecord existing = new() { Id = 1, CompanyName = "Acme" };
