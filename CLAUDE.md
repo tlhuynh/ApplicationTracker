@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ApplicationTracker is a full-stack .NET project for tracking job applications, built as a learning playground to explore modern technologies. The core focus is ASP.NET Core Web API with web frontends (React, Angular planned), alongside a .NET MAUI Blazor Hybrid app for mobile and desktop.
 
-**Tech Stack:** .NET 10, C# 13, ASP.NET Core Web API, EF Core, SQL Server, .NET MAUI, Blazor Hybrid, MudBlazor, SQLite, Scalar, ClosedXML, React, Vite, Vitest
+**Tech Stack:** .NET 10, C# 13, ASP.NET Core Web API, EF Core, SQL Server, ASP.NET Core Identity, JWT Bearer Auth, .NET MAUI, Blazor Hybrid, MudBlazor, SQLite, Scalar, ClosedXML, React, Vite, Vitest
 
 **Target Platforms:** Web (React), Android, iOS, macOS (Catalyst), Windows
 
@@ -45,6 +45,7 @@ npm run generate-types # Generate TypeScript types from OpenAPI spec (backend mu
 - SQL Server 2022 runs via Docker (`docker-compose.yml` at project root)
 - SA password stored in `.env` (gitignored); `.env.example` checked in as template
 - Real connection string stored via `dotnet user-secrets` (not in appsettings)
+- JWT secret key stored via `dotnet user-secrets` (`Jwt:Key`); non-secret settings (Issuer, Audience, ExpiryInMinutes) in `appsettings.json`
 - `appsettings.Development.json` has a placeholder password (`<see-user-secrets>`)
 - EF Core migrations live in `ApplicationTracker.Infrastructure`, startup project is `ApplicationTracker.Api`
 
@@ -94,6 +95,7 @@ Maui → Shared (gets Core transitively)
 - **Excel Import**: ClosedXML for parsing `.xlsx` uploads; service returns domain models, controller maps to DTOs. Validation: CompanyName required, Status must match enum name (numeric values rejected), AppliedDate required (culture-invariant parsing via `CultureInfo.InvariantCulture`), PostingUrl must be valid HTTP/HTTPS if provided. Duplicate detection: CompanyName + PostingUrl (when URL provided), fallback to CompanyName + AppliedDate (database check only, not within same batch)
 - **Domain Models**: Non-entity result types live in `Core/Models/` (e.g., `ExcelImportResult`)
 - **Partial Updates**: `PATCH /api/applicationrecords/{id}/status` updates only the status field — uses `PatchStatusRequest` DTO and `UpdateStatusAsync` service method
+- **Authentication**: ASP.NET Core Identity + JWT Bearer tokens. `AuthController` provides register, login, and refresh endpoints. `TokenService` generates JWT access tokens (15 min) and cryptographic refresh tokens (7 days, stored in `RefreshTokens` table). Refresh token rotation on each use. `ApplicationDbContext` extends `IdentityDbContext<IdentityUser>`. Frontend integration pending (Part 2)
 
 ### MAUI App Structure
 
@@ -126,6 +128,8 @@ Located in `src/clients/ApplicationTracker.React/`:
 ### Entity Design
 
 `BaseEntity` provides common fields: `Id`, `CreatedAt`, `LastModified`, `UserId`, `ServerId`, `NeedsSync`, `IsDeleted` - designed for future server sync capability.
+
+`RefreshToken` is a standalone entity (not extending `BaseEntity`) for auth infrastructure — stores token value, user ID, expiration, and revocation status.
 
 ## Code Style
 

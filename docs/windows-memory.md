@@ -46,6 +46,16 @@ This is a snapshot of the Claude Code memory from the Windows development machin
 - Excel import: ClosedXML service + endpoint (`POST /api/applicationrecords/import`) — done
 - Unit tests: `ApplicationTracker.Api.Tests` (xUnit + Moq, 32 tests) — done
 - PATCH status endpoint: `PATCH /api/applicationrecords/{id}/status` — `PatchStatusRequest` DTO, `UpdateStatusAsync` service method, frontend `patchStatus()` API function
+- Authentication (backend only — Part 1 done, Part 2 frontend pending):
+  - ASP.NET Core Identity + JWT Bearer tokens
+  - `AuthController`: register (`POST /api/auth/register`), login (`POST /api/auth/login`), refresh (`POST /api/auth/refresh`)
+  - `TokenService` / `ITokenService`: generates JWT access tokens (HS256, 15 min expiry) and cryptographic refresh tokens (7 days, stored in `RefreshTokens` table)
+  - `ApplicationDbContext` extends `IdentityDbContext<IdentityUser>` (changed from `DbContext`)
+  - `RefreshToken` entity (standalone, not extending `BaseEntity`) — token rotation on each refresh
+  - JWT key stored in user-secrets (`Jwt:Key`); Issuer/Audience/ExpiryInMinutes in `appsettings.json`
+  - NuGet: `Microsoft.AspNetCore.Identity.EntityFrameworkCore` (Infrastructure), `Microsoft.AspNetCore.Authentication.JwtBearer` (Api), `Microsoft.Extensions.Identity.Stores` (Core)
+  - DTOs: `RegisterRequest`, `LoginRequest`, `AuthResponse`
+  - `[Authorize]` not yet applied to endpoints — pending Part 3
 - Static import template at `templates/ApplicationRecords_Import_Template.xlsx`
 - Scalar API docs at `/scalar/v1` (Development environment only)
 - CORS configured in `Program.cs` for `http://localhost:5173` (Vite dev server)

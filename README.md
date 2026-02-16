@@ -25,6 +25,10 @@ A full-stack .NET project for tracking job applications, built as a learning pla
 - [ESLint](https://eslint.org/) - Linting for TypeScript/React
 - [openapi-typescript](https://openapi-ts.dev/) - TypeScript type generation from OpenAPI spec
 
+### Authentication
+- [ASP.NET Core Identity](https://learn.microsoft.com/aspnet/core/security/authentication/identity) - User management (registration, password hashing)
+- [JWT Bearer Authentication](https://learn.microsoft.com/aspnet/core/security/authentication/jwt-authn) - Token-based API authentication
+
 ### Data & Infrastructure
 - [Entity Framework Core](https://learn.microsoft.com/ef/core/) - ORM for backend data access
 - [SQL Server 2022](https://learn.microsoft.com/sql/sql-server/) - Backend database (Docker)
@@ -228,6 +232,7 @@ dotnet run --project src/backend/ApplicationTracker.Api
 - **Toast notifications** — success/error feedback via Sonner
 - **Dark/light theme** — toggle with system preference detection, persisted in localStorage
 - **Responsive sidebar** — collapsible navigation with Dashboard and Import pages
+- **Authentication (backend)** — register, login, and token refresh endpoints via ASP.NET Core Identity + JWT (frontend login page coming soon)
 
 ## Resources
 
@@ -237,6 +242,8 @@ dotnet run --project src/backend/ApplicationTracker.Api
 - [.NET MAUI](https://learn.microsoft.com/dotnet/maui/)
 - [Blazor Hybrid](https://learn.microsoft.com/aspnet/core/blazor/hybrid/)
 - [MudBlazor](https://mudblazor.com/docs)
+- [ASP.NET Core Identity](https://learn.microsoft.com/aspnet/core/security/authentication/identity)
+- [JWT Bearer Authentication](https://learn.microsoft.com/aspnet/core/security/authentication/jwt-authn)
 - [Scalar](https://github.com/scalar/scalar/tree/main/integrations/aspnetcore)
 - [ClosedXML](https://github.com/ClosedXML/ClosedXML/wiki)
 - [xUnit](https://xunit.net/docs/getting-started/v3/cmdline)
