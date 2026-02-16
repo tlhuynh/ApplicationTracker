@@ -93,6 +93,7 @@ Maui → Shared (gets Core transitively)
 - **Request Validation**: DataAnnotations on request DTOs
 - **Excel Import**: ClosedXML for parsing `.xlsx` uploads; service returns domain models, controller maps to DTOs. Validation: CompanyName required, Status must match enum name (numeric values rejected), AppliedDate required (culture-invariant parsing via `CultureInfo.InvariantCulture`), PostingUrl must be valid HTTP/HTTPS if provided. Duplicate detection: CompanyName + PostingUrl (when URL provided), fallback to CompanyName + AppliedDate (database check only, not within same batch)
 - **Domain Models**: Non-entity result types live in `Core/Models/` (e.g., `ExcelImportResult`)
+- **Partial Updates**: `PATCH /api/applicationrecords/{id}/status` updates only the status field — uses `PatchStatusRequest` DTO and `UpdateStatusAsync` service method
 
 ### MAUI App Structure
 
