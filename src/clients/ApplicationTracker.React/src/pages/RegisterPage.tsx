@@ -15,7 +15,6 @@ interface RegisterErrors {
 export function RegisterPage() {
   const navigate = useNavigate();
   const { register, isAuthenticated } = useAuth();
-  if (isAuthenticated) return <Navigate to="/" replace />;
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -23,6 +22,7 @@ export function RegisterPage() {
   const [serverError, setServerError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  if (isAuthenticated) return <Navigate to="/" replace />;
   const validate = (): boolean => {
     const newErrors: RegisterErrors = {};
     if (!email.trim()) {

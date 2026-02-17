@@ -18,4 +18,9 @@ public class LoginRequest {
 	/// </summary>
 	[Required]
 	public string Password { get; set; } = string.Empty;
+
+	/// <summary>
+	/// Gets or sets whether to persist the session across browser restarts.
+	/// </summary>
+	public bool RememberMe { get; set; }
 }

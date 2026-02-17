@@ -2,6 +2,7 @@
 using ApplicationTracker.Core.Interfaces.Services;
 using ApplicationTracker.Infrastructure.Data;
 using ApplicationTracker.Shared.DTOs;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -45,15 +46,20 @@ public class AuthController(
 		}
 
 		string accessToken = tokenService.GenerateAccessToken(user);
-		string refreshTokenValue = tokenService.GenerateRefreshToken();
-
-		RefreshToken refreshToken = new() {
-			Token = refreshTokenValue, UserId = user.Id, ExpiresAt = DateTime.UtcNow.AddDays(7)
-		};
-		dbContext.RefreshTokens.Add(refreshToken);
-		await dbContext.SaveChangesAsync();
-
 		int expiryMinutes = int.Parse(configuration["Jwt:ExpiryInMinutes"] ?? "15");
+
+		string refreshTokenValue = string.Empty;
+
+		// NOTES: this would mean the user would need to re-authenticate after 15 mins.
+		// Might be better to increase the Access Token a little longer
+		if (request.RememberMe) {
+			refreshTokenValue = tokenService.GenerateRefreshToken();
+			RefreshToken refreshToken = new() {
+				Token = refreshTokenValue, UserId = user.Id, ExpiresAt = DateTime.UtcNow.AddDays(7)
+			};
+			dbContext.RefreshTokens.Add(refreshToken);
+			await dbContext.SaveChangesAsync();
+		}
 
 		return Ok(new AuthResponse {
 			AccessToken = accessToken,
@@ -98,5 +104,22 @@ public class AuthController(
 			RefreshToken = newRefreshTokenValue,
 			ExpiresAt = DateTime.UtcNow.AddMinutes(expiryMinutes)
 		});
+	}
+
+	/// <summary>
+	/// Revokes a refresh token so it can no longer be used.
+	/// </summary>
+	[Authorize]
+	[HttpPost("logout")]
+	public async Task<IActionResult> Logout([FromBody] string refreshToken) {
+		RefreshToken? stored = await dbContext.RefreshTokens
+			.FirstOrDefaultAsync(rt => rt.Token == refreshToken && !rt.IsRevoked);
+
+		if (stored is not null) {
+			stored.IsRevoked = true;
+			await dbContext.SaveChangesAsync();
+		}
+
+		return NoContent();
 	}
 }

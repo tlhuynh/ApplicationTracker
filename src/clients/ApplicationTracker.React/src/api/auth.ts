@@ -1,5 +1,5 @@
 ﻿import type { components } from '@/types/api';
-import { ApiError, handleResponse } from '@/api/client';
+import { ApiError, authFetch, handleResponse } from '@/api/client';
 
 type AuthResponse = components['schemas']['AuthResponse'];
 type LoginRequest = components['schemas']['LoginRequest'];
@@ -31,6 +31,15 @@ export async function login(request: LoginRequest): Promise<AuthResponse> {
     body: JSON.stringify(request),
   });
   return handleResponse<AuthResponse>(response);
+}
+
+/** Revokes the refresh token on the server. */
+export async function logout(token: string): Promise<void> {
+  await authFetch(`${BASE_URL}/logout`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(token),
+  });
 }
 
 export type { AuthResponse, LoginRequest, RegisterRequest };

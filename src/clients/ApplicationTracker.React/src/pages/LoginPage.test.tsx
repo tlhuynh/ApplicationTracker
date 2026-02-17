@@ -47,6 +47,7 @@ describe('LoginPage', () => {
     expect(screen.getByLabelText('Password')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Login' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Register' })).toHaveAttribute('href', '/register');
+    expect(screen.getByLabelText('Remember me')).toBeInTheDocument();
   });
 
   it('shows validation errors when submitting empty form', async () => {
@@ -69,7 +70,7 @@ describe('LoginPage', () => {
     await user.click(screen.getByRole('button', { name: 'Login' }));
 
     await waitFor(() => {
-      expect(mockLogin).toHaveBeenCalledWith('test@example.com', 'password123');
+      expect(mockLogin).toHaveBeenCalledWith('test@example.com', 'password123', false);
     });
 
     await waitFor(() => {
