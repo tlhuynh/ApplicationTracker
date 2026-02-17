@@ -1,5 +1,9 @@
 ﻿/** Shared API client — centralizes auth headers and error handling. */
 
+import type { components } from '@/types/api';
+
+type AuthResponse = components['schemas']['AuthResponse'];
+
 /** Represents an error response from the API with an HTTP status code. */
 export class ApiError extends Error {
   status: number;
@@ -33,6 +37,8 @@ export async function handleResponse<T>(response: Response): Promise<T> {
  */
 let accessToken: string | null = null;
 
+const REFRESH_TOKEN_KEY = 'refresh_token';
+
 /** Called by AuthProvider to update the in-memory token. */
 export function setAccessToken(token: string | null) {
   accessToken = token;
@@ -43,11 +49,25 @@ export function getAccessToken(): string | null {
   return accessToken;
 }
 
+/** Exchanges a refresh token for a new access + refresh token pair. */
+export async function refreshToken(token: string): Promise<AuthResponse> {
+  const response = await fetch('/api/auth/refresh', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(token),
+  });
+  return handleResponse<AuthResponse>(response);
+}
+
+/** Tracks whether a 401 retry is already in progress to prevent infinite loops. */
+let isRefreshing = false;
+
 /**
  * Fetch wrapper that attaches the Authorization header when a token is available.
  *
- * Usage is identical to the native fetch() — pass a URL and optional RequestInit.
- * The wrapper merges the Bearer token into the headers automatically.
+ * If the server responds with 401 (token expired), attempts a single token refresh
+ * and retries the original request. If the refresh also fails, clears auth state
+ * so the user is redirected to login.
  */
 export async function authFetch(url: string, options: RequestInit = {}): Promise<Response> {
   const headers = new Headers(options.headers);
@@ -56,5 +76,33 @@ export async function authFetch(url: string, options: RequestInit = {}): Promise
     headers.set('Authorization', `Bearer ${accessToken}`);
   }
 
-  return fetch(url, { ...options, headers });
+  const response = await fetch(url, { ...options, headers });
+
+  if (response.status === 401 && !isRefreshing) {
+    const storedRefreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
+    if (storedRefreshToken) {
+      isRefreshing = true;
+      try {
+        const result = await refreshToken(storedRefreshToken);
+        const newAccessToken = result.accessToken ?? '';
+        const newRefreshToken = result.refreshToken ?? '';
+
+        setAccessToken(newAccessToken);
+        localStorage.setItem(REFRESH_TOKEN_KEY, newRefreshToken);
+
+        // Retry the original request with the new token
+        const retryHeaders = new Headers(options.headers);
+        retryHeaders.set('Authorization', `Bearer ${newAccessToken}`);
+        return fetch(url, { ...options, headers: retryHeaders });
+      } catch {
+        // Refresh failed — clear auth state so ProtectedRoute redirects to login
+        setAccessToken(null);
+        localStorage.removeItem(REFRESH_TOKEN_KEY);
+      } finally {
+        isRefreshing = false;
+      }
+    }
+  }
+
+  return response;
 }
