@@ -9,7 +9,7 @@ export interface AuthContextState {
   /** Whether the initial session restore (refresh token check) is still in progress. */
   isLoading: boolean;
   /** Logs in with email/password. Throws on failure. */
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string, rememberMe: boolean) => Promise<void>;
   /** Registers a new account. Throws on failure. */
   register: (email: string, password: string) => Promise<void>;
   /** Logs out and clears all tokens. */

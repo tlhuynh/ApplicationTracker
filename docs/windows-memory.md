@@ -55,9 +55,11 @@ This is a snapshot of the Claude Code memory from the Windows development machin
   - JWT key stored in user-secrets (`Jwt:Key`); Issuer/Audience/ExpiryInMinutes in `appsettings.json`
   - NuGet: `Microsoft.AspNetCore.Identity.EntityFrameworkCore` (Infrastructure), `Microsoft.AspNetCore.Authentication.JwtBearer` (Api), `Microsoft.Extensions.Identity.Stores` (Core)
   - DTOs: `RegisterRequest`, `LoginRequest`, `AuthResponse`
-  - Frontend: `AuthProvider` (in-memory access token, localStorage refresh token, silent restore on mount, auto-refresh at 80% TTL), `useAuth()` hook, `ProtectedRoute` layout route, `LoginPage`, `RegisterPage`
+  - Frontend: `AuthProvider` (in-memory access token, localStorage refresh token, silent restore on mount, auto-refresh at 80% TTL), `useAuth()` hook, `ProtectedRoute` layout route, `LoginPage` (with "Remember me" checkbox), `RegisterPage`
+  - Logout: frontend calls `POST /api/auth/logout` to revoke refresh token server-side (fire-and-forget), then clears local state
+  - Remember me: `LoginRequest.RememberMe` controls whether refresh token is issued. Unchecked = session-only (no refresh token), checked = persistent session with refresh token in localStorage
   - API layer: `client.ts` with `authFetch()` wrapper (attaches Bearer header, 401 retry with token refresh), `auth.ts` for public auth endpoints (login/register only; `refreshToken` moved to `client.ts` to avoid circular dependency)
-  - `[Authorize]` on `ApplicationRecordsController`; `AuthController` remains public
+  - `[Authorize]` on `ApplicationRecordsController`; `AuthController` register/login/refresh are public, logout requires auth
   - `BearerSecuritySchemeTransformer` adds JWT Bearer auth UI to Scalar (OpenAPI doc transformer)
   - Microsoft.OpenApi v3.x (shipped with .NET 10): use `IOpenApiSecurityScheme` interface, not concrete class; namespace is `Microsoft.OpenApi` not `Microsoft.OpenApi.Models`
 - Per-user data filtering — done:
@@ -94,7 +96,7 @@ This is a snapshot of the Claude Code memory from the Windows development machin
 - Code style: function declarations for components, arrow functions for handlers, named exports
 - Tests colocated with source files (not in root `tests/`)
 - Styling: Tailwind CSS v4 + shadcn/ui (new-york style, neutral base color, lucide icons)
-- UI components installed: Button, Sidebar, Separator, Sheet, Tooltip, Table, Input, Skeleton, Dialog, Label, Select, Textarea, Sonner, AlertDialog, Card
+- UI components installed: Button, Sidebar, Separator, Sheet, Tooltip, Table, Input, Skeleton, Dialog, Label, Select, Textarea, Sonner, AlertDialog, Card, Checkbox
 - Data table: TanStack Table (`@tanstack/react-table`) with sorting, global filtering, pagination
 - Feature components in `src/components/applications/` (ApplicationTable, ApplicationFormDialog, applicationColumns, NotesCell)
 - API types: auto-generated via `openapi-typescript` (`npm run generate-types`, backend must be running on http://localhost:5021)

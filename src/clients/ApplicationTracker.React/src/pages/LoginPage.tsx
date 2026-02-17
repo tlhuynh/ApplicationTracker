@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-
+import { Checkbox } from '@/components/ui/checkbox';
 interface LoginErrors {
   email?: string;
   password?: string;
@@ -14,14 +14,15 @@ interface LoginErrors {
 export function LoginPage() {
   const navigate = useNavigate();
   const { login, isAuthenticated } = useAuth();
-  // If user is already authenticated, navigate them to home page instead of showing them the form.
-  if (isAuthenticated) return <Navigate to="/" replace />;
-
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState<LoginErrors>({});
   const [serverError, setServerError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
+
+  // If user is already authenticated, navigate them to home page instead of showing them the form.
+  if (isAuthenticated) return <Navigate to="/" replace />;
 
   const validate = (): boolean => {
     const newErrors: LoginErrors = {};
@@ -42,7 +43,7 @@ export function LoginPage() {
 
     setIsSubmitting(true);
     try {
-      await login(email, password);
+      await login(email, password, rememberMe);
       navigate('/', { replace: true });
     } catch (err: unknown) {
       setServerError(err instanceof Error ? err.message : 'Login failed');
@@ -92,6 +93,17 @@ export function LoginPage() {
                 className={errors.password ? 'border-destructive' : ''}
               />
               {errors.password && <p className="text-sm text-destructive">{errors.password}</p>}
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Checkbox
+                id="rememberMe"
+                checked={rememberMe}
+                onCheckedChange={(checked) => setRememberMe(checked === true)}
+              />
+              <Label htmlFor="rememberMe" className="text-sm font-normal">
+                Remember me
+              </Label>
             </div>
 
             <Button type="submit" className="w-full" disabled={isSubmitting}>

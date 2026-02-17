@@ -1,6 +1,6 @@
 ﻿import {useEffect, useRef, useState} from 'react';
 import {AuthContext} from '@/hooks/use-auth';
-import {login as apiLogin, register as apiRegister} from '@/api/auth';
+import {login as apiLogin, register as apiRegister, logout as apiLogout} from '@/api/auth';
 import {setAccessToken, refreshToken} from '@/api/client';
 
 const REFRESH_TOKEN_KEY = 'refresh_token';
@@ -129,17 +129,20 @@ export function AuthProvider({children}: AuthProviderProps) {
     };
   }, []);
 
-  const handleLogin = async (email: string, password: string) => {
-    const response = await apiLogin({email, password});
+  const handleLogin = async (email: string, password: string, rememberMe: boolean) => {
+    const response = await apiLogin({email, password, rememberMe});
     const accessToken = response.accessToken ?? '';
     const newRefreshToken = response.refreshToken ?? '';
 
     setAccessToken(accessToken);
     setUser(extractEmail(accessToken));
-    localStorage.setItem(REFRESH_TOKEN_KEY, newRefreshToken);
 
-    if (response.expiresAt) {
-      scheduleRefreshRef.current(response.expiresAt, newRefreshToken);
+    if (newRefreshToken) {
+      localStorage.setItem(REFRESH_TOKEN_KEY, newRefreshToken);
+
+      if (response.expiresAt) {
+        scheduleRefreshRef.current(response.expiresAt, newRefreshToken);
+      }
     }
   };
 
@@ -149,6 +152,11 @@ export function AuthProvider({children}: AuthProviderProps) {
   };
 
   const handleLogout = () => {
+    const storedToken = localStorage.getItem(REFRESH_TOKEN_KEY);
+    if (storedToken) {
+      apiLogout(storedToken).catch(() => {});
+    }
+
     setAccessToken(null);
     setUser(null);
     localStorage.removeItem(REFRESH_TOKEN_KEY);
