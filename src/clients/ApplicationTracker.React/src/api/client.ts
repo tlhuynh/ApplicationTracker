@@ -78,6 +78,7 @@ export async function authFetch(url: string, options: RequestInit = {}): Promise
 
   const response = await fetch(url, { ...options, headers });
 
+  // Retry logic to try refreshing the token, log out user if this retry failed.
   if (response.status === 401 && !isRefreshing) {
     const storedRefreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
     if (storedRefreshToken) {
