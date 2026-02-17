@@ -10,5 +10,5 @@ public interface IApplicationRecordRepository : IRepository<ApplicationRecord> {
 	/// Checks whether a duplicate application record exists in the database.
 	/// Matches by CompanyName + PostingUrl when a URL is provided, or CompanyName + AppliedDate otherwise.
 	/// </summary>
-	Task<bool> ExistsAsync(string companyName, DateTime appliedDate, string? postingUrl);
+	Task<bool> ExistsAsync(string companyName, DateTime appliedDate, string? postingUrl, string userId);
 }

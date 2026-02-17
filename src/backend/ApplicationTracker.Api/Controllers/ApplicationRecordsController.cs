@@ -5,6 +5,7 @@ using ApplicationTracker.Shared.DTOs;
 using ApplicationTracker.Shared.Mappings;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 namespace ApplicationTracker.Api.Controllers;
 
@@ -18,11 +19,19 @@ public class ApplicationRecordsController(
 	IApplicationRecordService service,
 	IExcelImportService excelImportService) : ControllerBase {
 	/// <summary>
+	/// Extracts the authenticated user's identifier from the JWT claims.
+	/// </summary>
+	private string GetUserId() {
+		return User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+	}
+
+	/// <summary>
 	/// Retrieves all application records.
 	/// </summary>
 	[HttpGet]
 	public async Task<ActionResult<List<ApplicationRecordDto>>> GetAll() {
-		List<ApplicationRecord> records = await service.GetAllAsync();
+		string userId = GetUserId();
+		List<ApplicationRecord> records = await service.GetAllAsync(userId);
 		List<ApplicationRecordDto> dtos = records.Select(r => r.ToDto()).ToList();
 		return Ok(dtos);
 	}
@@ -33,7 +42,8 @@ public class ApplicationRecordsController(
 	/// <param name="id">The record identifier.</param>
 	[HttpGet("{id:int}")]
 	public async Task<ActionResult<ApplicationRecordDto>> GetById(int id) {
-		ApplicationRecord? record = await service.GetByIdAsync(id);
+		string userId = GetUserId();
+		ApplicationRecord? record = await service.GetByIdAsync(id, userId);
 		if (record is null) {
 			return NotFound();
 		}
@@ -47,8 +57,9 @@ public class ApplicationRecordsController(
 	/// <param name="request">The creation request.</param>
 	[HttpPost]
 	public async Task<ActionResult<ApplicationRecordDto>> Create(CreateApplicationRecordRequest request) {
+		string userId = GetUserId();
 		ApplicationRecord entity = request.ToEntity();
-		ApplicationRecord created = await service.CreateAsync(entity);
+		ApplicationRecord created = await service.CreateAsync(entity, userId);
 		ApplicationRecordDto dto = created.ToDto();
 		return CreatedAtAction(nameof(GetById), new { id = dto.Id }, dto);
 	}
@@ -60,6 +71,7 @@ public class ApplicationRecordsController(
 	/// <param name="request">The update request.</param>
 	[HttpPut("{id:int}")]
 	public async Task<ActionResult<ApplicationRecordDto>> Update(int id, UpdateApplicationRecordRequest request) {
+		string userId = GetUserId();
 		ApplicationRecord updatedFields = new() {
 			CompanyName = request.CompanyName,
 			Status = request.Status,
@@ -68,7 +80,7 @@ public class ApplicationRecordsController(
 			Notes = request.Notes
 		};
 
-		ApplicationRecord? updated = await service.UpdateAsync(id, updatedFields);
+		ApplicationRecord? updated = await service.UpdateAsync(id, updatedFields, userId);
 		if (updated is null) {
 			return NotFound();
 		}
@@ -83,7 +95,8 @@ public class ApplicationRecordsController(
 	/// <param name="request">The patch request containing the new status.</param>
 	[HttpPatch("{id:int}/status")]
 	public async Task<ActionResult<ApplicationRecordDto>> PatchStatus(int id, PatchStatusRequest request) {
-		ApplicationRecord? updated = await service.UpdateStatusAsync(id, request.Status);
+		string userId = GetUserId();
+		ApplicationRecord? updated = await service.UpdateStatusAsync(id, request.Status, userId);
 		if (updated is null) {
 			return NotFound();
 		}
@@ -97,7 +110,8 @@ public class ApplicationRecordsController(
 	/// <param name="id">The identifier of the record to delete.</param>
 	[HttpDelete("{id:int}")]
 	public async Task<IActionResult> Delete(int id) {
-		bool deleted = await service.DeleteAsync(id);
+		string userId = GetUserId();
+		bool deleted = await service.DeleteAsync(id, userId);
 		if (!deleted) {
 			return NotFound();
 		}
@@ -121,8 +135,9 @@ public class ApplicationRecordsController(
 			return BadRequest("Only .xlsx files are supported.");
 		}
 
+		string userId = GetUserId();
 		await using Stream stream = file.OpenReadStream();
-		ExcelImportResult result = await excelImportService.ImportAsync(stream);
+		ExcelImportResult result = await excelImportService.ImportAsync(stream, userId);
 		return Ok(result.ToDto());
 	}
 }
