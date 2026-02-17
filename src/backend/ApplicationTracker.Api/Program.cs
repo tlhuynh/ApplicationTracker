@@ -1,5 +1,6 @@
 using System.Text;
 using ApplicationTracker.Api.Services;
+using ApplicationTracker.Api.Transformers;
 using ApplicationTracker.Core.Interfaces.Services;
 using ApplicationTracker.Infrastructure;
 using ApplicationTracker.Infrastructure.Data;
@@ -11,7 +12,9 @@ using Scalar.AspNetCore;
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
-builder.Services.AddOpenApi();
+builder.Services.AddOpenApi(options => {
+	options.AddDocumentTransformer<BearerSecuritySchemeTransformer>();
+});
 builder.Services.AddCors(options => {
 	options.AddDefaultPolicy(policy => {
 		policy.WithOrigins("http://localhost:5173", "https://localhost:5173")
@@ -19,7 +22,6 @@ builder.Services.AddCors(options => {
 			.AllowAnyMethod();
 	});
 });
-
 builder.Services.AddInfrastructure(builder.Configuration);
 
 // Identity and JWT configuration

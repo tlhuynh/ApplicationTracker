@@ -46,7 +46,7 @@ This is a snapshot of the Claude Code memory from the Windows development machin
 - Excel import: ClosedXML service + endpoint (`POST /api/applicationrecords/import`) — done
 - Unit tests: `ApplicationTracker.Api.Tests` (xUnit + Moq, 32 tests) — done
 - PATCH status endpoint: `PATCH /api/applicationrecords/{id}/status` — `PatchStatusRequest` DTO, `UpdateStatusAsync` service method, frontend `patchStatus()` API function
-- Authentication (Part 1 backend + Part 2 frontend done, Part 3 `[Authorize]` pending):
+- Authentication (Part 1 backend + Part 2 frontend + Part 3 `[Authorize]` — all done):
   - ASP.NET Core Identity + JWT Bearer tokens
   - `AuthController`: register (`POST /api/auth/register`), login (`POST /api/auth/login`), refresh (`POST /api/auth/refresh`)
   - `TokenService` / `ITokenService`: generates JWT access tokens (HS256, 15 min expiry) and cryptographic refresh tokens (7 days, stored in `RefreshTokens` table)
@@ -57,7 +57,9 @@ This is a snapshot of the Claude Code memory from the Windows development machin
   - DTOs: `RegisterRequest`, `LoginRequest`, `AuthResponse`
   - Frontend: `AuthProvider` (in-memory access token, localStorage refresh token, silent restore on mount, auto-refresh at 80% TTL), `useAuth()` hook, `ProtectedRoute` layout route, `LoginPage`, `RegisterPage`
   - API layer: `client.ts` with `authFetch()` wrapper (attaches Bearer header), `auth.ts` for public auth endpoints
-  - `[Authorize]` not yet applied to endpoints — pending Part 3
+  - `[Authorize]` on `ApplicationRecordsController`; `AuthController` remains public
+  - `BearerSecuritySchemeTransformer` adds JWT Bearer auth UI to Scalar (OpenAPI doc transformer)
+  - Microsoft.OpenApi v3.x (shipped with .NET 10): use `IOpenApiSecurityScheme` interface, not concrete class; namespace is `Microsoft.OpenApi` not `Microsoft.OpenApi.Models`
 - Static import template at `templates/ApplicationRecords_Import_Template.xlsx`
 - Scalar API docs at `/scalar/v1` (Development environment only)
 - CORS configured in `Program.cs` for `http://localhost:5173` (Vite dev server)
