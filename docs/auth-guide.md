@@ -21,8 +21,9 @@ A high-level guide for implementing JWT-based authentication in a .NET + React S
 ### 3. Create the auth controller
 
 - `POST /register` — create user via Identity's `UserManager`, return success/error
-- `POST /login` — validate credentials via `SignInManager`, return access token + refresh token + expiry
+- `POST /login` — validate credentials via `SignInManager`, return access token + refresh token + expiry. Support `RememberMe` flag — if false, skip generating/storing a refresh token (session-only)
 - `POST /refresh` — validate refresh token from DB, rotate it, return new token pair
+- `POST /logout` — accept refresh token, revoke it in the database (`[Authorize]` required). Return 204 regardless of whether token was found (don't leak existence)
 
 ### 4. Configure JWT Bearer authentication
 
@@ -32,7 +33,7 @@ A high-level guide for implementing JWT-based authentication in a .NET + React S
 ### 5. Secure API endpoints
 
 - Add `[Authorize]` to controllers that require authentication
-- Keep auth endpoints public (no `[Authorize]`)
+- Keep auth endpoints public (no `[Authorize]`) except logout (requires auth to know which user is revoking)
 - Extract user ID from JWT claims in controllers to scope data per user
 
 ### 6. Per-user data isolation
@@ -46,6 +47,7 @@ A high-level guide for implementing JWT-based authentication in a .NET + React S
 ### 7. Create the API layer
 
 - Auth API functions (`login`, `register`) — plain `fetch()` calls, no auth header needed
+- `logout` function — uses `authFetch` (endpoint requires `[Authorize]`)
 - `refreshToken` function — plain `fetch()`, co-located with the fetch wrapper to avoid circular imports
 
 ### 8. Build the token management layer (`client.ts`)
@@ -59,17 +61,17 @@ A high-level guide for implementing JWT-based authentication in a .NET + React S
 
 - Wrap the entire app (above the router) so all routes can access auth state
 - Manage state: `user` (email from JWT), `isAuthenticated`, `isLoading`
-- **Login handler** — call API, store access token in memory, refresh token in localStorage, extract user from JWT claims, schedule auto-refresh
+- **Login handler** — call API, store access token in memory, extract user from JWT claims. If a refresh token was returned (RememberMe was true), store it in localStorage and schedule auto-refresh. Otherwise session is in-memory only
 - **Register handler** — call API, don't auto-login (let user log in explicitly)
-- **Logout handler** — clear access token, clear localStorage, cancel refresh timer
+- **Logout handler** — read refresh token from localStorage before clearing it, send it to the backend logout endpoint (fire-and-forget — `.catch(() => {})`), then clear access token, localStorage, and cancel refresh timer. User is logged out locally regardless of whether the backend call succeeds
 - **Silent session restore** (on mount) — check localStorage for refresh token, exchange it for a new access token. If it fails, stay logged out silently
 - **Auto-refresh timer** — `setTimeout` at ~80% of token TTL. On success, schedule the next refresh (self-resetting). Use `useRef` to hold the function to avoid React Compiler issues with recursive references
 
 ### 10. Build the auth UI
 
-- `LoginPage` — email + password form, client-side validation, server error display, redirect to `/` on success
+- `LoginPage` — email + password form, "Remember me" checkbox, client-side validation, server error display, redirect to `/` on success
 - `RegisterPage` — email + password + confirm password form, same patterns
-- Both pages: redirect already-authenticated users to `/` via `<Navigate>`
+- Both pages: redirect already-authenticated users to `/` via `<Navigate>` (placed after all hooks to satisfy Rules of Hooks)
 
 ### 11. Protect routes
 
@@ -86,6 +88,8 @@ A high-level guide for implementing JWT-based authentication in a .NET + React S
 | **Auto-login after register** | Convenience vs forcing user to confirm credentials |
 | **Error granularity** | "Invalid credentials" (secure) vs "Email not found" / "Wrong password" (user-friendly, leaks info) |
 | **Refresh token rotation** | Rotate on each use (detects theft) vs static (simpler) |
+| **Remember me** | No refresh token (session ends on browser close) vs refresh token in localStorage (persistent) |
+| **Server-side logout** | Revoke token in DB (secure, extra API call) vs frontend-only cleanup (simpler, token still valid until expiry) |
 
 ## Order of Implementation
 
@@ -93,7 +97,7 @@ The parts build on each other roughly in this order:
 
 1. Identity + DB migration
 2. Token service + refresh token table
-3. Auth controller (register, login, refresh)
+3. Auth controller (register, login, refresh, logout)
 4. JWT Bearer config + `[Authorize]`
 5. Frontend API layer + `authFetch` wrapper
 6. AuthProvider (login/logout/state)
@@ -101,4 +105,4 @@ The parts build on each other roughly in this order:
 8. ProtectedRoute + route config
 9. Silent session restore + auto-refresh timer
 10. Per-user data isolation
-11. Polish: 401 retry, auth page redirects
+11. Polish: 401 retry, auth page redirects, remember me, server-side logout
