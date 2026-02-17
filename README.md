@@ -132,9 +132,9 @@ ApplicationTracker/
 │   │   │       ├── components/              # App components + shadcn/ui
 │   │   │       │   ├── applications/        # Application feature components
 │   │   │       │   └── ui/                  # shadcn/ui generated components
-│   │   │       ├── hooks/                   # Custom React hooks (use-theme, use-mobile)
+│   │   │       ├── hooks/                   # Custom React hooks (use-auth, use-theme, use-mobile)
 │   │   │       ├── lib/                     # Utilities and constants
-│   │   │       ├── pages/                   # Route page components (Home, Import, NotFound)
+│   │   │       ├── pages/                   # Route page components (Home, Import, Login, Register, NotFound)
 │   │   │       ├── test/                    # Test setup
 │   │   │       └── types/                   # Generated API types
 │   │   └── ApplicationTracker.Maui/        # .NET MAUI Blazor app
@@ -232,7 +232,7 @@ dotnet run --project src/backend/ApplicationTracker.Api
 - **Toast notifications** — success/error feedback via Sonner
 - **Dark/light theme** — toggle with system preference detection, persisted in localStorage
 - **Responsive sidebar** — collapsible navigation with Dashboard and Import pages
-- **Authentication (backend)** — register, login, and token refresh endpoints via ASP.NET Core Identity + JWT (frontend login page coming soon)
+- **Authentication** — register, login, and token refresh via ASP.NET Core Identity + JWT. React frontend with login/register pages, protected routes, in-memory access token with silent refresh, and automatic session restore on page reload
 
 ## Resources
 

@@ -95,7 +95,8 @@ Maui → Shared (gets Core transitively)
 - **Excel Import**: ClosedXML for parsing `.xlsx` uploads; service returns domain models, controller maps to DTOs. Validation: CompanyName required, Status must match enum name (numeric values rejected), AppliedDate required (culture-invariant parsing via `CultureInfo.InvariantCulture`), PostingUrl must be valid HTTP/HTTPS if provided. Duplicate detection: CompanyName + PostingUrl (when URL provided), fallback to CompanyName + AppliedDate (database check only, not within same batch)
 - **Domain Models**: Non-entity result types live in `Core/Models/` (e.g., `ExcelImportResult`)
 - **Partial Updates**: `PATCH /api/applicationrecords/{id}/status` updates only the status field — uses `PatchStatusRequest` DTO and `UpdateStatusAsync` service method
-- **Authentication**: ASP.NET Core Identity + JWT Bearer tokens. `AuthController` provides register, login, and refresh endpoints. `TokenService` generates JWT access tokens (15 min) and cryptographic refresh tokens (7 days, stored in `RefreshTokens` table). Refresh token rotation on each use. `ApplicationDbContext` extends `IdentityDbContext<IdentityUser>`. Frontend integration pending (Part 2)
+- **Authentication**: ASP.NET Core Identity + JWT Bearer tokens. `AuthController` provides register, login, and refresh endpoints. `TokenService` generates JWT access tokens (15 min) and cryptographic refresh tokens (7 days, stored in `RefreshTokens` table). Refresh token rotation on each use. `ApplicationDbContext` extends `IdentityDbContext<IdentityUser>`. Frontend auth integration done (Part 2). `[Authorize]` not yet applied to endpoints (Part 3 pending)
+- **Frontend Auth**: `AuthProvider` manages in-memory access token + localStorage refresh token. `useAuth()` hook provides `login`, `register`, `logout`, `user`, `isAuthenticated`, `isLoading`. `ProtectedRoute` layout route redirects unauthenticated users to `/login`. Silent session restore on page refresh via stored refresh token. Auto-refresh at 80% of token TTL. `authFetch()` wrapper in `client.ts` attaches Bearer header to all API calls
 
 ### MAUI App Structure
 
@@ -111,13 +112,13 @@ Located in `src/clients/ApplicationTracker.Maui/`:
 
 Located in `src/clients/ApplicationTracker.React/`:
 
-- `src/api/` - API client functions (hand-written fetch wrappers)
-- `src/components/` - App components (`AppSidebar.tsx`, `ThemeProvider.tsx`, `ThemeToggle.tsx`)
+- `src/api/` - API client functions (`applicationRecords.ts`, `auth.ts`, `client.ts` shared fetch wrapper)
+- `src/components/` - App components (`AppSidebar.tsx`, `AuthProvider.tsx`, `ProtectedRoute.tsx`, `ThemeProvider.tsx`, `ThemeToggle.tsx`)
 - `src/components/applications/` - Application feature components (`ApplicationTable`, `ApplicationFormDialog`, `applicationColumns`, `NotesCell`)
 - `src/components/ui/` - shadcn/ui generated components (ESLint-ignored)
-- `src/hooks/` - Custom hooks (`use-mobile.ts`, `use-theme.ts`)
+- `src/hooks/` - Custom hooks (`use-auth.ts`, `use-mobile.ts`, `use-theme.ts`)
 - `src/lib/` - Utilities (`utils.ts` with `cn()` helper) and constants (`constants.ts`)
-- `src/pages/` - Route page components (`HomePage`, `ImportPage`, `NotFoundPage`)
+- `src/pages/` - Route page components (`HomePage`, `ImportPage`, `LoginPage`, `RegisterPage`, `NotFoundPage`)
 - `src/types/` - Generated TypeScript types from OpenAPI spec (`api.d.ts`)
 - `src/test/` - Test setup (`setup.ts` with JSDOM mocks)
 - `vite.config.ts` - Vite + Vitest + API proxy configuration

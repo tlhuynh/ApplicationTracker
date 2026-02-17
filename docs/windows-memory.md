@@ -46,7 +46,7 @@ This is a snapshot of the Claude Code memory from the Windows development machin
 - Excel import: ClosedXML service + endpoint (`POST /api/applicationrecords/import`) — done
 - Unit tests: `ApplicationTracker.Api.Tests` (xUnit + Moq, 32 tests) — done
 - PATCH status endpoint: `PATCH /api/applicationrecords/{id}/status` — `PatchStatusRequest` DTO, `UpdateStatusAsync` service method, frontend `patchStatus()` API function
-- Authentication (backend only — Part 1 done, Part 2 frontend pending):
+- Authentication (Part 1 backend + Part 2 frontend done, Part 3 `[Authorize]` pending):
   - ASP.NET Core Identity + JWT Bearer tokens
   - `AuthController`: register (`POST /api/auth/register`), login (`POST /api/auth/login`), refresh (`POST /api/auth/refresh`)
   - `TokenService` / `ITokenService`: generates JWT access tokens (HS256, 15 min expiry) and cryptographic refresh tokens (7 days, stored in `RefreshTokens` table)
@@ -55,6 +55,8 @@ This is a snapshot of the Claude Code memory from the Windows development machin
   - JWT key stored in user-secrets (`Jwt:Key`); Issuer/Audience/ExpiryInMinutes in `appsettings.json`
   - NuGet: `Microsoft.AspNetCore.Identity.EntityFrameworkCore` (Infrastructure), `Microsoft.AspNetCore.Authentication.JwtBearer` (Api), `Microsoft.Extensions.Identity.Stores` (Core)
   - DTOs: `RegisterRequest`, `LoginRequest`, `AuthResponse`
+  - Frontend: `AuthProvider` (in-memory access token, localStorage refresh token, silent restore on mount, auto-refresh at 80% TTL), `useAuth()` hook, `ProtectedRoute` layout route, `LoginPage`, `RegisterPage`
+  - API layer: `client.ts` with `authFetch()` wrapper (attaches Bearer header), `auth.ts` for public auth endpoints
   - `[Authorize]` not yet applied to endpoints — pending Part 3
 - Static import template at `templates/ApplicationRecords_Import_Template.xlsx`
 - Scalar API docs at `/scalar/v1` (Development environment only)
@@ -70,7 +72,7 @@ This is a snapshot of the Claude Code memory from the Windows development machin
   - Excel import page (`/import`): file upload, results summary, error table
   - Dark/light theme toggle (`ThemeProvider` + `ThemeToggle`)
   - Sidebar: Dashboard + Import nav items, collapsed by default
-- Tests: ApplicationTable (5 tests), HomePage (3 tests) — done
+- Tests: ApplicationTable (9 tests), HomePage (3 tests), LoginPage (4 tests), RegisterPage (6 tests), ProtectedRoute (3 tests), App (1 test), NotFoundPage (1 test) — 27 total
 
 ## React Client Setup
 - Location: `src/clients/ApplicationTracker.React/`
@@ -88,12 +90,13 @@ This is a snapshot of the Claude Code memory from the Windows development machin
 - Data table: TanStack Table (`@tanstack/react-table`) with sorting, global filtering, pagination
 - Feature components in `src/components/applications/` (ApplicationTable, ApplicationFormDialog, applicationColumns, NotesCell)
 - API types: auto-generated via `openapi-typescript` (`npm run generate-types`, backend must be running on http://localhost:5021)
-- API client: hand-written fetch functions in `src/api/applicationRecords.ts`
+- API client: `src/api/client.ts` (shared `authFetch` wrapper + `ApiError`), `src/api/applicationRecords.ts`, `src/api/auth.ts`
 - API proxy: Vite proxies `/api` to `http://localhost:5021`
-- App shell: header (with theme toggle) + collapsible sidebar (shadcn Sidebar), nav items: Dashboard, Import
+- App shell: header (with theme toggle, user email, logout button) + collapsible sidebar (shadcn Sidebar), nav items: Dashboard, Import
 - Theme: ThemeProvider + ThemeToggle (dark/light/system, persisted in localStorage)
+- Auth: AuthProvider (wraps router in main.tsx), ProtectedRoute (layout route guarding app shell), LoginPage, RegisterPage
 - Test setup: `src/test/setup.ts` includes `window.matchMedia` mock for JSDOM
-- Routes: `/` (HomePage), `/import` (ImportPage), `*` (NotFoundPage)
+- Routes: `/login` (LoginPage), `/register` (RegisterPage), `/` (HomePage, protected), `/import` (ImportPage, protected), `*` (NotFoundPage)
 
 ## Troubleshooting Notes (React)
 - TypeScript 5.9 `erasableSyntaxOnly` — cannot use `public` in constructor parameters (use explicit property + assignment)
@@ -103,13 +106,15 @@ This is a snapshot of the Claude Code memory from the Windows development machin
 - React Compiler `set-state-in-effect`: don't call functions that synchronously setState inside useEffect — use inline `.then()/.catch()` callbacks, or call setState functions only from event handlers
 - ESLint `react-refresh/only-export-components`: files must export ONLY components OR only non-components. Move contexts/hooks to separate files (e.g., `ThemeProviderContext` → `use-theme.ts`)
 - Icon-only interactive elements need `aria-label` for accessibility and testability
+- React Compiler `refs`: cannot read or write `ref.current` during render. Move ref assignments into `useEffect` or event handlers. For self-referencing functions (recursive setTimeout), use `useRef` to hold the function and assign inside `useEffect`
+- shadcn `CardTitle` renders as `div` (not `h2`) — use `getByText` with `data-slot` selector in tests, not `getByRole('heading')`
 
 ## User Context
 - New to React — see `docs/react-concepts.md` for topics already covered (don't re-explain these)
 - Familiar with .NET/Blazor — React concepts explained via Blazor comparisons
 - Prefers to review and apply changes themselves — present changes with explanations
 - Conversation style: Q&A-driven. Explain *why* code is written a certain way, not just *what* to write. User asks follow-up questions before applying changes.
-- Current branch: `Add-UI-components` — all React UI work is on this branch
+- Current branch: `Add-user-login` — frontend auth integration
 
 ## IDE Setup
 - Rider settings sync via JetBrains account (plugins, keymaps, etc.)
