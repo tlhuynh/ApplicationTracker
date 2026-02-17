@@ -4,12 +4,14 @@ using ApplicationTracker.Core.Models;
 using ApplicationTracker.Shared.DTOs;
 using ApplicationTracker.Shared.Mappings;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 namespace ApplicationTracker.Api.Controllers;
 
 /// <summary>
 /// REST API controller for managing application records.
 /// </summary>
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class ApplicationRecordsController(
