@@ -14,7 +14,7 @@ namespace ApplicationTracker.Api.Services;
 /// </summary>
 public class ExcelImportService(IApplicationRecordRepository repository) : IExcelImportService {
 	/// <inheritdoc />
-	public async Task<ExcelImportResult> ImportAsync(Stream fileStream) {
+	public async Task<ExcelImportResult> ImportAsync(Stream fileStream, string userId) {
 		using XLWorkbook workbook = new(fileStream);
 		IXLWorksheet sheet = workbook.Worksheet(1);
 		List<ExcelImportError> errors = [];
@@ -89,23 +89,24 @@ public class ExcelImportService(IApplicationRecordRepository repository) : IExce
 			}
 
 			// Check for duplicate application in database
-		if (await repository.ExistsAsync(companyName, appliedDate, postingUrl)) {
-			errors.Add(new() {
-				RowNumber = rowNumber,
-				CompanyName = companyName,
-				ErrorMessage = "Duplicate application — a record with the same company and "
-					+ (postingUrl is not null ? "posting URL" : "applied date")
-					+ " already exists."
-			});
-			continue;
-		}
+			if (await repository.ExistsAsync(companyName, appliedDate, postingUrl, userId)) {
+				errors.Add(new() {
+					RowNumber = rowNumber,
+					CompanyName = companyName,
+					ErrorMessage = "Duplicate application — a record with the same company and "
+					               + (postingUrl is not null ? "posting URL" : "applied date")
+					               + " already exists."
+				});
+				continue;
+			}
 
-		ApplicationRecord entity = new() {
+			ApplicationRecord entity = new() {
 				CompanyName = companyName,
 				Status = status,
 				AppliedDate = appliedDate,
 				PostingUrl = postingUrl,
-				Notes = notes
+				Notes = notes,
+				UserId = userId
 			};
 
 			await repository.AddAsync(entity);

@@ -1,5 +1,7 @@
 ﻿using ApplicationTracker.Core.Entities;
 using ApplicationTracker.Core.Entities.Base;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace ApplicationTracker.Infrastructure.Data;
@@ -7,8 +9,10 @@ namespace ApplicationTracker.Infrastructure.Data;
 /// <summary>
 /// EF Core database context for the application.
 /// </summary>
-public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : DbContext(options) {
+public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
+	: IdentityDbContext<IdentityUser>(options) {
 	public DbSet<ApplicationRecord> ApplicationRecords => Set<ApplicationRecord>();
+	public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
 	protected override void OnModelCreating(ModelBuilder modelBuilder) {
 		base.OnModelCreating(modelBuilder);

@@ -25,6 +25,10 @@ A full-stack .NET project for tracking job applications, built as a learning pla
 - [ESLint](https://eslint.org/) - Linting for TypeScript/React
 - [openapi-typescript](https://openapi-ts.dev/) - TypeScript type generation from OpenAPI spec
 
+### Authentication
+- [ASP.NET Core Identity](https://learn.microsoft.com/aspnet/core/security/authentication/identity) - User management (registration, password hashing)
+- [JWT Bearer Authentication](https://learn.microsoft.com/aspnet/core/security/authentication/jwt-authn) - Token-based API authentication
+
 ### Data & Infrastructure
 - [Entity Framework Core](https://learn.microsoft.com/ef/core/) - ORM for backend data access
 - [SQL Server 2022](https://learn.microsoft.com/sql/sql-server/) - Backend database (Docker)
@@ -128,9 +132,9 @@ ApplicationTracker/
 │   │   │       ├── components/              # App components + shadcn/ui
 │   │   │       │   ├── applications/        # Application feature components
 │   │   │       │   └── ui/                  # shadcn/ui generated components
-│   │   │       ├── hooks/                   # Custom React hooks (use-theme, use-mobile)
+│   │   │       ├── hooks/                   # Custom React hooks (use-auth, use-theme, use-mobile)
 │   │   │       ├── lib/                     # Utilities and constants
-│   │   │       ├── pages/                   # Route page components (Home, Import, NotFound)
+│   │   │       ├── pages/                   # Route page components (Home, Import, Login, Register, NotFound)
 │   │   │       ├── test/                    # Test setup
 │   │   │       └── types/                   # Generated API types
 │   │   └── ApplicationTracker.Maui/        # .NET MAUI Blazor app
@@ -228,6 +232,8 @@ dotnet run --project src/backend/ApplicationTracker.Api
 - **Toast notifications** — success/error feedback via Sonner
 - **Dark/light theme** — toggle with system preference detection, persisted in localStorage
 - **Responsive sidebar** — collapsible navigation with Dashboard and Import pages
+- **Authentication** — register, login, and token refresh via ASP.NET Core Identity + JWT. React frontend with login/register pages, protected routes, in-memory access token with silent refresh, automatic session restore on page reload, 401 retry with transparent token refresh, logged-in user redirect away from auth pages, "Remember me" option (session-only vs persistent), and server-side refresh token revocation on logout
+- **Per-user data isolation** — each user only sees their own application records. Records are stamped with the user's ID on creation/import, and all queries filter by user
 
 ## Resources
 
@@ -237,6 +243,8 @@ dotnet run --project src/backend/ApplicationTracker.Api
 - [.NET MAUI](https://learn.microsoft.com/dotnet/maui/)
 - [Blazor Hybrid](https://learn.microsoft.com/aspnet/core/blazor/hybrid/)
 - [MudBlazor](https://mudblazor.com/docs)
+- [ASP.NET Core Identity](https://learn.microsoft.com/aspnet/core/security/authentication/identity)
+- [JWT Bearer Authentication](https://learn.microsoft.com/aspnet/core/security/authentication/jwt-authn)
 - [Scalar](https://github.com/scalar/scalar/tree/main/integrations/aspnetcore)
 - [ClosedXML](https://github.com/ClosedXML/ClosedXML/wiki)
 - [xUnit](https://xunit.net/docs/getting-started/v3/cmdline)

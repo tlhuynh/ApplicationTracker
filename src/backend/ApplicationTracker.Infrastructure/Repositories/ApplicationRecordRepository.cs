@@ -11,7 +11,7 @@ namespace ApplicationTracker.Infrastructure.Repositories;
 public class ApplicationRecordRepository(ApplicationDbContext context) : Repository<ApplicationRecord>(context),
 	IApplicationRecordRepository {
 	/// <inheritdoc />
-	public async Task<bool> ExistsAsync(string companyName, DateTime appliedDate, string? postingUrl) {
+	public async Task<bool> ExistsAsync(string companyName, DateTime appliedDate, string? postingUrl, string userId) {
 		if (postingUrl is not null) {
 			return await _dbSet.AnyAsync(r =>
 				r.CompanyName == companyName && r.PostingUrl == postingUrl);

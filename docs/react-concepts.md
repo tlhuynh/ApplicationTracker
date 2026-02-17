@@ -60,3 +60,23 @@ These topics have been covered in previous sessions. Don't re-explain from scrat
 - **`getByRole` with `name`** — matches accessible name (text content or `aria-label`). Icon-only elements need `aria-label`
 - **MSW** — mock API at the network level (installed but not heavily used yet)
 - **`vi.mocked()`** — type-safe access to mocked functions for controlling return values per test
+- **Context mocking in tests** — wrap components with `AuthContext.Provider` to inject fake auth state. More targeted than mocking the module
+- **`createMemoryRouter`** — in-memory router for tests. `initialEntries` sets the starting URL. `router.state.location.pathname` asserts navigation happened
+- **`userEvent`** — `@testing-library/user-event` simulates real user interactions (typing, clicking). `userEvent.setup()` creates an instance, then `user.type()`, `user.click()`
+
+## Authentication Pattern
+
+- **In-memory access token** — stored in a module-level variable (`client.ts`), not localStorage. XSS-safe but lost on page refresh
+- **localStorage refresh token** — longer-lived token persisted for session restore. Trade-off: accessible to XSS, but needed without httpOnly cookie support
+- **Silent session restore** — on mount, `AuthProvider` checks for stored refresh token and exchanges it for a new access token
+- **Auto-refresh** — `scheduleRefresh` sets a `setTimeout` at 80% of token TTL. Self-resetting via ref (not `setInterval`) because each refresh returns a new token (rotation)
+- **`useRef` for recursive functions** — `scheduleRefreshRef` avoids React Compiler's "accessed before declared" error. The ref holds the function, and the recursive `setTimeout` reads `ref.current`
+- **`authFetch()` wrapper** — centralizes `Authorization: Bearer` header attachment. Drop-in replacement for `fetch()`. On 401, automatically attempts one token refresh and retries the original request; if refresh fails, clears auth state. Uses module-level `isRefreshing` flag to prevent infinite retry loops
+- **`ProtectedRoute` layout route** — pathless route in router config that acts as middleware. Checks auth state, shows loading during session restore, redirects to `/login` if unauthenticated
+- **`<Navigate>` component** — React Router's declarative redirect. `replace` prop prevents back-button to protected page. Also used on Login/Register pages to redirect already-authenticated users to `/`
+- **Provider placement** — `AuthProvider` wraps `RouterProvider` in `main.tsx` so auth state is available to all routes (including public `/login` and `/register`)
+- **Circular dependency avoidance** — `refreshToken` lives in `client.ts` (not `auth.ts`) because `authFetch` needs it for 401 retry, and `auth.ts` already imports from `client.ts`. Co-locating token infrastructure in one module avoids the cycle
+- **Remember me** — checkbox on LoginPage controls whether the backend issues a refresh token. When unchecked, no refresh token is stored in localStorage, so closing the browser ends the session. `handleLogin` conditionally stores the refresh token and schedules auto-refresh only when one is returned
+- **Server-side logout** — `handleLogout` reads the refresh token from localStorage before clearing it, sends it to `POST /api/auth/logout` (fire-and-forget via `.catch(() => {})`), then clears local state. The backend call is best-effort — the user is logged out locally regardless
+- **JSDOM missing APIs** — `window.matchMedia` (for shadcn sidebar) and `global.ResizeObserver` (for Radix UI Checkbox) must be mocked in `src/test/setup.ts`
+- **Rules of Hooks** — never place an early `return` before `useState`/`useEffect` calls. Conditional returns (like `<Navigate>`) must go after all hooks to satisfy React's call-order requirement

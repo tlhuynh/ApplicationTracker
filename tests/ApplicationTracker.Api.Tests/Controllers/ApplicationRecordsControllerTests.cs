@@ -7,6 +7,7 @@ using ApplicationTracker.Shared.DTOs;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
 using Moq;
+using System.Security.Claims;
 
 namespace ApplicationTracker.Api.Tests.Controllers;
 
@@ -14,6 +15,7 @@ namespace ApplicationTracker.Api.Tests.Controllers;
 /// Unit tests for <see cref="ApplicationRecordsController"/>.
 /// </summary>
 public class ApplicationRecordsControllerTests {
+	private const string TestUserId = "test-user-id";
 	private readonly Mock<IApplicationRecordService> _applicationRecordServiceMock;
 	private readonly Mock<IExcelImportService> _excelImportServiceMock;
 	private readonly ApplicationRecordsController _controller;
@@ -23,6 +25,19 @@ public class ApplicationRecordsControllerTests {
 		_excelImportServiceMock = new Mock<IExcelImportService>();
 		_controller = new ApplicationRecordsController(_applicationRecordServiceMock.Object,
 			_excelImportServiceMock.Object);
+		SetupUserClaims();
+	}
+
+	/// <summary>
+	/// Configures the controller's HttpContext with a fake authenticated user.
+	/// </summary>
+	private void SetupUserClaims() {
+		List<Claim> claims = [new Claim(ClaimTypes.NameIdentifier, TestUserId)];
+		ClaimsIdentity identity = new(claims, "TestAuth");
+		ClaimsPrincipal principal = new(identity);
+		_controller.ControllerContext = new ControllerContext {
+			HttpContext = new DefaultHttpContext { User = principal }
+		};
 	}
 
 	[Fact]
@@ -31,7 +46,7 @@ public class ApplicationRecordsControllerTests {
 		List<ApplicationRecord> records = [
 			new() { Id = 1, CompanyName = "Acme", Status = ApplicationStatus.Applied }
 		];
-		_applicationRecordServiceMock.Setup(s => s.GetAllAsync()).ReturnsAsync(records);
+		_applicationRecordServiceMock.Setup(s => s.GetAllAsync(TestUserId)).ReturnsAsync(records);
 
 		// Act
 		ActionResult<List<ApplicationRecordDto>> result = await _controller.GetAll();
@@ -47,7 +62,7 @@ public class ApplicationRecordsControllerTests {
 	public async Task GetById_WhenFound_ReturnsOk() {
 		// Arrange
 		ApplicationRecord record = new() { Id = 1, CompanyName = "Acme" };
-		_applicationRecordServiceMock.Setup(s => s.GetByIdAsync(1)).ReturnsAsync(record);
+		_applicationRecordServiceMock.Setup(s => s.GetByIdAsync(1, TestUserId)).ReturnsAsync(record);
 
 		// Act
 		ActionResult<ApplicationRecordDto> result = await _controller.GetById(1);
@@ -61,7 +76,8 @@ public class ApplicationRecordsControllerTests {
 	[Fact]
 	public async Task GetById_WhenNotFound_ReturnsNotFound() {
 		// Arrange
-		_applicationRecordServiceMock.Setup(s => s.GetByIdAsync(99)).ReturnsAsync((ApplicationRecord?)null);
+		_applicationRecordServiceMock.Setup(s =>
+			s.GetByIdAsync(99, TestUserId)).ReturnsAsync((ApplicationRecord?)null);
 
 		// Act
 		ActionResult<ApplicationRecordDto> result = await _controller.GetById(99);
@@ -75,7 +91,8 @@ public class ApplicationRecordsControllerTests {
 		// Arrange
 		CreateApplicationRecordRequest request = new() { CompanyName = "Acme", Status = ApplicationStatus.Applied };
 		ApplicationRecord created = new() { Id = 1, CompanyName = "Acme", Status = ApplicationStatus.Applied };
-		_applicationRecordServiceMock.Setup(s => s.CreateAsync(It.IsAny<ApplicationRecord>())).ReturnsAsync(created);
+		_applicationRecordServiceMock.Setup(s =>
+			s.CreateAsync(It.IsAny<ApplicationRecord>(), TestUserId)).ReturnsAsync(created);
 
 		// Act
 		ActionResult<ApplicationRecordDto> result = await _controller.Create(request);
@@ -100,7 +117,8 @@ public class ApplicationRecordsControllerTests {
 			Status =
 				ApplicationStatus.Interviewing
 		};
-		_applicationRecordServiceMock.Setup(s => s.UpdateAsync(1, It.IsAny<ApplicationRecord>())).ReturnsAsync(updated);
+		_applicationRecordServiceMock.Setup(s =>
+			s.UpdateAsync(1, It.IsAny<ApplicationRecord>(), TestUserId)).ReturnsAsync(updated);
 
 		// Act
 		ActionResult<ApplicationRecordDto> result = await _controller.Update(1, request);
@@ -116,7 +134,7 @@ public class ApplicationRecordsControllerTests {
 		// Arrange
 		UpdateApplicationRecordRequest request = new() { CompanyName = "Ghost" };
 		_applicationRecordServiceMock.Setup(s => s.UpdateAsync(99,
-			It.IsAny<ApplicationRecord>())).ReturnsAsync((ApplicationRecord?)null);
+			It.IsAny<ApplicationRecord>(), TestUserId)).ReturnsAsync((ApplicationRecord?)null);
 
 		// Act
 		ActionResult<ApplicationRecordDto> result = await _controller.Update(99, request);
@@ -129,13 +147,9 @@ public class ApplicationRecordsControllerTests {
 	public async Task PatchStatus_WhenFound_ReturnsOkWithUpdatedDto() {
 		// Arrange
 		PatchStatusRequest request = new() { Status = ApplicationStatus.Interviewing };
-		ApplicationRecord updated = new() {
-			Id = 1,
-			CompanyName = "Acme",
-			Status = ApplicationStatus.Interviewing
-		};
+		ApplicationRecord updated = new() { Id = 1, CompanyName = "Acme", Status = ApplicationStatus.Interviewing };
 		_applicationRecordServiceMock
-			.Setup(s => s.UpdateStatusAsync(1, ApplicationStatus.Interviewing))
+			.Setup(s => s.UpdateStatusAsync(1, ApplicationStatus.Interviewing, TestUserId))
 			.ReturnsAsync(updated);
 
 		// Act
@@ -153,7 +167,7 @@ public class ApplicationRecordsControllerTests {
 		// Arrange
 		PatchStatusRequest request = new() { Status = ApplicationStatus.Rejected };
 		_applicationRecordServiceMock
-			.Setup(s => s.UpdateStatusAsync(99, ApplicationStatus.Rejected))
+			.Setup(s => s.UpdateStatusAsync(99, ApplicationStatus.Rejected, TestUserId))
 			.ReturnsAsync((ApplicationRecord?)null);
 
 		// Act
@@ -166,7 +180,7 @@ public class ApplicationRecordsControllerTests {
 	[Fact]
 	public async Task Delete_WhenFound_ReturnsNoContent() {
 		// Arrange
-		_applicationRecordServiceMock.Setup(s => s.DeleteAsync(1)).ReturnsAsync(true);
+		_applicationRecordServiceMock.Setup(s => s.DeleteAsync(1, TestUserId)).ReturnsAsync(true);
 
 		// Act
 		IActionResult result = await _controller.Delete(1);
@@ -178,7 +192,7 @@ public class ApplicationRecordsControllerTests {
 	[Fact]
 	public async Task Delete_WhenNotFound_ReturnsNotFound() {
 		// Arrange
-		_applicationRecordServiceMock.Setup(s => s.DeleteAsync(99)).ReturnsAsync(false);
+		_applicationRecordServiceMock.Setup(s => s.DeleteAsync(99, TestUserId)).ReturnsAsync(false);
 
 		// Act
 		IActionResult result = await _controller.Delete(99);
@@ -199,7 +213,7 @@ public class ApplicationRecordsControllerTests {
 			]
 		};
 		_excelImportServiceMock.Setup(s =>
-			s.ImportAsync(It.IsAny<Stream>())).ReturnsAsync(importResult);
+			s.ImportAsync(It.IsAny<Stream>(), TestUserId)).ReturnsAsync(importResult);
 
 		Mock<IFormFile> fileMock = new();
 		fileMock.Setup(f => f.FileName).Returns("import.xlsx");
@@ -231,6 +245,6 @@ public class ApplicationRecordsControllerTests {
 		// Assert
 		BadRequestObjectResult badResult = Assert.IsType<BadRequestObjectResult>(result.Result);
 		Assert.Equal("Only .xlsx files are supported.", badResult.Value);
-		_excelImportServiceMock.Verify(s => s.ImportAsync(It.IsAny<Stream>()), Times.Never);
+		_excelImportServiceMock.Verify(s => s.ImportAsync(It.IsAny<Stream>(), It.IsAny<string>()), Times.Never);
 	}
 }

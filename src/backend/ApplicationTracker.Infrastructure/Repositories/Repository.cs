@@ -12,12 +12,12 @@ public class Repository<T>(ApplicationDbContext context) : IRepository<T>
 	where T : BaseEntity {
 	protected readonly DbSet<T> _dbSet = context.Set<T>();
 
-	public async Task<T?> GetByIdAsync(int id) {
-		return await _dbSet.FindAsync(id);
+	public async Task<T?> GetByIdAsync(int id, string userId) {
+		return await _dbSet.FirstOrDefaultAsync(e => e.Id == id && e.UserId == userId);
 	}
 
-	public async Task<List<T>> GetAllAsync() {
-		return await _dbSet.ToListAsync();
+	public async Task<List<T>> GetAllAsync(string userId) {
+		return await _dbSet.Where(e => e.UserId == userId).ToListAsync();
 	}
 
 	public async Task AddAsync(T entity) {

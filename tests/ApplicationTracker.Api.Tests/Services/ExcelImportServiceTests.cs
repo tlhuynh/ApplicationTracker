@@ -11,6 +11,7 @@ namespace ApplicationTracker.Api.Tests.Services;
 /// Unit tests for <see cref="ExcelImportService"/>.
 /// </summary>
 public class ExcelImportServiceTests {
+	private const string TestUserId = "test-user-id";
 	private readonly Mock<IApplicationRecordRepository> _repositoryMock;
 	private readonly ExcelImportService _service;
 
@@ -56,14 +57,16 @@ public class ExcelImportServiceTests {
 		);
 
 		// Act
-		ExcelImportResult result = await _service.ImportAsync(stream);
+		ExcelImportResult result = await _service.ImportAsync(stream, TestUserId);
 
 		// Assert
 		Assert.Equal(2, result.TotalRows);
 		Assert.Equal(2, result.ImportedCount);
 		Assert.Equal(0, result.FailedCount);
 		Assert.Empty(result.Errors);
-		_repositoryMock.Verify(r => r.AddAsync(It.IsAny<ApplicationRecord>()), Times.Exactly(2));
+		_repositoryMock.Verify(r =>
+			r.AddAsync(It.Is<ApplicationRecord>(e =>
+				e.UserId == TestUserId)), Times.Exactly(2));
 		_repositoryMock.Verify(r => r.SaveChangesAsync(), Times.Once);
 	}
 
@@ -75,7 +78,7 @@ public class ExcelImportServiceTests {
 		);
 
 		// Act
-		ExcelImportResult result = await _service.ImportAsync(stream);
+		ExcelImportResult result = await _service.ImportAsync(stream, TestUserId);
 
 		// Assert
 		Assert.Equal(1, result.TotalRows);
@@ -97,7 +100,7 @@ public class ExcelImportServiceTests {
 		);
 
 		// Act
-		ExcelImportResult result = await _service.ImportAsync(stream);
+		ExcelImportResult result = await _service.ImportAsync(stream, TestUserId);
 
 		// Assert
 		Assert.Equal(1, result.TotalRows);
@@ -120,14 +123,16 @@ public class ExcelImportServiceTests {
 		);
 
 		// Act
-		ExcelImportResult result = await _service.ImportAsync(stream);
+		ExcelImportResult result = await _service.ImportAsync(stream, TestUserId);
 
 		// Assert
 		Assert.Equal(4, result.TotalRows);
 		Assert.Equal(2, result.ImportedCount);
 		Assert.Equal(2, result.FailedCount);
 		Assert.Equal(2, result.Errors.Count);
-		_repositoryMock.Verify(r => r.AddAsync(It.IsAny<ApplicationRecord>()), Times.Exactly(2));
+		_repositoryMock.Verify(r =>
+			r.AddAsync(It.Is<ApplicationRecord>(e =>
+				e.UserId == TestUserId)), Times.Exactly(2));
 		_repositoryMock.Verify(r => r.SaveChangesAsync(), Times.Once);
 	}
 
@@ -137,7 +142,7 @@ public class ExcelImportServiceTests {
 		await using MemoryStream stream = CreateExcelStream();
 
 		// Act
-		ExcelImportResult result = await _service.ImportAsync(stream);
+		ExcelImportResult result = await _service.ImportAsync(stream, TestUserId);
 
 		// Assert
 		Assert.Equal(0, result.TotalRows);
@@ -156,7 +161,7 @@ public class ExcelImportServiceTests {
 		);
 
 		// Act
-		ExcelImportResult result = await _service.ImportAsync(stream);
+		ExcelImportResult result = await _service.ImportAsync(stream, TestUserId);
 
 		// Assert
 		Assert.Equal(1, result.TotalRows);
@@ -176,7 +181,7 @@ public class ExcelImportServiceTests {
 		);
 
 		// Act
-		ExcelImportResult result = await _service.ImportAsync(stream);
+		ExcelImportResult result = await _service.ImportAsync(stream, TestUserId);
 
 		// Assert
 		Assert.Equal(1, result.TotalRows);
@@ -196,7 +201,7 @@ public class ExcelImportServiceTests {
 		);
 
 		// Act
-		ExcelImportResult result = await _service.ImportAsync(stream);
+		ExcelImportResult result = await _service.ImportAsync(stream, TestUserId);
 
 		// Assert
 		Assert.Equal(1, result.TotalRows);
@@ -211,14 +216,14 @@ public class ExcelImportServiceTests {
 	[Fact]
 	public async Task ImportAsync_WithDuplicateByPostingUrl_SkipsRowAndReportsError() {
 		// Arrange
-		_repositoryMock.Setup(r => r.ExistsAsync("Acme", It.IsAny<DateTime>(), "https://acme.com/jobs/1"))
+		_repositoryMock.Setup(r => r.ExistsAsync("Acme", It.IsAny<DateTime>(), "https://acme.com/jobs/1", TestUserId))
 			.ReturnsAsync(true);
 		await using MemoryStream stream = CreateExcelStream(
 			["Acme", "Applied", "2025-01-15", "https://acme.com/jobs/1", ""]
 		);
 
 		// Act
-		ExcelImportResult result = await _service.ImportAsync(stream);
+		ExcelImportResult result = await _service.ImportAsync(stream, TestUserId);
 
 		// Assert
 		Assert.Equal(1, result.TotalRows);
@@ -233,14 +238,14 @@ public class ExcelImportServiceTests {
 	[Fact]
 	public async Task ImportAsync_WithDuplicateByAppliedDate_SkipsRowAndReportsError() {
 		// Arrange
-		_repositoryMock.Setup(r => r.ExistsAsync("Acme", It.IsAny<DateTime>(), null))
+		_repositoryMock.Setup(r => r.ExistsAsync("Acme", It.IsAny<DateTime>(), null, TestUserId))
 			.ReturnsAsync(true);
 		await using MemoryStream stream = CreateExcelStream(
 			["Acme", "Applied", "2025-01-15", "", ""]
 		);
 
 		// Act
-		ExcelImportResult result = await _service.ImportAsync(stream);
+		ExcelImportResult result = await _service.ImportAsync(stream, TestUserId);
 
 		// Assert
 		Assert.Equal(1, result.TotalRows);
