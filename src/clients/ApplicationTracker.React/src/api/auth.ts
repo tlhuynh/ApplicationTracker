@@ -33,14 +33,4 @@ export async function login(request: LoginRequest): Promise<AuthResponse> {
   return handleResponse<AuthResponse>(response);
 }
 
-/** Exchanges a refresh token for a new access + refresh token pair. */
-export async function refreshToken(token: string): Promise<AuthResponse> {
-  const response = await fetch(`${BASE_URL}/refresh`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(token),
-  });
-  return handleResponse<AuthResponse>(response);
-}
-
 export type { AuthResponse, LoginRequest, RegisterRequest };

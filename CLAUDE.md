@@ -97,7 +97,7 @@ Maui → Shared (gets Core transitively)
 - **Partial Updates**: `PATCH /api/applicationrecords/{id}/status` updates only the status field — uses `PatchStatusRequest` DTO and `UpdateStatusAsync` service method
 - **Authentication**: ASP.NET Core Identity + JWT Bearer tokens. `AuthController` provides register, login, and refresh endpoints. `TokenService` generates JWT access tokens (15 min) and cryptographic refresh tokens (7 days, stored in `RefreshTokens` table). Refresh token rotation on each use. `ApplicationDbContext` extends `IdentityDbContext<IdentityUser>`. `[Authorize]` on `ApplicationRecordsController`; `AuthController` is public. `BearerSecuritySchemeTransformer` adds JWT auth UI to Scalar
 - **Per-User Data**: All repository queries filter by `UserId`. Controller extracts user ID from JWT `sub` claim via `User.FindFirstValue(ClaimTypes.NameIdentifier)`. Service layer passes userId through to repositories. Records are stamped with `UserId` on creation and import. Users can only see/edit/delete their own records
-- **Frontend Auth**: `AuthProvider` manages in-memory access token + localStorage refresh token. `useAuth()` hook provides `login`, `register`, `logout`, `user`, `isAuthenticated`, `isLoading`. `ProtectedRoute` layout route redirects unauthenticated users to `/login`. Silent session restore on page refresh via stored refresh token. Auto-refresh at 80% of token TTL. `authFetch()` wrapper in `client.ts` attaches Bearer header to all API calls
+- **Frontend Auth**: `AuthProvider` manages in-memory access token + localStorage refresh token. `useAuth()` hook provides `login`, `register`, `logout`, `user`, `isAuthenticated`, `isLoading`. `ProtectedRoute` layout route redirects unauthenticated users to `/login`. Silent session restore on page refresh via stored refresh token. Auto-refresh at 80% of token TTL. `authFetch()` wrapper in `client.ts` attaches Bearer header and retries once on 401 (refreshes token transparently). Login/Register pages redirect authenticated users to `/` via `<Navigate>`
 
 ### MAUI App Structure
 
@@ -113,7 +113,7 @@ Located in `src/clients/ApplicationTracker.Maui/`:
 
 Located in `src/clients/ApplicationTracker.React/`:
 
-- `src/api/` - API client functions (`applicationRecords.ts`, `auth.ts`, `client.ts` shared fetch wrapper)
+- `src/api/` - API client functions (`applicationRecords.ts`, `auth.ts` login/register, `client.ts` shared fetch wrapper + token refresh)
 - `src/components/` - App components (`AppSidebar.tsx`, `AuthProvider.tsx`, `ProtectedRoute.tsx`, `ThemeProvider.tsx`, `ThemeToggle.tsx`)
 - `src/components/applications/` - Application feature components (`ApplicationTable`, `ApplicationFormDialog`, `applicationColumns`, `NotesCell`)
 - `src/components/ui/` - shadcn/ui generated components (ESLint-ignored)

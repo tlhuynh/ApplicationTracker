@@ -1,7 +1,7 @@
 ﻿import {useEffect, useRef, useState} from 'react';
 import {AuthContext} from '@/hooks/use-auth';
-import {login as apiLogin, register as apiRegister, refreshToken} from '@/api/auth';
-import {setAccessToken} from '@/api/client';
+import {login as apiLogin, register as apiRegister} from '@/api/auth';
+import {setAccessToken, refreshToken} from '@/api/client';
 
 const REFRESH_TOKEN_KEY = 'refresh_token';
 

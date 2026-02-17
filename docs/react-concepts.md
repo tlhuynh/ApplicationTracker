@@ -71,7 +71,8 @@ These topics have been covered in previous sessions. Don't re-explain from scrat
 - **Silent session restore** — on mount, `AuthProvider` checks for stored refresh token and exchanges it for a new access token
 - **Auto-refresh** — `scheduleRefresh` sets a `setTimeout` at 80% of token TTL. Self-resetting via ref (not `setInterval`) because each refresh returns a new token (rotation)
 - **`useRef` for recursive functions** — `scheduleRefreshRef` avoids React Compiler's "accessed before declared" error. The ref holds the function, and the recursive `setTimeout` reads `ref.current`
-- **`authFetch()` wrapper** — centralizes `Authorization: Bearer` header attachment. Drop-in replacement for `fetch()`
+- **`authFetch()` wrapper** — centralizes `Authorization: Bearer` header attachment. Drop-in replacement for `fetch()`. On 401, automatically attempts one token refresh and retries the original request; if refresh fails, clears auth state. Uses module-level `isRefreshing` flag to prevent infinite retry loops
 - **`ProtectedRoute` layout route** — pathless route in router config that acts as middleware. Checks auth state, shows loading during session restore, redirects to `/login` if unauthenticated
-- **`<Navigate>` component** — React Router's declarative redirect. `replace` prop prevents back-button to protected page
+- **`<Navigate>` component** — React Router's declarative redirect. `replace` prop prevents back-button to protected page. Also used on Login/Register pages to redirect already-authenticated users to `/`
 - **Provider placement** — `AuthProvider` wraps `RouterProvider` in `main.tsx` so auth state is available to all routes (including public `/login` and `/register`)
+- **Circular dependency avoidance** — `refreshToken` lives in `client.ts` (not `auth.ts`) because `authFetch` needs it for 401 retry, and `auth.ts` already imports from `client.ts`. Co-locating token infrastructure in one module avoids the cycle

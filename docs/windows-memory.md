@@ -56,7 +56,7 @@ This is a snapshot of the Claude Code memory from the Windows development machin
   - NuGet: `Microsoft.AspNetCore.Identity.EntityFrameworkCore` (Infrastructure), `Microsoft.AspNetCore.Authentication.JwtBearer` (Api), `Microsoft.Extensions.Identity.Stores` (Core)
   - DTOs: `RegisterRequest`, `LoginRequest`, `AuthResponse`
   - Frontend: `AuthProvider` (in-memory access token, localStorage refresh token, silent restore on mount, auto-refresh at 80% TTL), `useAuth()` hook, `ProtectedRoute` layout route, `LoginPage`, `RegisterPage`
-  - API layer: `client.ts` with `authFetch()` wrapper (attaches Bearer header), `auth.ts` for public auth endpoints
+  - API layer: `client.ts` with `authFetch()` wrapper (attaches Bearer header, 401 retry with token refresh), `auth.ts` for public auth endpoints (login/register only; `refreshToken` moved to `client.ts` to avoid circular dependency)
   - `[Authorize]` on `ApplicationRecordsController`; `AuthController` remains public
   - `BearerSecuritySchemeTransformer` adds JWT Bearer auth UI to Scalar (OpenAPI doc transformer)
   - Microsoft.OpenApi v3.x (shipped with .NET 10): use `IOpenApiSecurityScheme` interface, not concrete class; namespace is `Microsoft.OpenApi` not `Microsoft.OpenApi.Models`
@@ -98,7 +98,7 @@ This is a snapshot of the Claude Code memory from the Windows development machin
 - Data table: TanStack Table (`@tanstack/react-table`) with sorting, global filtering, pagination
 - Feature components in `src/components/applications/` (ApplicationTable, ApplicationFormDialog, applicationColumns, NotesCell)
 - API types: auto-generated via `openapi-typescript` (`npm run generate-types`, backend must be running on http://localhost:5021)
-- API client: `src/api/client.ts` (shared `authFetch` wrapper + `ApiError`), `src/api/applicationRecords.ts`, `src/api/auth.ts`
+- API client: `src/api/client.ts` (shared `authFetch` wrapper + `ApiError` + `refreshToken`), `src/api/applicationRecords.ts`, `src/api/auth.ts` (login/register only)
 - API proxy: Vite proxies `/api` to `http://localhost:5021`
 - App shell: header (with theme toggle, user email, logout button) + collapsible sidebar (shadcn Sidebar), nav items: Dashboard, Import
 - Theme: ThemeProvider + ThemeToggle (dark/light/system, persisted in localStorage)

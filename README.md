@@ -232,7 +232,7 @@ dotnet run --project src/backend/ApplicationTracker.Api
 - **Toast notifications** — success/error feedback via Sonner
 - **Dark/light theme** — toggle with system preference detection, persisted in localStorage
 - **Responsive sidebar** — collapsible navigation with Dashboard and Import pages
-- **Authentication** — register, login, and token refresh via ASP.NET Core Identity + JWT. React frontend with login/register pages, protected routes, in-memory access token with silent refresh, and automatic session restore on page reload
+- **Authentication** — register, login, and token refresh via ASP.NET Core Identity + JWT. React frontend with login/register pages, protected routes, in-memory access token with silent refresh, automatic session restore on page reload, 401 retry with transparent token refresh, and logged-in user redirect away from auth pages
 - **Per-user data isolation** — each user only sees their own application records. Records are stamped with the user's ID on creation/import, and all queries filter by user
 
 ## Resources
