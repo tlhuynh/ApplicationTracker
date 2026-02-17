@@ -60,6 +60,12 @@ This is a snapshot of the Claude Code memory from the Windows development machin
   - `[Authorize]` on `ApplicationRecordsController`; `AuthController` remains public
   - `BearerSecuritySchemeTransformer` adds JWT Bearer auth UI to Scalar (OpenAPI doc transformer)
   - Microsoft.OpenApi v3.x (shipped with .NET 10): use `IOpenApiSecurityScheme` interface, not concrete class; namespace is `Microsoft.OpenApi` not `Microsoft.OpenApi.Models`
+- Per-user data filtering — done:
+  - All repository queries (`GetAllAsync`, `GetByIdAsync`, `ExistsAsync`) filter by `UserId`
+  - Controller extracts user ID from JWT `sub` claim via `User.FindFirstValue(ClaimTypes.NameIdentifier)` — passed through service layer to repositories
+  - `CreateAsync` and `ImportAsync` stamp `entity.UserId` before saving
+  - Users can only see/edit/delete their own records (accessing another user's record returns 404)
+  - Controller tests use `DefaultHttpContext` with `ClaimsPrincipal` to mock authenticated user
 - Static import template at `templates/ApplicationRecords_Import_Template.xlsx`
 - Scalar API docs at `/scalar/v1` (Development environment only)
 - CORS configured in `Program.cs` for `http://localhost:5173` (Vite dev server)

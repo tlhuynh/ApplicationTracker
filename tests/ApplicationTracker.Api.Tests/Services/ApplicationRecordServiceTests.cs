@@ -10,6 +10,7 @@ namespace ApplicationTracker.Api.Tests.Services;
 /// Unit tests for <see cref="ApplicationRecordService"/>.
 /// </summary>
 public class ApplicationRecordServiceTests {
+	private const string TestUserId = "test-user-id";
 	private readonly Mock<IApplicationRecordRepository> _repositoryMock;
 	private readonly ApplicationRecordService _service;
 
@@ -25,10 +26,10 @@ public class ApplicationRecordServiceTests {
 			new() { Id = 1, CompanyName = "Acme" },
 			new() { Id = 2, CompanyName = "Globex" }
 		];
-		_repositoryMock.Setup(r => r.GetAllAsync()).ReturnsAsync(records);
+		_repositoryMock.Setup(r => r.GetAllAsync(TestUserId)).ReturnsAsync(records);
 
 		// Act
-		List<ApplicationRecord> result = await _service.GetAllAsync();
+		List<ApplicationRecord> result = await _service.GetAllAsync(TestUserId);
 
 		// Assert
 		Assert.Equal(2, result.Count);
@@ -40,10 +41,10 @@ public class ApplicationRecordServiceTests {
 	public async Task GetByIdAsync_WhenFound_ReturnsRecord() {
 		// Arrange
 		ApplicationRecord record = new() { Id = 1, CompanyName = "Acme" };
-		_repositoryMock.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(record);
+		_repositoryMock.Setup(r => r.GetByIdAsync(1, TestUserId)).ReturnsAsync(record);
 
 		// Act
-		ApplicationRecord? result = await _service.GetByIdAsync(1);
+		ApplicationRecord? result = await _service.GetByIdAsync(1, TestUserId);
 
 		// Assert
 		Assert.NotNull(result);
@@ -53,25 +54,26 @@ public class ApplicationRecordServiceTests {
 	[Fact]
 	public async Task GetByIdAsync_WhenNotFound_ReturnsNull() {
 		// Arrange
-		_repositoryMock.Setup(r => r.GetByIdAsync(99)).ReturnsAsync((ApplicationRecord?)null);
+		_repositoryMock.Setup(r => r.GetByIdAsync(99, TestUserId)).ReturnsAsync((ApplicationRecord?)null);
 
 		// Act
-		ApplicationRecord? result = await _service.GetByIdAsync(99);
+		ApplicationRecord? result = await _service.GetByIdAsync(99, TestUserId);
 
 		// Assert
 		Assert.Null(result);
 	}
 
 	[Fact]
-	public async Task CreateAsync_AddsEntityAndSavesChanges() {
+	public async Task CreateAsync_SetsUserIdAddsEntityAndSavesChanges() {
 		// Arrange
 		ApplicationRecord entity = new() { CompanyName = "Acme", Status = ApplicationStatus.Applied };
 
 		// Act
-		ApplicationRecord result = await _service.CreateAsync(entity);
+		ApplicationRecord result = await _service.CreateAsync(entity, TestUserId);
 
 		// Assert
 		Assert.Equal("Acme", result.CompanyName);
+		Assert.Equal(TestUserId, result.UserId);
 		_repositoryMock.Verify(r => r.AddAsync(entity), Times.Once);
 		_repositoryMock.Verify(r => r.SaveChangesAsync(), Times.Once);
 	}
@@ -87,10 +89,10 @@ public class ApplicationRecordServiceTests {
 			PostingUrl = "https://example.com",
 			Notes = "Updated"
 		};
-		_repositoryMock.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(existing);
+		_repositoryMock.Setup(r => r.GetByIdAsync(1, TestUserId)).ReturnsAsync(existing);
 
 		// Act
-		ApplicationRecord? result = await _service.UpdateAsync(1, updatedFields);
+		ApplicationRecord? result = await _service.UpdateAsync(1, updatedFields, TestUserId);
 
 		// Assert
 		Assert.NotNull(result);
@@ -104,10 +106,10 @@ public class ApplicationRecordServiceTests {
 	public async Task UpdateAsync_WhenNotFound_ReturnsNull() {
 		// Arrange
 		ApplicationRecord updatedFields = new() { CompanyName = "Ghost" };
-		_repositoryMock.Setup(r => r.GetByIdAsync(99)).ReturnsAsync((ApplicationRecord?)null);
+		_repositoryMock.Setup(r => r.GetByIdAsync(99, TestUserId)).ReturnsAsync((ApplicationRecord?)null);
 
 		// Act
-		ApplicationRecord? result = await _service.UpdateAsync(99, updatedFields);
+		ApplicationRecord? result = await _service.UpdateAsync(99, updatedFields, TestUserId);
 
 		// Assert
 		Assert.Null(result);
@@ -119,15 +121,12 @@ public class ApplicationRecordServiceTests {
 	public async Task UpdateStatusAsync_WhenFound_UpdatesOnlyStatus() {
 		// Arrange
 		ApplicationRecord existing = new() {
-			Id = 1,
-			CompanyName = "Acme",
-			Status = ApplicationStatus.Applied,
-			Notes = "Original notes"
+			Id = 1, CompanyName = "Acme", Status = ApplicationStatus.Applied, Notes = "Original notes"
 		};
-		_repositoryMock.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(existing);
+		_repositoryMock.Setup(r => r.GetByIdAsync(1, TestUserId)).ReturnsAsync(existing);
 
 		// Act
-		ApplicationRecord? result = await _service.UpdateStatusAsync(1, ApplicationStatus.Interviewing);
+		ApplicationRecord? result = await _service.UpdateStatusAsync(1, ApplicationStatus.Interviewing, TestUserId);
 
 		// Assert
 		Assert.NotNull(result);
@@ -141,10 +140,10 @@ public class ApplicationRecordServiceTests {
 	[Fact]
 	public async Task UpdateStatusAsync_WhenNotFound_ReturnsNull() {
 		// Arrange
-		_repositoryMock.Setup(r => r.GetByIdAsync(99)).ReturnsAsync((ApplicationRecord?)null);
+		_repositoryMock.Setup(r => r.GetByIdAsync(99, TestUserId)).ReturnsAsync((ApplicationRecord?)null);
 
 		// Act
-		ApplicationRecord? result = await _service.UpdateStatusAsync(99, ApplicationStatus.Rejected);
+		ApplicationRecord? result = await _service.UpdateStatusAsync(99, ApplicationStatus.Rejected, TestUserId);
 
 		// Assert
 		Assert.Null(result);
@@ -156,10 +155,10 @@ public class ApplicationRecordServiceTests {
 	public async Task DeleteAsync_WhenFound_DeletesAndReturnsTrue() {
 		// Arrange
 		ApplicationRecord existing = new() { Id = 1, CompanyName = "Acme" };
-		_repositoryMock.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(existing);
+		_repositoryMock.Setup(r => r.GetByIdAsync(1, TestUserId)).ReturnsAsync(existing);
 
 		// Act
-		bool result = await _service.DeleteAsync(1);
+		bool result = await _service.DeleteAsync(1, TestUserId);
 
 		// Assert
 		Assert.True(result);
@@ -170,10 +169,10 @@ public class ApplicationRecordServiceTests {
 	[Fact]
 	public async Task DeleteAsync_WhenNotFound_ReturnsFalse() {
 		// Arrange
-		_repositoryMock.Setup(r => r.GetByIdAsync(99)).ReturnsAsync((ApplicationRecord?)null);
+		_repositoryMock.Setup(r => r.GetByIdAsync(99, TestUserId)).ReturnsAsync((ApplicationRecord?)null);
 
 		// Act
-		bool result = await _service.DeleteAsync(99);
+		bool result = await _service.DeleteAsync(99, TestUserId);
 
 		// Assert
 		Assert.False(result);
