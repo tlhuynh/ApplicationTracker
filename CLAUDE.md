@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ApplicationTracker is a full-stack .NET project for tracking job applications, built as a learning playground to explore modern technologies. The core focus is ASP.NET Core Web API with web frontends (React, Angular planned), alongside a .NET MAUI Blazor Hybrid app for mobile and desktop.
 
-**Tech Stack:** .NET 10, C# 13, ASP.NET Core Web API, EF Core, SQL Server, .NET MAUI, Blazor Hybrid, MudBlazor, SQLite, Scalar, ClosedXML, React, Vite, Vitest
+**Tech Stack:** .NET 10, C# 13, ASP.NET Core Web API, EF Core, SQL Server, ASP.NET Core Identity, JWT Bearer Auth, .NET MAUI, Blazor Hybrid, MudBlazor, SQLite, Scalar, ClosedXML, React, Vite, Vitest
 
 **Target Platforms:** Web (React), Android, iOS, macOS (Catalyst), Windows
 
@@ -45,6 +45,7 @@ npm run generate-types # Generate TypeScript types from OpenAPI spec (backend mu
 - SQL Server 2022 runs via Docker (`docker-compose.yml` at project root)
 - SA password stored in `.env` (gitignored); `.env.example` checked in as template
 - Real connection string stored via `dotnet user-secrets` (not in appsettings)
+- JWT secret key stored via `dotnet user-secrets` (`Jwt:Key`); non-secret settings (Issuer, Audience, ExpiryInMinutes) in `appsettings.json`
 - `appsettings.Development.json` has a placeholder password (`<see-user-secrets>`)
 - EF Core migrations live in `ApplicationTracker.Infrastructure`, startup project is `ApplicationTracker.Api`
 
@@ -94,6 +95,9 @@ Maui → Shared (gets Core transitively)
 - **Excel Import**: ClosedXML for parsing `.xlsx` uploads; service returns domain models, controller maps to DTOs. Validation: CompanyName required, Status must match enum name (numeric values rejected), AppliedDate required (culture-invariant parsing via `CultureInfo.InvariantCulture`), PostingUrl must be valid HTTP/HTTPS if provided. Duplicate detection: CompanyName + PostingUrl (when URL provided), fallback to CompanyName + AppliedDate (database check only, not within same batch)
 - **Domain Models**: Non-entity result types live in `Core/Models/` (e.g., `ExcelImportResult`)
 - **Partial Updates**: `PATCH /api/applicationrecords/{id}/status` updates only the status field — uses `PatchStatusRequest` DTO and `UpdateStatusAsync` service method
+- **Authentication**: ASP.NET Core Identity + JWT Bearer tokens. `AuthController` provides register, login, refresh, and logout endpoints. `TokenService` generates JWT access tokens (15 min) and cryptographic refresh tokens (7 days, stored in `RefreshTokens` table). Refresh token rotation on each use. `LoginRequest.RememberMe` controls whether a refresh token is issued (false = session-only, no refresh token stored). Logout endpoint (`POST /api/auth/logout`, `[Authorize]`) revokes the refresh token server-side. `ApplicationDbContext` extends `IdentityDbContext<IdentityUser>`. `[Authorize]` on `ApplicationRecordsController`; `AuthController` register/login/refresh are public, logout requires auth. `BearerSecuritySchemeTransformer` adds JWT auth UI to Scalar
+- **Per-User Data**: All repository queries filter by `UserId`. Controller extracts user ID from JWT `sub` claim via `User.FindFirstValue(ClaimTypes.NameIdentifier)`. Service layer passes userId through to repositories. Records are stamped with `UserId` on creation and import. Users can only see/edit/delete their own records
+- **Frontend Auth**: `AuthProvider` manages in-memory access token + localStorage refresh token. `useAuth()` hook provides `login`, `register`, `logout`, `user`, `isAuthenticated`, `isLoading`. `ProtectedRoute` layout route redirects unauthenticated users to `/login`. Silent session restore on page refresh via stored refresh token. Auto-refresh at 80% of token TTL. `authFetch()` wrapper in `client.ts` attaches Bearer header and retries once on 401 (refreshes token transparently). Login/Register pages redirect authenticated users to `/` via `<Navigate>`. "Remember me" checkbox on login — unchecked = session-only (no refresh token), checked = persistent session. Logout calls backend to revoke refresh token (fire-and-forget)
 
 ### MAUI App Structure
 
@@ -109,13 +113,13 @@ Located in `src/clients/ApplicationTracker.Maui/`:
 
 Located in `src/clients/ApplicationTracker.React/`:
 
-- `src/api/` - API client functions (hand-written fetch wrappers)
-- `src/components/` - App components (`AppSidebar.tsx`, `ThemeProvider.tsx`, `ThemeToggle.tsx`)
+- `src/api/` - API client functions (`applicationRecords.ts`, `auth.ts` login/register, `client.ts` shared fetch wrapper + token refresh)
+- `src/components/` - App components (`AppSidebar.tsx`, `AuthProvider.tsx`, `ProtectedRoute.tsx`, `ThemeProvider.tsx`, `ThemeToggle.tsx`)
 - `src/components/applications/` - Application feature components (`ApplicationTable`, `ApplicationFormDialog`, `applicationColumns`, `NotesCell`)
 - `src/components/ui/` - shadcn/ui generated components (ESLint-ignored)
-- `src/hooks/` - Custom hooks (`use-mobile.ts`, `use-theme.ts`)
+- `src/hooks/` - Custom hooks (`use-auth.ts`, `use-mobile.ts`, `use-theme.ts`)
 - `src/lib/` - Utilities (`utils.ts` with `cn()` helper) and constants (`constants.ts`)
-- `src/pages/` - Route page components (`HomePage`, `ImportPage`, `NotFoundPage`)
+- `src/pages/` - Route page components (`HomePage`, `ImportPage`, `LoginPage`, `RegisterPage`, `NotFoundPage`)
 - `src/types/` - Generated TypeScript types from OpenAPI spec (`api.d.ts`)
 - `src/test/` - Test setup (`setup.ts` with JSDOM mocks)
 - `vite.config.ts` - Vite + Vitest + API proxy configuration
@@ -126,6 +130,8 @@ Located in `src/clients/ApplicationTracker.React/`:
 ### Entity Design
 
 `BaseEntity` provides common fields: `Id`, `CreatedAt`, `LastModified`, `UserId`, `ServerId`, `NeedsSync`, `IsDeleted` - designed for future server sync capability.
+
+`RefreshToken` is a standalone entity (not extending `BaseEntity`) for auth infrastructure — stores token value, user ID, expiration, and revocation status.
 
 ## Code Style
 
@@ -227,7 +233,7 @@ dotnet test tests/ApplicationTracker.Api.Tests
 #### Test Boundaries
 
 - **Service tests** mock the repository layer — verify orchestration logic and correct repository calls via `Verify()`
-- **Controller tests** mock the service layer — verify HTTP status codes and response shapes
+- **Controller tests** mock the service layer — verify HTTP status codes and response shapes. Use `DefaultHttpContext` with `ClaimsPrincipal` to mock the authenticated user
 - **Soft-delete, timestamps, validation (400s)** are infrastructure/framework concerns — need integration tests (not yet implemented)
 
 ### Frontend (React)
