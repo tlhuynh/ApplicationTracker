@@ -60,3 +60,18 @@ These topics have been covered in previous sessions. Don't re-explain from scrat
 - **`getByRole` with `name`** — matches accessible name (text content or `aria-label`). Icon-only elements need `aria-label`
 - **MSW** — mock API at the network level (installed but not heavily used yet)
 - **`vi.mocked()`** — type-safe access to mocked functions for controlling return values per test
+- **Context mocking in tests** — wrap components with `AuthContext.Provider` to inject fake auth state. More targeted than mocking the module
+- **`createMemoryRouter`** — in-memory router for tests. `initialEntries` sets the starting URL. `router.state.location.pathname` asserts navigation happened
+- **`userEvent`** — `@testing-library/user-event` simulates real user interactions (typing, clicking). `userEvent.setup()` creates an instance, then `user.type()`, `user.click()`
+
+## Authentication Pattern
+
+- **In-memory access token** — stored in a module-level variable (`client.ts`), not localStorage. XSS-safe but lost on page refresh
+- **localStorage refresh token** — longer-lived token persisted for session restore. Trade-off: accessible to XSS, but needed without httpOnly cookie support
+- **Silent session restore** — on mount, `AuthProvider` checks for stored refresh token and exchanges it for a new access token
+- **Auto-refresh** — `scheduleRefresh` sets a `setTimeout` at 80% of token TTL. Self-resetting via ref (not `setInterval`) because each refresh returns a new token (rotation)
+- **`useRef` for recursive functions** — `scheduleRefreshRef` avoids React Compiler's "accessed before declared" error. The ref holds the function, and the recursive `setTimeout` reads `ref.current`
+- **`authFetch()` wrapper** — centralizes `Authorization: Bearer` header attachment. Drop-in replacement for `fetch()`
+- **`ProtectedRoute` layout route** — pathless route in router config that acts as middleware. Checks auth state, shows loading during session restore, redirects to `/login` if unauthenticated
+- **`<Navigate>` component** — React Router's declarative redirect. `replace` prop prevents back-button to protected page
+- **Provider placement** — `AuthProvider` wraps `RouterProvider` in `main.tsx` so auth state is available to all routes (including public `/login` and `/register`)
