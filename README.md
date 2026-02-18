@@ -134,7 +134,7 @@ ApplicationTracker/
 │   │   │       │   └── ui/                  # shadcn/ui generated components
 │   │   │       ├── hooks/                   # Custom React hooks (use-auth, use-theme, use-mobile)
 │   │   │       ├── lib/                     # Utilities and constants
-│   │   │       ├── pages/                   # Route page components (Home, Import, Login, Register, NotFound)
+│   │   │       ├── pages/                   # Route page components (Home, Import, Login, Register, ConfirmEmail, ForgotPassword, ResetPassword, NotFound)
 │   │   │       ├── test/                    # Test setup
 │   │   │       └── types/                   # Generated API types
 │   │   └── ApplicationTracker.Maui/        # .NET MAUI Blazor app
@@ -232,7 +232,7 @@ dotnet run --project src/backend/ApplicationTracker.Api
 - **Toast notifications** — success/error feedback via Sonner
 - **Dark/light theme** — toggle with system preference detection, persisted in localStorage
 - **Responsive sidebar** — collapsible navigation with Dashboard and Import pages
-- **Authentication** — register, login, and token refresh via ASP.NET Core Identity + JWT. React frontend with login/register pages, protected routes, in-memory access token with silent refresh, automatic session restore on page reload, 401 retry with transparent token refresh, logged-in user redirect away from auth pages, "Remember me" option (session-only vs persistent), and server-side refresh token revocation on logout
+- **Authentication** — register, login, and token refresh via ASP.NET Core Identity + JWT. Email confirmation required before login (console-logged links in development). Password reset via email link. React frontend with login/register pages, protected routes, in-memory access token with silent refresh, automatic session restore on page reload, 401 retry with transparent token refresh, logged-in user redirect away from auth pages, "Remember me" option (session-only vs persistent), server-side refresh token revocation on logout, email confirmation page, forgot password page, and reset password page
 - **Per-user data isolation** — each user only sees their own application records. Records are stamped with the user's ID on creation/import, and all queries filter by user
 
 ## Resources

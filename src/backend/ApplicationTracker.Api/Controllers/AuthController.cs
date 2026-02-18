@@ -17,6 +17,7 @@ namespace ApplicationTracker.Api.Controllers;
 public class AuthController(
 	UserManager<IdentityUser> userManager,
 	ITokenService tokenService,
+	IEmailService emailService,
 	ApplicationDbContext dbContext,
 	IConfiguration configuration) : ControllerBase {
 	/// <summary>
@@ -32,7 +33,18 @@ public class AuthController(
 			return BadRequest(result.Errors.Select(e => e.Description));
 		}
 
-		return Ok("Registration successful.");
+		string token = await userManager.GenerateEmailConfirmationTokenAsync(user);
+		// Prevent potential issue since token can contains +, /, =
+		string encodedToken = Uri.EscapeDataString(token);
+		string frontendBaseUrl = configuration["App:FrontendBaseUrl"] ?? "http://localhost:5173";
+		string confirmationLink = $"{frontendBaseUrl}/confirm-email?userId={user.Id}&token={encodedToken}";
+
+		await emailService.SendAsync(
+			user.Email!,
+			"Confirm your email",
+			$"Please confirm your email by clicking the link:\n{confirmationLink}");
+
+		return Ok("Registration successful. Please check your email to confirm your account.");
 	}
 
 	/// <summary>
@@ -43,6 +55,10 @@ public class AuthController(
 		IdentityUser? user = await userManager.FindByEmailAsync(request.Email);
 		if (user is null || !await userManager.CheckPasswordAsync(user, request.Password)) {
 			return Unauthorized("Invalid email or password.");
+		}
+
+		if (!await userManager.IsEmailConfirmedAsync(user)) {
+			return StatusCode(403, "Email not confirmed. Please check your inbox or request a new confirmation link.");
 		}
 
 		string accessToken = tokenService.GenerateAccessToken(user);
@@ -122,4 +138,90 @@ public class AuthController(
 
 		return NoContent();
 	}
+
+	/// <summary>
+  /// Confirms a user's email address using the token sent during registration.
+  /// </summary>
+  [HttpPost("confirm-email")]
+  public async Task<IActionResult> ConfirmEmail(ConfirmEmailRequest request) {
+        IdentityUser? user = await userManager.FindByIdAsync(request.UserId);
+        if (user is null) {
+                return BadRequest("Invalid confirmation request.");
+        }
+
+        IdentityResult result = await userManager.ConfirmEmailAsync(user, request.Token);
+        if (!result.Succeeded) {
+                return BadRequest("Invalid or expired confirmation token.");
+        }
+
+        return Ok("Email confirmed successfully. You can now log in.");
+  }
+
+  /// <summary>
+  /// Resends the email confirmation link for an unconfirmed account.
+  /// </summary>
+  [HttpPost("resend-confirmation")]
+  public async Task<IActionResult> ResendConfirmation(ResendConfirmationRequest request) {
+        IdentityUser? user = await userManager.FindByEmailAsync(request.Email);
+
+        // Always return Ok to prevent email enumeration
+        if (user is null || await userManager.IsEmailConfirmedAsync(user)) {
+                return Ok("If an account with that email exists and is unconfirmed, a new confirmation link has been sent.");
+        }
+
+        string token = await userManager.GenerateEmailConfirmationTokenAsync(user);
+        string encodedToken = Uri.EscapeDataString(token);
+        string frontendBaseUrl = configuration["App:FrontendBaseUrl"] ?? "http://localhost:5173";
+        string confirmationLink = $"{frontendBaseUrl}/confirm-email?userId={user.Id}&token={encodedToken}";
+
+        await emailService.SendAsync(
+                user.Email!,
+                "Confirm your email",
+                $"Please confirm your email by clicking the link:\n{confirmationLink}");
+
+        return Ok("If an account with that email exists and is unconfirmed, a new confirmation link has been sent.");
+  }
+
+  /// <summary>
+  /// Sends a password reset link to the specified email address.
+  /// </summary>
+  [HttpPost("forgot-password")]
+  public async Task<IActionResult> ForgotPassword(ForgotPasswordRequest request) {
+        IdentityUser? user = await userManager.FindByEmailAsync(request.Email);
+
+        // Always return Ok to prevent email enumeration
+        if (user is null || !await userManager.IsEmailConfirmedAsync(user)) {
+                return Ok("If an account with that email exists, a password reset link has been sent.");
+        }
+
+        string token = await userManager.GeneratePasswordResetTokenAsync(user);
+        string encodedToken = Uri.EscapeDataString(token);
+        string frontendBaseUrl = configuration["App:FrontendBaseUrl"] ?? "http://localhost:5173";
+        string resetLink = $"{frontendBaseUrl}/reset-password?email={Uri.EscapeDataString(user.Email!)}&token={encodedToken}";
+
+        await emailService.SendAsync(
+                user.Email!,
+                "Reset your password",
+                $"Reset your password by clicking the link:\n{resetLink}");
+
+        return Ok("If an account with that email exists, a password reset link has been sent.");
+  }
+
+  /// <summary>
+  /// Resets a user's password using the token from the forgot password email.
+  /// </summary>
+  [HttpPost("reset-password")]
+  public async Task<IActionResult> ResetPassword(ResetPasswordRequest request) {
+        IdentityUser? user = await userManager.FindByEmailAsync(request.Email);
+        if (user is null) {
+                return BadRequest("Invalid or expired reset token.");
+        }
+
+        IdentityResult result = await userManager.ResetPasswordAsync(user, request.Token, request.NewPassword);
+        if (!result.Succeeded) {
+                return BadRequest(result.Errors.Select(e => e.Description));
+        }
+
+        return Ok("Password has been reset successfully. You can now log in.");
+  }
 }

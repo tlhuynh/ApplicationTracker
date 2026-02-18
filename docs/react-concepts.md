@@ -22,6 +22,8 @@ These topics have been covered in previous sessions. Don't re-explain from scrat
 - **Custom hooks** — extract reusable logic (e.g., `useTheme`). Must start with `use`
 - **Lazy initializer** — `useState(() => localStorage.getItem(...))` runs only once, not every render
 - **Async in useEffect** — can't make effect async directly. Use `.then()` chains or call async function inside. React Compiler's `set-state-in-effect` rule: don't call setState synchronously in effect body
+- **`useRef` as execution guard** — `useRef` persists across React StrictMode's unmount/remount cycle. For one-time API calls in `useEffect` (e.g., consuming a confirmation token), set `hasCalledRef.current = true` before the call to prevent StrictMode's second mount from re-executing it
+- **`useSearchParams`** — React Router hook for reading URL query parameters. `.get('key')` auto-decodes URL-encoded values. Used for token-based flows (email confirmation, password reset) where params come from backend-generated links
 
 ## TanStack Table
 
@@ -80,3 +82,6 @@ These topics have been covered in previous sessions. Don't re-explain from scrat
 - **Server-side logout** — `handleLogout` reads the refresh token from localStorage before clearing it, sends it to `POST /api/auth/logout` (fire-and-forget via `.catch(() => {})`), then clears local state. The backend call is best-effort — the user is logged out locally regardless
 - **JSDOM missing APIs** — `window.matchMedia` (for shadcn sidebar) and `global.ResizeObserver` (for Radix UI Checkbox) must be mocked in `src/test/setup.ts`
 - **Rules of Hooks** — never place an early `return` before `useState`/`useEffect` calls. Conditional returns (like `<Navigate>`) must go after all hooks to satisfy React's call-order requirement
+- **Email confirmation flow** — Register → show "check email" card (not navigate). ConfirmEmailPage reads `userId` + `token` from URL params, calls API on mount. Uses `useRef` guard for StrictMode. Login returns 403 if unconfirmed → show "Resend confirmation email" button
+- **Password reset flow** — "Forgot password?" link on LoginPage → ForgotPasswordPage (email form) → ResetPasswordPage reads `email` + `token` from URL params → new password form. All endpoints return generic messages to prevent email enumeration
+- **`isMissingParams` pattern** — derive a boolean from render-time values (search params) and use it as both a conditional return and an `useEffect` guard. Avoids calling `setState` synchronously in effects (React Compiler `set-state-in-effect` rule)
