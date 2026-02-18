@@ -1,5 +1,7 @@
-﻿/** Shared API client — centralizes auth headers and error handling. */
+﻿// Set up to switch between env
+export const API_BASE_URL = import.meta.env.VITE_API_URL ?? '';
 
+/** Shared API client — centralizes auth headers and error handling. */
 import type { components } from '@/types/api';
 
 type AuthResponse = components['schemas']['AuthResponse'];
@@ -51,7 +53,7 @@ export function getAccessToken(): string | null {
 
 /** Exchanges a refresh token for a new access + refresh token pair. */
 export async function refreshToken(token: string): Promise<AuthResponse> {
-  const response = await fetch('/api/auth/refresh', {
+  const response = await fetch(`${API_BASE_URL}/api/auth/refresh`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(token),
@@ -76,7 +78,7 @@ export async function authFetch(url: string, options: RequestInit = {}): Promise
     headers.set('Authorization', `Bearer ${accessToken}`);
   }
 
-  const response = await fetch(url, { ...options, headers });
+  const response = await fetch(`${API_BASE_URL}/api/auth/refresh`, { ...options, headers });
 
   // Retry logic to try refreshing the token, log out user if this retry failed.
   if (response.status === 401 && !isRefreshing) {
@@ -94,7 +96,7 @@ export async function authFetch(url: string, options: RequestInit = {}): Promise
         // Retry the original request with the new token
         const retryHeaders = new Headers(options.headers);
         retryHeaders.set('Authorization', `Bearer ${newAccessToken}`);
-        return fetch(url, { ...options, headers: retryHeaders });
+        return fetch(`${API_BASE_URL}${url}`, { ...options, headers: retryHeaders });
       } catch {
         // Refresh failed — clear auth state so ProtectedRoute redirects to login
         setAccessToken(null);

@@ -15,9 +15,10 @@ builder.Services.AddControllers();
 builder.Services.AddOpenApi(options => {
 	options.AddDocumentTransformer<BearerSecuritySchemeTransformer>();
 });
+string[] allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>() ?? [];
 builder.Services.AddCors(options => {
 	options.AddDefaultPolicy(policy => {
-		policy.WithOrigins("http://localhost:5173", "https://localhost:5173")
+		policy.WithOrigins(allowedOrigins)
 			.AllowAnyHeader()
 			.AllowAnyMethod();
 	});
