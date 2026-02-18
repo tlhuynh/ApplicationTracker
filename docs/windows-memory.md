@@ -48,13 +48,13 @@ This is a snapshot of the Claude Code memory from the Windows development machin
 - PATCH status endpoint: `PATCH /api/applicationrecords/{id}/status` — `PatchStatusRequest` DTO, `UpdateStatusAsync` service method, frontend `patchStatus()` API function
 - Authentication (Part 1 backend + Part 2 frontend + Part 3 `[Authorize]` — all done):
   - ASP.NET Core Identity + JWT Bearer tokens
-  - `AuthController`: register (`POST /api/auth/register`), login (`POST /api/auth/login`), refresh (`POST /api/auth/refresh`)
+  - `AuthController`: register, login, refresh, logout, confirm-email, resend-confirmation, forgot-password, reset-password
   - `TokenService` / `ITokenService`: generates JWT access tokens (HS256, 15 min expiry) and cryptographic refresh tokens (7 days, stored in `RefreshTokens` table)
   - `ApplicationDbContext` extends `IdentityDbContext<IdentityUser>` (changed from `DbContext`)
   - `RefreshToken` entity (standalone, not extending `BaseEntity`) — token rotation on each refresh
   - JWT key stored in user-secrets (`Jwt:Key`); Issuer/Audience/ExpiryInMinutes in `appsettings.json`
   - NuGet: `Microsoft.AspNetCore.Identity.EntityFrameworkCore` (Infrastructure), `Microsoft.AspNetCore.Authentication.JwtBearer` (Api), `Microsoft.Extensions.Identity.Stores` (Core)
-  - DTOs: `RegisterRequest`, `LoginRequest`, `AuthResponse`
+  - DTOs: `RegisterRequest`, `LoginRequest`, `AuthResponse`, `ConfirmEmailRequest`, `ResendConfirmationRequest`, `ForgotPasswordRequest`, `ResetPasswordRequest`
   - Frontend: `AuthProvider` (in-memory access token, localStorage refresh token, silent restore on mount, auto-refresh at 80% TTL), `useAuth()` hook, `ProtectedRoute` layout route, `LoginPage` (with "Remember me" checkbox), `RegisterPage`
   - Logout: frontend calls `POST /api/auth/logout` to revoke refresh token server-side (fire-and-forget), then clears local state
   - Remember me: `LoginRequest.RememberMe` controls whether refresh token is issued. Unchecked = session-only (no refresh token), checked = persistent session with refresh token in localStorage
@@ -62,6 +62,17 @@ This is a snapshot of the Claude Code memory from the Windows development machin
   - `[Authorize]` on `ApplicationRecordsController`; `AuthController` register/login/refresh are public, logout requires auth
   - `BearerSecuritySchemeTransformer` adds JWT Bearer auth UI to Scalar (OpenAPI doc transformer)
   - Microsoft.OpenApi v3.x (shipped with .NET 10): use `IOpenApiSecurityScheme` interface, not concrete class; namespace is `Microsoft.OpenApi` not `Microsoft.OpenApi.Models`
+- Email confirmation + password reset — done:
+  - `IEmailService` interface (Core) + `ConsoleEmailService` (Api) — logs email links to console for development
+  - Registration generates confirmation token, sends confirmation link via email service
+  - Login returns 403 if email not confirmed; frontend shows "Resend confirmation email" button
+  - `confirm-email`, `resend-confirmation`, `forgot-password`, `reset-password` endpoints on AuthController
+  - Frontend: `ConfirmEmailPage`, `ForgotPasswordPage`, `ResetPasswordPage` (public routes)
+  - `RegisterPage` shows "Check your email" success card instead of navigating to login
+  - `LoginPage` handles 403 with resend button + "Forgot password?" link
+  - `FrontendBaseUrl` in `appsettings.json` for building email links
+  - Identity tokens URL-encoded with `Uri.EscapeDataString()` (contain `+`, `/`, `=`)
+  - `useRef` guard in `ConfirmEmailPage` to prevent StrictMode double API call
 - Per-user data filtering — done:
   - All repository queries (`GetAllAsync`, `GetByIdAsync`, `ExistsAsync`) filter by `UserId`
   - Controller extracts user ID from JWT `sub` claim via `User.FindFirstValue(ClaimTypes.NameIdentifier)` — passed through service layer to repositories
@@ -100,13 +111,13 @@ This is a snapshot of the Claude Code memory from the Windows development machin
 - Data table: TanStack Table (`@tanstack/react-table`) with sorting, global filtering, pagination
 - Feature components in `src/components/applications/` (ApplicationTable, ApplicationFormDialog, applicationColumns, NotesCell)
 - API types: auto-generated via `openapi-typescript` (`npm run generate-types`, backend must be running on http://localhost:5021)
-- API client: `src/api/client.ts` (shared `authFetch` wrapper + `ApiError` + `refreshToken`), `src/api/applicationRecords.ts`, `src/api/auth.ts` (login/register only)
+- API client: `src/api/client.ts` (shared `authFetch` wrapper + `ApiError` + `refreshToken`), `src/api/applicationRecords.ts`, `src/api/auth.ts` (login/register/logout + email confirmation/reset functions)
 - API proxy: Vite proxies `/api` to `http://localhost:5021`
 - App shell: header (with theme toggle, user email, logout button) + collapsible sidebar (shadcn Sidebar), nav items: Dashboard, Import
 - Theme: ThemeProvider + ThemeToggle (dark/light/system, persisted in localStorage)
 - Auth: AuthProvider (wraps router in main.tsx), ProtectedRoute (layout route guarding app shell), LoginPage, RegisterPage
 - Test setup: `src/test/setup.ts` includes `window.matchMedia` mock for JSDOM
-- Routes: `/login` (LoginPage), `/register` (RegisterPage), `/` (HomePage, protected), `/import` (ImportPage, protected), `*` (NotFoundPage)
+- Routes: `/login` (LoginPage), `/register` (RegisterPage), `/confirm-email` (ConfirmEmailPage), `/forgot-password` (ForgotPasswordPage), `/reset-password` (ResetPasswordPage), `/` (HomePage, protected), `/import` (ImportPage, protected), `*` (NotFoundPage)
 
 ## Troubleshooting Notes (React)
 - TypeScript 5.9 `erasableSyntaxOnly` — cannot use `public` in constructor parameters (use explicit property + assignment)
@@ -118,6 +129,7 @@ This is a snapshot of the Claude Code memory from the Windows development machin
 - Icon-only interactive elements need `aria-label` for accessibility and testability
 - React Compiler `refs`: cannot read or write `ref.current` during render. Move ref assignments into `useEffect` or event handlers. For self-referencing functions (recursive setTimeout), use `useRef` to hold the function and assign inside `useEffect`
 - shadcn `CardTitle` renders as `div` (not `h2`) — use `getByText` with `data-slot` selector in tests, not `getByRole('heading')`
+- React StrictMode double-invokes `useEffect` in development — for one-time API calls (e.g., email confirmation), use `useRef` as a guard (`if (hasCalledRef.current) return; hasCalledRef.current = true;`) to prevent duplicate calls that consume tokens
 
 ## User Context
 - New to React — see `docs/react-concepts.md` for topics already covered (don't re-explain these)
