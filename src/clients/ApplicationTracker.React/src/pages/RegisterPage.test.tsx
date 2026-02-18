@@ -85,10 +85,10 @@ describe('RegisterPage', () => {
     expect(screen.getByText('Passwords do not match')).toBeInTheDocument();
   });
 
-  it('calls register and redirects to login on success', async () => {
+  it('calls register and shows confirmation message on success', async () => {
     const user = userEvent.setup();
     const mockRegister = vi.fn().mockResolvedValue(undefined);
-    const { router } = renderRegisterPage({ register: mockRegister });
+    renderRegisterPage({ register: mockRegister });
 
     await user.type(screen.getByLabelText('Email'), 'test@example.com');
     await user.type(screen.getByLabelText('Password'), 'password123');
@@ -99,9 +99,9 @@ describe('RegisterPage', () => {
       expect(mockRegister).toHaveBeenCalledWith('test@example.com', 'password123');
     });
 
-    await waitFor(() => {
-      expect(router.state.location.pathname).toBe('/login');
-    });
+    expect(screen.getByText('Check your email')).toBeInTheDocument();
+    expect(screen.getByText('test@example.com')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Go to Login' })).toHaveAttribute('href', '/login');
   });
 
   it('displays server error when registration fails', async () => {

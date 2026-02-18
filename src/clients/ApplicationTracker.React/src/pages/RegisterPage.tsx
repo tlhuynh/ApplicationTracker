@@ -1,10 +1,10 @@
-﻿import {useState} from 'react';
-import { Link, Navigate, useNavigate } from 'react-router';
-import {useAuth} from '@/hooks/use-auth';
-import {Button} from '@/components/ui/button';
-import {Card, CardContent, CardDescription, CardHeader, CardTitle} from '@/components/ui/card';
-import {Input} from '@/components/ui/input';
-import {Label} from '@/components/ui/label';
+﻿import { useState } from 'react';
+import { Link, Navigate } from 'react-router';
+import { useAuth } from '@/hooks/use-auth';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 interface RegisterErrors {
   email?: string;
@@ -13,7 +13,6 @@ interface RegisterErrors {
 }
 
 export function RegisterPage() {
-  const navigate = useNavigate();
   const { register, isAuthenticated } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -21,8 +20,10 @@ export function RegisterPage() {
   const [errors, setErrors] = useState<RegisterErrors>({});
   const [serverError, setServerError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isRegistered, setIsRegistered] = useState(false);
 
   if (isAuthenticated) return <Navigate to="/" replace />;
+
   const validate = (): boolean => {
     const newErrors: RegisterErrors = {};
     if (!email.trim()) {
@@ -45,7 +46,7 @@ export function RegisterPage() {
   const clearError = (field: keyof RegisterErrors) => {
     setErrors((prev) => {
       if (!prev[field]) return prev;
-      const rest = {...prev};
+      const rest = { ...prev };
       delete rest[field];
       return rest;
     });
@@ -59,13 +60,36 @@ export function RegisterPage() {
     setIsSubmitting(true);
     try {
       await register(email, password);
-      navigate('/login', {replace: true});
+      setIsRegistered(true);
     } catch (err: unknown) {
       setServerError(err instanceof Error ? err.message : 'Registration failed');
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  if (isRegistered) {
+    return (
+      <div className="flex min-h-screen items-center justify-center p-4">
+        <Card className="w-full max-w-md">
+          <CardHeader>
+            <CardTitle className="text-2xl">Check your email</CardTitle>
+            <CardDescription>
+              We&apos;ve sent a confirmation link to <strong>{email}</strong>. Please check your
+              inbox and click the link to activate your account.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Link to="/login">
+              <Button variant="outline" className="w-full">
+                Go to Login
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen items-center justify-center p-4">
@@ -76,9 +100,7 @@ export function RegisterPage() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="grid gap-4">
-            {serverError && (
-              <p className="text-sm text-destructive">{serverError}</p>
-            )}
+            {serverError && <p className="text-sm text-destructive">{serverError}</p>}
 
             <div className="grid gap-2">
               <Label htmlFor="email">Email</Label>

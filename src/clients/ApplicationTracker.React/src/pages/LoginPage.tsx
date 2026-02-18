@@ -1,11 +1,14 @@
 ﻿import { useState } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router';
 import { useAuth } from '@/hooks/use-auth';
+import { ApiError } from '@/api/client';
+import { resendConfirmation } from '@/api/auth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
+
 interface LoginErrors {
   email?: string;
   password?: string;
@@ -20,8 +23,9 @@ export function LoginPage() {
   const [serverError, setServerError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
+  const [emailNotConfirmed, setEmailNotConfirmed] = useState(false);
+  const [resendMessage, setResendMessage] = useState<string | null>(null);
 
-  // If user is already authenticated, navigate them to home page instead of showing them the form.
   if (isAuthenticated) return <Navigate to="/" replace />;
 
   const validate = (): boolean => {
@@ -39,6 +43,8 @@ export function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setServerError(null);
+    setEmailNotConfirmed(false);
+    setResendMessage(null);
     if (!validate()) return;
 
     setIsSubmitting(true);
@@ -46,9 +52,24 @@ export function LoginPage() {
       await login(email, password, rememberMe);
       navigate('/', { replace: true });
     } catch (err: unknown) {
-      setServerError(err instanceof Error ? err.message : 'Login failed');
+      if (err instanceof ApiError && err.status === 403) {
+        setEmailNotConfirmed(true);
+        setServerError('Your email address has not been confirmed.');
+      } else {
+        setServerError(err instanceof Error ? err.message : 'Login failed');
+      }
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleResend = async () => {
+    setResendMessage(null);
+    try {
+      const message = await resendConfirmation({ email });
+      setResendMessage(message);
+    } catch (err: unknown) {
+      setResendMessage(err instanceof Error ? err.message : 'Failed to resend confirmation email');
     }
   };
 
@@ -61,8 +82,17 @@ export function LoginPage() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="grid gap-4">
-            {serverError && (
-              <p className="text-sm text-destructive">{serverError}</p>
+            {serverError && <p className="text-sm text-destructive">{serverError}</p>}
+
+            {emailNotConfirmed && (
+              <div className="grid gap-2">
+                <Button type="button" variant="outline" onClick={handleResend}>
+                  Resend confirmation email
+                </Button>
+                {resendMessage && (
+                  <p className="text-sm text-muted-foreground">{resendMessage}</p>
+                )}
+              </div>
             )}
 
             <div className="grid gap-2">
@@ -95,15 +125,23 @@ export function LoginPage() {
               {errors.password && <p className="text-sm text-destructive">{errors.password}</p>}
             </div>
 
-            <div className="flex items-center gap-2">
-              <Checkbox
-                id="rememberMe"
-                checked={rememberMe}
-                onCheckedChange={(checked) => setRememberMe(checked === true)}
-              />
-              <Label htmlFor="rememberMe" className="text-sm font-normal">
-                Remember me
-              </Label>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  id="rememberMe"
+                  checked={rememberMe}
+                  onCheckedChange={(checked) => setRememberMe(checked === true)}
+                />
+                <Label htmlFor="rememberMe" className="text-sm font-normal">
+                  Remember me
+                </Label>
+              </div>
+              <Link
+                to="/forgot-password"
+                className="text-sm text-primary underline-offset-4 hover:underline"
+              >
+                Forgot password?
+              </Link>
             </div>
 
             <Button type="submit" className="w-full" disabled={isSubmitting}>
