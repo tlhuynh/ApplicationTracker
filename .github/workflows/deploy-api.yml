@@ -1,57 +1,57 @@
 ﻿name: Deploy API to Azure App Service
 
-  on:
-    push:
-      branches: [ main ]
-      paths:
-        - 'src/backend/**'
-        - 'tests/**'
-        - '.github/workflows/deploy-api.yml'
-    workflow_dispatch:
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'src/backend/**'
+      - 'tests/**'
+      - '.github/workflows/deploy-api.yml'
+  workflow_dispatch:
 
-  jobs:
-    test:
-      name: Run Tests
-      runs-on: ubuntu-latest
+jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
 
-      steps:
-        - name: Checkout code
-          uses: actions/checkout@v4
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-        - name: Set up .NET
-          uses: actions/setup-dotnet@v4
-          with:
-            dotnet-version: '10.x'
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.x'
 
-        - name: Restore dependencies
-          run: dotnet restore tests/ApplicationTracker.Api.Tests
+      - name: Restore dependencies
+        run: dotnet restore tests/ApplicationTracker.Api.Tests
 
-        - name: Run tests
-          run: dotnet test tests/ApplicationTracker.Api.Tests -c Release --no-restore --verbosity normal
+      - name: Run tests
+        run: dotnet test tests/ApplicationTracker.Api.Tests -c Release --no-restore --verbosity normal
 
-    deploy:
-      name: Deploy to Azure
-      runs-on: ubuntu-latest
-      needs: test
+  deploy:
+    name: Deploy to Azure
+    runs-on: ubuntu-latest
+    needs: test
 
-      steps:
-        - name: Checkout code
-          uses: actions/checkout@v4
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-        - name: Set up .NET
-          uses: actions/setup-dotnet@v4
-          with:
-            dotnet-version: '10.x'
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.x'
 
-        - name: Restore dependencies
-          run: dotnet restore src/backend/ApplicationTracker.Api
+      - name: Restore dependencies
+        run: dotnet restore src/backend/ApplicationTracker.Api
 
-        - name: Publish
-          run: dotnet publish src/backend/ApplicationTracker.Api -c Release -o ./publish --no-restore
+      - name: Publish
+        run: dotnet publish src/backend/ApplicationTracker.Api -c Release -o ./publish --no-restore
 
-        - name: Deploy to Azure App Service
-          uses: azure/webapps-deploy@v3
-          with:
-            app-name: ${{ secrets.AZURE_APP_SERVICE_NAME }}
-            publish-profile: ${{ secrets.AZURE_APP_SERVICE_PUBLISH_PROFILE }}
-            package: ./publish
+      - name: Deploy to Azure App Service
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ secrets.AZURE_APP_SERVICE_NAME }}
+          publish-profile: ${{ secrets.AZURE_APP_SERVICE_PUBLISH_PROFILE }}
+          package: ./publish
