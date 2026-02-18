@@ -1,5 +1,5 @@
 ﻿import type { components } from '@/types/api';
-import { ApiError, authFetch, handleResponse } from '@/api/client';
+import { API_BASE_URL, ApiError, authFetch, handleResponse } from '@/api/client';
 
 // Alias for easier access to generated types
 type AuthResponse = components['schemas']['AuthResponse'];
@@ -10,7 +10,7 @@ type ResendConfirmationRequest = components['schemas']['ResendConfirmationReques
 type ForgotPasswordRequest = components['schemas']['ForgotPasswordRequest'];
 type ResetPasswordRequest = components['schemas']['ResetPasswordRequest'];
 
-const BASE_URL = '/api/auth';
+const BASE_URL = `${API_BASE_URL}/api/auth`;
 
 /** Registers a new user account. */
 export async function register(request: RegisterRequest): Promise<string> {
