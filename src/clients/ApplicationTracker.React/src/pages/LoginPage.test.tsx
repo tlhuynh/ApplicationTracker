@@ -2,6 +2,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { createMemoryRouter, RouterProvider } from 'react-router';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { ApiError } from '@/api/client';
 import { AuthContext, type AuthContextState } from '@/hooks/use-auth';
 import { LoginPage } from './LoginPage';
 
@@ -80,7 +81,7 @@ describe('LoginPage', () => {
 
   it('displays server error when login fails', async () => {
     const user = userEvent.setup();
-    const mockLogin = vi.fn().mockRejectedValue(new Error('Invalid email or password.'));
+    const mockLogin = vi.fn().mockRejectedValue(new ApiError(401, 'Invalid email or password.'));
     renderLoginPage({ login: mockLogin });
 
     await user.type(screen.getByLabelText('Email'), 'test@example.com');
