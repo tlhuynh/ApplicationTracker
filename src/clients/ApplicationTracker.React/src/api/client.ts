@@ -78,7 +78,7 @@ export async function authFetch(url: string, options: RequestInit = {}): Promise
     headers.set('Authorization', `Bearer ${accessToken}`);
   }
 
-  const response = await fetch(`${API_BASE_URL}/api/auth/refresh`, { ...options, headers });
+  const response = await fetch(`${API_BASE_URL}${url}`, { ...options, headers });
 
   // Retry logic to try refreshing the token, log out user if this retry failed.
   if (response.status === 401 && !isRefreshing) {
