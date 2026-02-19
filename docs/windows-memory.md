@@ -106,7 +106,7 @@ This is a snapshot of the Claude Code memory from the Windows development machin
   - Azure App Settings: `Jwt__Key`, `ASPNETCORE_ENVIRONMENT=Production`, `App__FrontendBaseUrl`, `Resend__ApiKey`; connection string in Connection Strings tab (type SQLAzure)
   - Azure resources: Resource Group `ApplicationTrackerRG` (Central US), SQL Server `applicationtracker-sql-server` + DB `ApplicationTrackerDB` (Basic DTU 5 DTUs/2GB), App Service `applicationtracker-api` (B1 Linux, Always On), Static Web App `applicationtracker-react` (free); ~$18/month total
   - App Service URL: `https://applicationtracker-api-g5f4efdwenfpf5a0.centralus-01.azurewebsites.net`
-  - Static Web App URL: `https://mango-rock-06c415c0f.6.azurestaticapps.net`
+  - Static Web App URL: `https://mango-rock-06c415c0f.6.azurestaticapps.net` (custom domain: `https://jobapptracker.tlhuynh.dev`)
   - `ResendEmailService` in production (`Api/Services/`), `ConsoleEmailService` in development; sends from `noreply@tlhuynh.dev`; domain verified in Resend + Cloudflare DNS configured (SPF, DKIM, DMARC)
   - Bug fix: `authFetch` in `client.ts` was hardcoded to fetch `/api/auth/refresh` instead of the passed `url` — every protected API call was hitting the wrong endpoint
 - Pending UX improvements: loading overlay to prevent background interaction during slow API calls; toast notification persistence + error message sanitization (avoid exposing technical details to users)
