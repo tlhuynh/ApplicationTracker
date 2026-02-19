@@ -5,7 +5,9 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-
+import { ApiError } from '@/api/client';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { AlertCircle } from 'lucide-react';
 interface RegisterErrors {
   email?: string;
   password?: string;
@@ -62,7 +64,15 @@ export function RegisterPage() {
       await register(email, password);
       setIsRegistered(true);
     } catch (err: unknown) {
-      setServerError(err instanceof Error ? err.message : 'Registration failed');
+      if (err instanceof ApiError) {
+        if (err.status >= 500 || err.status === 405) {
+          setServerError('Something went wrong on our end. Please try again later.');
+        } else {
+          setServerError(err.message || 'Registration failed. Please try again.');
+        }
+      } else {
+        setServerError('Unable to reach the server. Please check your connection.');
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -100,7 +110,12 @@ export function RegisterPage() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="grid gap-4">
-            {serverError && <p className="text-sm text-destructive">{serverError}</p>}
+            {serverError && (
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>{serverError}</AlertDescription>
+              </Alert>
+            )}
 
             <div className="grid gap-2">
               <Label htmlFor="email">Email</Label>
