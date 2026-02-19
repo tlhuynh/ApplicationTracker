@@ -2,6 +2,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { createMemoryRouter, RouterProvider } from 'react-router';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { ApiError } from '@/api/client';
 import { AuthContext, type AuthContextState } from '@/hooks/use-auth';
 import { RegisterPage } from './RegisterPage';
 
@@ -106,7 +107,7 @@ describe('RegisterPage', () => {
 
   it('displays server error when registration fails', async () => {
     const user = userEvent.setup();
-    const mockRegister = vi.fn().mockRejectedValue(new Error('Email already taken'));
+    const mockRegister = vi.fn().mockRejectedValue(new ApiError(400, 'Email already taken'));
     renderRegisterPage({ register: mockRegister });
 
     await user.type(screen.getByLabelText('Email'), 'test@example.com');
