@@ -103,11 +103,13 @@ This is a snapshot of the Claude Code memory from the Windows development machin
   - `public/staticwebapp.config.json` — SPA routing fallback to `index.html`
   - `.env.production` / `.env.development` — gitignored by default; added exceptions in `.gitignore`
   - `appsettings.Production.json` — non-secret production config (CORS origins, FrontendBaseUrl)
-  - Azure App Settings: `Jwt__Key`, `ASPNETCORE_ENVIRONMENT=Production`, `App__FrontendBaseUrl`; connection string in Connection Strings tab (type SQLAzure)
-  - Azure resources: Resource Group `ApplicationTrackerRG` (Central US), SQL Server `applicationtracker-sql-server` + DB `ApplicationTrackerDB` (free offer), App Service `applicationtracker-api` (F1 Linux), Static Web App `applicationtracker-react` (free)
+  - Azure App Settings: `Jwt__Key`, `ASPNETCORE_ENVIRONMENT=Production`, `App__FrontendBaseUrl`, `Resend__ApiKey`; connection string in Connection Strings tab (type SQLAzure)
+  - Azure resources: Resource Group `ApplicationTrackerRG` (Central US), SQL Server `applicationtracker-sql-server` + DB `ApplicationTrackerDB` (Basic DTU 5 DTUs/2GB), App Service `applicationtracker-api` (B1 Linux, Always On), Static Web App `applicationtracker-react` (free); ~$18/month total
   - App Service URL: `https://applicationtracker-api-g5f4efdwenfpf5a0.centralus-01.azurewebsites.net`
   - Static Web App URL: `https://mango-rock-06c415c0f.6.azurestaticapps.net`
-  - F1 free tier has 60 CPU min/day quota — upgrade to B1 (~$13/month) for production use
+  - `ResendEmailService` in production (`Api/Services/`), `ConsoleEmailService` in development; sends from `noreply@tlhuynh.dev`; domain verified in Resend + Cloudflare DNS configured (SPF, DKIM, DMARC)
+  - Bug fix: `authFetch` in `client.ts` was hardcoded to fetch `/api/auth/refresh` instead of the passed `url` — every protected API call was hitting the wrong endpoint
+- Pending UX improvements: loading overlay to prevent background interaction during slow API calls; toast notification persistence + error message sanitization (avoid exposing technical details to users)
 
 ## React Client Setup
 - Location: `src/clients/ApplicationTracker.React/`
@@ -153,7 +155,7 @@ This is a snapshot of the Claude Code memory from the Windows development machin
 - Familiar with .NET/Blazor — React concepts explained via Blazor comparisons
 - Prefers to review and apply changes themselves — present changes with explanations
 - Conversation style: Q&A-driven. Explain *why* code is written a certain way, not just *what* to write. User asks follow-up questions before applying changes.
-- Current branch: working on error handling improvements (Login/Register Alert component)
+- Current branch: `Setup-cicd-pipeline` — production setup (email service, Azure upgrades, bug fixes)
 
 ## IDE Setup
 - Rider settings sync via JetBrains account (plugins, keymaps, etc.)
