@@ -81,7 +81,7 @@ This is a snapshot of the Claude Code memory from the Windows development machin
   - Controller tests use `DefaultHttpContext` with `ClaimsPrincipal` to mock authenticated user
 - Static import template at `templates/ApplicationRecords_Import_Template.xlsx`
 - Scalar API docs at `/scalar/v1` (Development environment only)
-- CORS configured in `Program.cs` for `http://localhost:5173` (Vite dev server)
+- CORS reads from `AllowedOrigins` config array in `appsettings.json` (dev) / `appsettings.Production.json` (prod) — no longer hardcoded in `Program.cs`
 - React client — all features below are done:
   - Boilerplate cleanup, React Router, API proxy, app shell
   - Applications data table with sorting, global filtering, pagination (TanStack Table + shadcn Table)
@@ -94,6 +94,20 @@ This is a snapshot of the Claude Code memory from the Windows development machin
   - Dark/light theme toggle (`ThemeProvider` + `ThemeToggle`)
   - Sidebar: Dashboard + Import nav items, collapsed by default
 - Tests: ApplicationTable (9 tests), HomePage (3 tests), LoginPage (4 tests), RegisterPage (6 tests), ProtectedRoute (3 tests), App (1 test), NotFoundPage (1 test) — 27 total
+- Auth error handling: shadcn `Alert` (destructive variant) replaces plain `<p>` for server errors on Login/Register. Status-code-based messages: 5xx/405 → generic server error, 4xx → API message passthrough, no `ApiError` → connection error
+- CI/CD + Azure deployment — done:
+  - GitHub Actions: `.github/workflows/deploy-api.yml` (test → deploy to App Service), `.github/workflows/azure-static-web-apps-mango-rock-06c415c0f.yml` (test → deploy to Static Web Apps)
+  - API workflow: restores/tests `ApplicationTracker.Api.Tests`, publishes API, deploys via publish profile (`AZURE_APP_SERVICE_NAME`, `AZURE_APP_SERVICE_PUBLISH_PROFILE` secrets)
+  - Frontend workflow: runs `npm ci` + `npm test`, deploys via Static Web Apps action (`AZURE_STATIC_WEB_APPS_API_TOKEN_MANGO_ROCK_06C415C0F`, `API_URL` secrets)
+  - `VITE_API_URL` injected at build time from `API_URL` secret; `API_BASE_URL` exported from `client.ts`; prefixed in `authFetch` + `refreshToken` + `auth.ts BASE_URL`
+  - `public/staticwebapp.config.json` — SPA routing fallback to `index.html`
+  - `.env.production` / `.env.development` — gitignored by default; added exceptions in `.gitignore`
+  - `appsettings.Production.json` — non-secret production config (CORS origins, FrontendBaseUrl)
+  - Azure App Settings: `Jwt__Key`, `ASPNETCORE_ENVIRONMENT=Production`, `App__FrontendBaseUrl`; connection string in Connection Strings tab (type SQLAzure)
+  - Azure resources: Resource Group `ApplicationTrackerRG` (Central US), SQL Server `applicationtracker-sql-server` + DB `ApplicationTrackerDB` (free offer), App Service `applicationtracker-api` (F1 Linux), Static Web App `applicationtracker-react` (free)
+  - App Service URL: `https://applicationtracker-api-g5f4efdwenfpf5a0.centralus-01.azurewebsites.net`
+  - Static Web App URL: `https://mango-rock-06c415c0f.6.azurestaticapps.net`
+  - F1 free tier has 60 CPU min/day quota — upgrade to B1 (~$13/month) for production use
 
 ## React Client Setup
 - Location: `src/clients/ApplicationTracker.React/`
@@ -107,7 +121,7 @@ This is a snapshot of the Claude Code memory from the Windows development machin
 - Code style: function declarations for components, arrow functions for handlers, named exports
 - Tests colocated with source files (not in root `tests/`)
 - Styling: Tailwind CSS v4 + shadcn/ui (new-york style, neutral base color, lucide icons)
-- UI components installed: Button, Sidebar, Separator, Sheet, Tooltip, Table, Input, Skeleton, Dialog, Label, Select, Textarea, Sonner, AlertDialog, Card, Checkbox
+- UI components installed: Button, Sidebar, Separator, Sheet, Tooltip, Table, Input, Skeleton, Dialog, Label, Select, Textarea, Sonner, AlertDialog, Card, Checkbox, Alert
 - Data table: TanStack Table (`@tanstack/react-table`) with sorting, global filtering, pagination
 - Feature components in `src/components/applications/` (ApplicationTable, ApplicationFormDialog, applicationColumns, NotesCell)
 - API types: auto-generated via `openapi-typescript` (`npm run generate-types`, backend must be running on http://localhost:5021)
@@ -130,13 +144,16 @@ This is a snapshot of the Claude Code memory from the Windows development machin
 - React Compiler `refs`: cannot read or write `ref.current` during render. Move ref assignments into `useEffect` or event handlers. For self-referencing functions (recursive setTimeout), use `useRef` to hold the function and assign inside `useEffect`
 - shadcn `CardTitle` renders as `div` (not `h2`) — use `getByText` with `data-slot` selector in tests, not `getByRole('heading')`
 - React StrictMode double-invokes `useEffect` in development — for one-time API calls (e.g., email confirmation), use `useRef` as a guard (`if (hasCalledRef.current) return; hasCalledRef.current = true;`) to prevent duplicate calls that consume tokens
+- Vite proxy returns 500 with **empty body** when backend is not running — `response.text()` returns `''`, making `ApiError.message` an empty string (falsy). Always guard with `err.message || 'fallback'` or check `instanceof ApiError` with status codes
+- YAML formatting: `.editorconfig` `[*]` sets `indent_style = tab` — add `[*.{yml,yaml}]` override with `indent_style = space` + `indent_size = 2`. Root `.prettierrc` also needed for Prettier to format workflow files (nearest config wins)
+- GitHub Actions YAML: `name:`, `on:`, `jobs:` must be at root level (zero indentation) — common mistake is indenting all keys under `name:`
 
 ## User Context
 - New to React — see `docs/react-concepts.md` for topics already covered (don't re-explain these)
 - Familiar with .NET/Blazor — React concepts explained via Blazor comparisons
 - Prefers to review and apply changes themselves — present changes with explanations
 - Conversation style: Q&A-driven. Explain *why* code is written a certain way, not just *what* to write. User asks follow-up questions before applying changes.
-- Current branch: `Add-user-login` — frontend auth integration
+- Current branch: working on error handling improvements (Login/Register Alert component)
 
 ## IDE Setup
 - Rider settings sync via JetBrains account (plugins, keymaps, etc.)
