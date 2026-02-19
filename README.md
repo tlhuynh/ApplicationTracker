@@ -212,6 +212,21 @@ npm test
 npm run test:watch
 ```
 
+## Deployment
+
+The project is deployed to Azure via GitHub Actions on every push to `main`.
+
+| Component | Service | URL |
+|---|---|---|
+| React SPA | Azure Static Web Apps | `https://mango-rock-06c415c0f.6.azurestaticapps.net` |
+| ASP.NET Core API | Azure App Service | `https://applicationtracker-api-g5f4efdwenfpf5a0.centralus-01.azurewebsites.net` |
+| Database | Azure SQL Database | `ApplicationTrackerDB` (Central US) |
+
+### CI/CD Workflows
+
+- `.github/workflows/deploy-api.yml` — runs .NET tests, publishes, and deploys to App Service
+- `.github/workflows/azure-static-web-apps-mango-rock-06c415c0f.yml` — runs React tests, builds with production API URL, and deploys to Static Web Apps
+
 ## API Documentation
 
 When running in Development, the interactive Scalar API reference is available at `/scalar/v1`.
