@@ -1,75 +1,76 @@
 name: Azure Static Web Apps CI/CD
 
-  on:
-    push:
-      branches:
-        - main
-      paths:
-        - 'src/clients/ApplicationTracker.React/**'
-        - '.github/workflows/azure-static-web-apps-mango-rock-06c415c0f.yml'
-    pull_request:
-      types: [opened, synchronize, reopened, closed]
-      branches:
-        - main
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'src/clients/ApplicationTracker.React/**'
+      - '.github/workflows/azure-static-web-apps-mango-rock-06c415c0f.yml'
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+    branches:
+      - main
 
-  jobs:
-    test:
-      if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action != 'closed')
-      runs-on: ubuntu-latest
-      name: Run Tests
+jobs:
+  test:
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action != 'closed')
+    runs-on: ubuntu-latest
+    name: Run Tests
 
-      steps:
-        - uses: actions/checkout@v4
+    steps:
+      - uses: actions/checkout@v4
 
-        - name: Set up Node.js
-          uses: actions/setup-node@v4
-          with:
-            node-version: '22'
-            cache: 'npm'
-            cache-dependency-path: src/clients/ApplicationTracker.React/package-lock.json
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: src/clients/ApplicationTracker.React/package-lock.json
 
-        - name: Install dependencies
-          working-directory: src/clients/ApplicationTracker.React
-          run: npm ci
+      - name: Install dependencies
+        working-directory: src/clients/ApplicationTracker.React
+        run: npm ci
 
-        - name: Run tests
-          working-directory: src/clients/ApplicationTracker.React
-          run: npm test
+      - name: Run tests
+        working-directory: src/clients/ApplicationTracker.React
+        run: npm test
 
-    deploy:
-      if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action != 'closed')
-      needs: test
-      runs-on: ubuntu-latest
-      name: Deploy
+  deploy:
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action != 'closed')
+    needs: test
+    runs-on: ubuntu-latest
+    name: Deploy
 
-      steps:
-        - uses: actions/checkout@v4
-          with:
-            submodules: true
-            lfs: false
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+          lfs: false
 
-        - name: Build and Deploy
-          id: builddeploy
-          uses: Azure/static-web-apps-deploy@v1
-          with:
-            azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_MANGO_ROCK_06C415C0F }}
-            repo_token: ${{ secrets.GITHUB_TOKEN }}
-            action: 'upload'
-            app_location: './src/clients/ApplicationTracker.React'
-            api_location: ''
-            output_location: 'dist'
-          env:
-            VITE_API_URL: ${{ secrets.API_URL }} # Injected into the Vite build at build time
+      - name: Build and Deploy
+        id: builddeploy
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_MANGO_ROCK_06C415C0F }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          action: 'upload'
+          app_location: './src/clients/ApplicationTracker.React'
+          api_location: ''
+          output_location: 'dist'
+        env:
+          VITE_API_URL: ${{ secrets.API_URL }} # Injected into the Vite build at build time
 
-    close_pull_request_job:
-      if: github.event_name == 'pull_request' && github.event.action == 'closed'
-      runs-on: ubuntu-latest
-      name: Close Pull Request Job
+  close_pull_request_job:
+    if: github.event_name == 'pull_request' && github.event.action == 'closed'
+    runs-on: ubuntu-latest
+    name: Close Pull Request Job
 
-      steps:
-        - name: Close Pull Request
-          id: closepullrequest
-          uses: Azure/static-web-apps-deploy@v1
-          with:
-            azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_MANGO_ROCK_06C415C0F }}
-            action: 'close'
+    steps:
+      - name: Close Pull Request
+        id: closepullrequest
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_MANGO_ROCK_06C415C0F }}
+          action: 'close'
+
