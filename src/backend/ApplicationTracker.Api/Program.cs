@@ -66,7 +66,13 @@ builder.Services.AddAuthorization();
 builder.Services.AddScoped<IApplicationRecordService, ApplicationRecordService>();
 builder.Services.AddScoped<IExcelImportService, ExcelImportService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
-builder.Services.AddScoped<IEmailService, ConsoleEmailService>();
+/* Write to console for dev and use Resend service for prod/non dev */
+if (builder.Environment.IsDevelopment()) {
+	builder.Services.AddScoped<IEmailService, ConsoleEmailService>();
+} else {
+	builder.Services.AddHttpClient<IEmailService, ResendEmailService>();
+}
+
 
 WebApplication app = builder.Build();
 
