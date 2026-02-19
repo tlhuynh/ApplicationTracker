@@ -216,11 +216,11 @@ npm run test:watch
 
 The project is deployed to Azure via GitHub Actions on every push to `main`.
 
-| Component | Service | URL |
-|---|---|---|
-| React SPA | Azure Static Web Apps | `https://mango-rock-06c415c0f.6.azurestaticapps.net` |
-| ASP.NET Core API | Azure App Service | `https://applicationtracker-api-g5f4efdwenfpf5a0.centralus-01.azurewebsites.net` |
-| Database | Azure SQL Database | `ApplicationTrackerDB` (Central US) |
+| Component | Service | Tier | URL |
+|---|---|---|---|
+| React SPA | Azure Static Web Apps | Free | `https://mango-rock-06c415c0f.6.azurestaticapps.net` |
+| ASP.NET Core API | Azure App Service | B1 Basic | `https://applicationtracker-api-g5f4efdwenfpf5a0.centralus-01.azurewebsites.net` |
+| Database | Azure SQL Database | Basic DTU | `ApplicationTrackerDB` (Central US) |
 
 ### CI/CD Workflows
 
