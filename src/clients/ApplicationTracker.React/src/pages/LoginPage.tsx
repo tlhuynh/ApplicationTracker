@@ -8,6 +8,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { AlertCircle } from 'lucide-react';
 
 interface LoginErrors {
   email?: string;
@@ -52,11 +54,17 @@ export function LoginPage() {
       await login(email, password, rememberMe);
       navigate('/', { replace: true });
     } catch (err: unknown) {
-      if (err instanceof ApiError && err.status === 403) {
-        setEmailNotConfirmed(true);
-        setServerError('Your email address has not been confirmed.');
+      if (err instanceof ApiError) {
+        if (err.status === 403) {
+          setEmailNotConfirmed(true);
+          setServerError('Your email address has not been confirmed.');
+        } else if (err.status >= 500 || err.status === 405) {
+          setServerError('Something went wrong on our end. Please try again later.');
+        } else {
+          setServerError(err.message || 'Login failed. Please try again.');
+        }
       } else {
-        setServerError(err instanceof Error ? err.message : 'Login failed');
+        setServerError('Unable to reach the server. Please check your connection.');
       }
     } finally {
       setIsSubmitting(false);
@@ -82,7 +90,12 @@ export function LoginPage() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="grid gap-4">
-            {serverError && <p className="text-sm text-destructive">{serverError}</p>}
+            {serverError && (
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>{serverError}</AlertDescription>
+              </Alert>
+            )}
 
             {emailNotConfirmed && (
               <div className="grid gap-2">
