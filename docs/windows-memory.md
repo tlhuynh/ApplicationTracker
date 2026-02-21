@@ -109,7 +109,7 @@ This is a snapshot of the Claude Code memory from the Windows development machin
   - Static Web App URL: `https://mango-rock-06c415c0f.6.azurestaticapps.net` (custom domain: `https://jobapptracker.tlhuynh.dev`)
   - `ResendEmailService` in production (`Api/Services/`), `ConsoleEmailService` in development; sends from `noreply@tlhuynh.dev`; domain verified in Resend + Cloudflare DNS configured (SPF, DKIM, DMARC)
   - Bug fix: `authFetch` in `client.ts` was hardcoded to fetch `/api/auth/refresh` instead of the passed `url` — every protected API call was hitting the wrong endpoint
-- Pending UX improvements: loading overlay to prevent background interaction during slow API calls; toast notification persistence + error message sanitization (avoid exposing technical details to users)
+- All production setup complete (email service, Azure upgrades, custom domain, CORS, demo link in README)
 
 ## React Client Setup
 - Location: `src/clients/ApplicationTracker.React/`
@@ -155,11 +155,15 @@ This is a snapshot of the Claude Code memory from the Windows development machin
 - Familiar with .NET/Blazor — React concepts explained via Blazor comparisons
 - Prefers to review and apply changes themselves — present changes with explanations
 - Conversation style: Q&A-driven. Explain *why* code is written a certain way, not just *what* to write. User asks follow-up questions before applying changes.
-- Current branch: `Setup-cicd-pipeline` — production setup (email service, Azure upgrades, bug fixes)
+- Current branch: `main` — all production setup complete and merged
 
 ## IDE Setup
 - Rider settings sync via JetBrains account (plugins, keymaps, etc.)
 - Rider Prettier: configure under Settings → Languages & Frameworks → JavaScript → Prettier (run on save)
+
+## Pending Work (in order)
+1. **Loading overlay** — prevent background interaction during slow API responses (login, register, and other pages)
+2. **Toast notification improvements** — persist/extend toast duration; sanitize error messages shown to users (avoid exposing technical details)
 
 ## Mac Development Notes
 - Node.js path on Mac may differ from Windows — check with `which node` if needed
