@@ -2,24 +2,31 @@
 
 A full-stack .NET project for tracking job applications, built as a learning playground to explore modern technologies.
 
+**Live Demo**:
+
+React: [jobapptracker.tlhuynh.dev](https://jobapptracker.tlhuynh.dev)
+
+Angular: WIP
+
 ## Technologies
 
 ### Frameworks & Language
 - [.NET 10](https://dotnet.microsoft.com/download/dotnet/10.0) / **C# 13**
 - [ASP.NET Core Web API](https://learn.microsoft.com/aspnet/core/web-api/) - Backend REST API
-- [.NET MAUI](https://learn.microsoft.com/dotnet/maui/) - Cross-platform native UI
-- [Blazor Hybrid](https://learn.microsoft.com/aspnet/core/blazor/hybrid/) - Web UI components within MAUI
 - [React 19](https://react.dev/) - Web frontend SPA
 - [Vite](https://vite.dev/) - Frontend build tool and dev server
-- [TanStack Table](https://tanstack.com/table/latest) - Headless table library for React
+- [.NET MAUI](https://learn.microsoft.com/dotnet/maui/) - Cross-platform native UI
+- [Blazor Hybrid](https://learn.microsoft.com/aspnet/core/blazor/hybrid/) - Web UI components within MAUI
 
 ### Component Libraries
-- [MudBlazor](https://mudblazor.com/) - Material Design component library (MAUI)
-- [shadcn/ui](https://ui.shadcn.com/) - Accessible UI components built on Radix UI (React)
-- [Tailwind CSS](https://tailwindcss.com/) - Utility-first CSS framework (React)
-- [Lucide React](https://lucide.dev/) - Icon library (used by shadcn/ui)
-- [Sonner](https://sonner.emilkowal.dev/) - Toast notifications (React)
-
+- React
+  - [shadcn/ui](https://ui.shadcn.com/) - Accessible UI components built on Radix UI (React)
+  - [Tailwind CSS](https://tailwindcss.com/) - Utility-first CSS framework (React)
+  - [Lucide React](https://lucide.dev/) - Icon library (used by shadcn/ui)
+  - [Sonner](https://sonner.emilkowal.dev/) - Toast notifications (React)
+  - [TanStack Table](https://tanstack.com/table/latest) - Headless table library for React
+- Cross-platform
+  - [MudBlazor](https://mudblazor.com/) - Material Design component library (MAUI)
 ### Frontend Tooling
 - [Prettier](https://prettier.io/) - Code formatting
 - [ESLint](https://eslint.org/) - Linting for TypeScript/React
@@ -46,18 +53,18 @@ A full-stack .NET project for tracking job applications, built as a learning pla
 - [MSW](https://mswjs.io/) - API mocking (Mock Service Worker)
 
 ## Platforms
-- Web (React)
+- Web
 - Mobile/Desktop
 	- Windows
 	- macOS (Catalyst)
-	- iOS	
+	- iOS
   - Android
 
 ## Prerequisites
 
 ### Windows
 - [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
-- [Node.js 22+](https://nodejs.org/) (for React client)
+- [Node.js 22+](https://nodejs.org/)
 - [Visual Studio 2022 (17.12+)](https://visualstudio.microsoft.com/) or [JetBrains Rider](https://www.jetbrains.com/rider/) with:
   - .NET MAUI workload
   - Android SDK
@@ -65,8 +72,8 @@ A full-stack .NET project for tracking job applications, built as a learning pla
 
 ### macOS
 - [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
-- [Node.js 22+](https://nodejs.org/) (for React client)
-- [JetBrains Rider](https://www.jetbrains.com/rider/) or [VS Code](https://code.visualstudio.com/)
+- [Node.js 22+](https://nodejs.org/)
+- [JetBrains Rider](https://www.jetbrains.com/rider/)
 - [Xcode 15+](https://developer.apple.com/xcode/) (for iOS/macOS development)
 - Command Line Tools: `xcode-select --install`
 
