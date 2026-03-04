@@ -247,4 +247,53 @@ public class ApplicationRecordsControllerTests {
 		Assert.Equal("Only .xlsx files are supported.", badResult.Value);
 		_excelImportServiceMock.Verify(s => s.ImportAsync(It.IsAny<Stream>(), It.IsAny<string>()), Times.Never);
 	}
+
+	[Fact]
+	public async Task Parse_WithValidFile_ReturnsOk() {
+		// Arrange
+		ParseExcelResult parseResult = new() {
+			TotalRows = 2,
+			ParsedCount = 2,
+			FailedCount = 0,
+			ParsedRows = [
+				new ParsedApplicationRow { CompanyName = "Acme", Status = ApplicationStatus.Applied },
+				new ParsedApplicationRow { CompanyName = "Globex", Status = ApplicationStatus.Interviewing }
+			],
+			Errors = []
+		};
+		_excelImportServiceMock.Setup(s =>
+			s.ParseAsync(It.IsAny<Stream>())).ReturnsAsync(parseResult);
+
+		Mock<IFormFile> fileMock = new();
+		fileMock.Setup(f => f.FileName).Returns("import.xlsx");
+		fileMock.Setup(f => f.Length).Returns(1024);
+		fileMock.Setup(f => f.OpenReadStream()).Returns(new MemoryStream());
+
+		// Act
+		ActionResult<ParseExcelResultDto> result = await _controller.Parse(fileMock.Object);
+
+		// Assert
+		OkObjectResult okResult = Assert.IsType<OkObjectResult>(result.Result);
+		ParseExcelResultDto dto = Assert.IsType<ParseExcelResultDto>(okResult.Value);
+		Assert.Equal(2, dto.TotalRows);
+		Assert.Equal(2, dto.ParsedCount);
+		Assert.Equal(0, dto.FailedCount);
+		Assert.Equal(2, dto.ParsedRecords.Count);
+	}
+
+	[Fact]
+	public async Task Parse_WithInvalidExtension_ReturnsBadRequest() {
+		// Arrange
+		Mock<IFormFile> fileMock = new();
+		fileMock.Setup(f => f.FileName).Returns("import.csv");
+		fileMock.Setup(f => f.Length).Returns(1024);
+
+		// Act
+		ActionResult<ParseExcelResultDto> result = await _controller.Parse(fileMock.Object);
+
+		// Assert
+		BadRequestObjectResult badResult = Assert.IsType<BadRequestObjectResult>(result.Result);
+		Assert.Equal("Only .xlsx files are supported.", badResult.Value);
+		_excelImportServiceMock.Verify(s => s.ParseAsync(It.IsAny<Stream>()), Times.Never);
+	}
 }
