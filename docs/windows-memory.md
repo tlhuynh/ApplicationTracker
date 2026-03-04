@@ -93,8 +93,9 @@ This is a snapshot of the Claude Code memory from the Windows development machin
   - Excel import page (`/import`): file upload, results summary, error table
   - Dark/light theme toggle (`ThemeProvider` + `ThemeToggle`)
   - Sidebar: Dashboard + Import nav items, collapsed by default
-- Tests: ApplicationTable (9 tests), HomePage (3 tests), LoginPage (4 tests), RegisterPage (6 tests), ProtectedRoute (3 tests), App (1 test), NotFoundPage (1 test) — 27 total
+- Tests: ApplicationTable (9 tests), HomePage (3 tests), LoginPage (6 tests), RegisterPage (6 tests), ProtectedRoute (3 tests), App (1 test), NotFoundPage (1 test) — 29 total
 - Auth error handling: shadcn `Alert` (destructive variant) replaces plain `<p>` for server errors on Login/Register. Status-code-based messages: 5xx/405 → generic server error, 4xx → API message passthrough, no `ApiError` → connection error
+- Demo mode — done (see MEMORY.md for full details). Key files: `demoStore.ts`, `demoApplicationRecords.ts`, `use-application-records-api.ts`, `ParseExcelResult`/`ParsedApplicationRow` Core models, `ParseExcelResultDto`, public `POST /api/applicationrecords/parse` endpoint
 - CI/CD + Azure deployment — done:
   - GitHub Actions: `.github/workflows/deploy-api.yml` (test → deploy to App Service), `.github/workflows/azure-static-web-apps-mango-rock-06c415c0f.yml` (test → deploy to Static Web Apps)
   - API workflow: restores/tests `ApplicationTracker.Api.Tests`, publishes API, deploys via publish profile (`AZURE_APP_SERVICE_NAME`, `AZURE_APP_SERVICE_PUBLISH_PROFILE` secrets)
@@ -162,8 +163,9 @@ This is a snapshot of the Claude Code memory from the Windows development machin
 - Rider Prettier: configure under Settings → Languages & Frameworks → JavaScript → Prettier (run on save)
 
 ## Pending Work (in order)
-1. **Loading overlay** — prevent background interaction during slow API responses (login, register, and other pages)
-2. **Toast notification improvements** — persist/extend toast duration; sanitize error messages shown to users (avoid exposing technical details)
+1. ~~Demo mode~~ — done
+2. **Loading overlay** — prevent background interaction during slow API responses (login, register, and other pages)
+3. **Toast notification improvements** — persist/extend toast duration; sanitize error messages shown to users (avoid exposing technical details)
 
 ## Mac Development Notes
 - Node.js path on Mac may differ from Windows — check with `which node` if needed
