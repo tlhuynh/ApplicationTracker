@@ -8,6 +8,7 @@ import {
   setDemoApplications,
   getNextDemoId,
 } from '@/api/demoStore';
+import { parseExcel } from '@/api/applicationRecords';
 
 type ApplicationRecord = components['schemas']['ApplicationRecordDto'];
 type CreateRequest = components['schemas']['CreateApplicationRecordRequest'];
@@ -79,47 +80,31 @@ export async function remove(id: number): Promise<void> {
   setDemoApplications(getDemoApplications().filter((r) => r.id !== id));
 }
 
-/** In demo mode, simulates an import by adding 3 sample records to the store. */
-export async function importExcel(_file: File): Promise<ExcelImportResult> {
-  const records = getDemoApplications();
+/** Parses an Excel file via the backend and adds the results to the demo store. */
+export async function importExcel(file: File): Promise<ExcelImportResult> {
+  const parseResult = await parseExcel(file);
+
+  const existing = getDemoApplications();
   const now = new Date().toISOString();
-  const added: ApplicationRecord[] = [
-    {
-      id: getNextDemoId(),
-      companyName: 'Demo Import Co.',
-      status: 0,
-      appliedDate: now,
-      postingUrl: null,
-      notes: 'Added via demo import.',
-      createdAt: now,
-      lastModified: now,
-    },
-    {
-      id: getNextDemoId(),
-      companyName: 'Demo Startup',
-      status: 1,
-      appliedDate: now,
-      postingUrl: null,
-      notes: 'Added via demo import.',
-      createdAt: now,
-      lastModified: now,
-    },
-    {
-      id: getNextDemoId(),
-      companyName: 'Demo Corp',
-      status: 0,
-      appliedDate: now,
-      postingUrl: null,
-      notes: 'Added via demo import.',
-      createdAt: now,
-      lastModified: now,
-    },
-  ];
-  setDemoApplications([...records, ...added]);
+
+  const newRecords: ApplicationRecord[] = parseResult.parsedRecords.map((r) => ({
+    id: getNextDemoId(),
+    companyName: r.companyName,
+    jobTitle: null,
+    status: r.status,
+    appliedDate: r.appliedDate,
+    postingUrl: r.postingUrl,
+    notes: r.notes,
+    createdAt: now,
+    lastModified: now,
+  }));
+
+  setDemoApplications([...existing, ...newRecords]);
+
   return {
-    importedCount: 3,
-    totalRows: 3,
-    failedCount: 0,
-    errors: [],
+    importedCount: parseResult.parsedCount,
+    totalRows: parseResult.totalRows,
+    failedCount: parseResult.failedCount,
+    errors: parseResult.errors,
   };
 }
