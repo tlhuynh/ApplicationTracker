@@ -256,6 +256,7 @@ dotnet run --project src/backend/ApplicationTracker.Api
 - **Responsive sidebar** — collapsible navigation with Dashboard and Import pages
 - **Authentication** — register, login, and token refresh via ASP.NET Core Identity + JWT. Email confirmation required before login (console-logged links in development). Password reset via email link. React frontend with login/register pages, protected routes, in-memory access token with silent refresh, automatic session restore on page reload, 401 retry with transparent token refresh, logged-in user redirect away from auth pages, "Remember me" option (session-only vs persistent), server-side refresh token revocation on logout, email confirmation page, forgot password page, and reset password page
 - **Per-user data isolation** — each user only sees their own application records. Records are stamped with the user's ID on creation/import, and all queries filter by user
+- **Demo mode** — "Try Demo" button on the login page lets visitors explore the full app without creating an account. Pre-seeded with sample data stored in `sessionStorage` (survives page refresh, clears when the browser closes). Excel import uses the real backend parser via a public endpoint — no DB write, just validation and parse. Duplicate detection is not available in demo mode
 
 ## Resources
 

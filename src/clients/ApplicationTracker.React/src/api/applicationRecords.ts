@@ -1,11 +1,12 @@
 ﻿import type { components } from '@/types/api';
-import { ApiError, authFetch, handleResponse } from '@/api/client';
+import { ApiError, API_BASE_URL, authFetch, handleResponse } from '@/api/client';
 
 // Type aliases for convenience — the generated types use verbose paths
 type ApplicationRecord = components['schemas']['ApplicationRecordDto'];
 type CreateRequest = components['schemas']['CreateApplicationRecordRequest'];
 type UpdateRequest = components['schemas']['UpdateApplicationRecordRequest'];
 type ExcelImportResult = components['schemas']['ExcelImportResultDto'];
+type ParseExcelResult = components['schemas']['ParseExcelResultDto'];
 
 const BASE_URL = '/api/applicationrecords';
 
@@ -69,6 +70,20 @@ export async function importExcel(file: File): Promise<ExcelImportResult> {
     body: formData,
   });
   return handleResponse<ExcelImportResult>(response);
+}
+
+/**
+ * Parses an Excel file server-side without saving to the database.
+ * Uses plain fetch (no auth header) since the endpoint is public — intended for demo mode.
+ */
+export async function parseExcel(file: File): Promise<ParseExcelResult> {
+  const formData = new FormData();
+  formData.append('file', file);
+  const response = await fetch(`${API_BASE_URL}/api/applicationrecords/parse`, {
+    method: 'POST',
+    body: formData,
+  });
+  return handleResponse<ParseExcelResult>(response);
 }
 
 export { ApiError };
