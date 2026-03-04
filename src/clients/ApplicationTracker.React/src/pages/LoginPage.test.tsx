@@ -12,9 +12,12 @@ function renderLoginPage(authOverrides: Partial<AuthContextState> = {}) {
     user: null,
     isAuthenticated: false,
     isLoading: false,
+    isDemoMode: false,
     login: vi.fn(),
     register: vi.fn(),
     logout: vi.fn(),
+    enterDemoMode: vi.fn(),
+    exitDemoMode: vi.fn(),
     ...authOverrides,
   };
 
@@ -90,6 +93,26 @@ describe('LoginPage', () => {
 
     await waitFor(() => {
       expect(screen.getByText('Invalid email or password.')).toBeInTheDocument();
+    });
+  });
+
+  it('renders the Try Demo button', () => {
+    renderLoginPage();
+
+    expect(screen.getByRole('button', { name: 'Try Demo' })).toBeInTheDocument();
+    expect(screen.getByText('No account needed — data is temporary and resets when you close the browser.')).toBeInTheDocument();
+  });
+
+  it('calls enterDemoMode and navigates to home when Try Demo is clicked', async () => {
+    const user = userEvent.setup();
+    const mockEnterDemoMode = vi.fn();
+    const { router } = renderLoginPage({ enterDemoMode: mockEnterDemoMode });
+
+    await user.click(screen.getByRole('button', { name: 'Try Demo' }));
+
+    expect(mockEnterDemoMode).toHaveBeenCalledOnce();
+    await waitFor(() => {
+      expect(router.state.location.pathname).toBe('/');
     });
   });
 });

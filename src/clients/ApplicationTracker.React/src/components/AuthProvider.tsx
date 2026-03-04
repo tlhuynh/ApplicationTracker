@@ -2,6 +2,7 @@
 import {AuthContext} from '@/hooks/use-auth';
 import {login as apiLogin, register as apiRegister, logout as apiLogout} from '@/api/auth';
 import {setAccessToken, refreshToken} from '@/api/client';
+import {isDemoModeActive, initDemoSession, clearDemoSession} from '@/api/demoStore';
 
 const REFRESH_TOKEN_KEY = 'refresh_token';
 
@@ -36,6 +37,7 @@ interface AuthProviderProps {
 export function AuthProvider({children}: AuthProviderProps) {
   const [user, setUser] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isDemoMode, setIsDemoMode] = useState(false);
 
   // NOTES: userRef here so that when ref changes, it doesn't trigger re-render. This will not be displayed anyway
   const refreshTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -48,7 +50,8 @@ export function AuthProvider({children}: AuthProviderProps) {
    */
   const scheduleRefreshRef = useRef<(expiresAt: string, currentRefreshToken: string) => void>(
     () => {
-    });
+    },
+  );
 
   useEffect(() => {
     scheduleRefreshRef.current = (expiresAt: string, currentRefreshToken: string) => {
@@ -84,13 +87,27 @@ export function AuthProvider({children}: AuthProviderProps) {
   }, []);
 
   /**
-   * On mount: attempt to restore the session from a stored refresh token.
+   * On mount: restore demo session if active, otherwise attempt to restore
+   * the real session from a stored refresh token.
+   *
+   * Prioritize checking sessionStorage to restore demo mode across page
+   * refreshes (and skips the refresh-token restore in that case). Exposes enterDemoMode and exitDemoMode.
    *
    * If the user previously logged in and still has a valid refresh token in localStorage,
    * we exchange it for a new access token — so the user doesn't have to log in again
    * after a page refresh. If it fails (expired/revoked), we silently stay logged out.
    */
   useEffect(() => {
+    // Demo mode takes priority — skip the real token restore
+    if (isDemoModeActive()) {
+      Promise.resolve().then(() => {
+        setUser('Demo');
+        setIsDemoMode(true);
+        setIsLoading(false);
+      });
+      return;
+    }
+
     const storedRefreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
 
     if (!storedRefreshToken) {
@@ -154,7 +171,8 @@ export function AuthProvider({children}: AuthProviderProps) {
   const handleLogout = () => {
     const storedToken = localStorage.getItem(REFRESH_TOKEN_KEY);
     if (storedToken) {
-      apiLogout(storedToken).catch(() => {});
+      apiLogout(storedToken).catch(() => {
+      });
     }
 
     setAccessToken(null);
@@ -166,13 +184,28 @@ export function AuthProvider({children}: AuthProviderProps) {
     }
   };
 
+  const handleEnterDemoMode = () => {
+    initDemoSession();
+    setUser('Demo');
+    setIsDemoMode(true);
+  };
+
+  const handleExitDemoMode = () => {
+    clearDemoSession();
+    setUser(null);
+    setIsDemoMode(false);
+  };
+
   const value = {
     user,
     isAuthenticated: !!user,
     isLoading,
+    isDemoMode,
     login: handleLogin,
     register: handleRegister,
     logout: handleLogout,
+    enterDemoMode: handleEnterDemoMode,
+    exitDemoMode: handleExitDemoMode,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

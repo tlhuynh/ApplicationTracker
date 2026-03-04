@@ -10,9 +10,12 @@ function renderProtectedRoute(authOverrides: Partial<AuthContextState> = {}) {
     user: null,
     isAuthenticated: false,
     isLoading: false,
+    isDemoMode: false,
     login: vi.fn(),
     register: vi.fn(),
     logout: vi.fn(),
+    enterDemoMode: vi.fn(),
+    exitDemoMode: vi.fn(),
     ...authOverrides,
   };
 
