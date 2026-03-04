@@ -243,6 +243,49 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/ApplicationRecords/parse": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "multipart/form-data": {
+                        file?: components["schemas"]["IFormFile"];
+                    };
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ParseExcelResultDto"];
+                        "application/json": components["schemas"]["ParseExcelResultDto"];
+                        "text/json": components["schemas"]["ParseExcelResultDto"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/Auth/register": {
         parameters: {
             query?: never;
@@ -624,6 +667,16 @@ export interface components {
             email: string;
             password: string;
             rememberMe?: boolean;
+        };
+        ParseExcelResultDto: {
+            /** Format: int32 */
+            totalRows?: number | string;
+            /** Format: int32 */
+            parsedCount?: number | string;
+            /** Format: int32 */
+            failedCount?: number | string;
+            parsedRecords?: components["schemas"]["CreateApplicationRecordRequest"][];
+            errors?: components["schemas"]["ExcelImportErrorDto"][];
         };
         PatchStatusRequest: {
             status: components["schemas"]["ApplicationStatus"];

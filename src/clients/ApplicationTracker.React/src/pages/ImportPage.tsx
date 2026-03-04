@@ -1,4 +1,5 @@
 ﻿import {useRef, useState} from 'react';
+import {useAuth} from '@/hooks/use-auth';
 import { type ExcelImportResult } from '@/api/applicationRecords';
 import { useApplicationRecordsApi } from '@/hooks/use-application-records-api';
 import {Button} from '@/components/ui/button';
@@ -21,6 +22,7 @@ import {toast} from 'sonner';
 import {FileUp, Download} from 'lucide-react';
 
 export function ImportPage() {
+  const { isDemoMode } = useAuth();
   const api = useApplicationRecordsApi();
   const [isUploading, setIsUploading] = useState(false);
   const [result, setResult] = useState<ExcelImportResult | null>(null);
@@ -58,6 +60,11 @@ export function ImportPage() {
           <CardDescription>
             Import application records from an Excel (.xlsx) file.
           </CardDescription>
+          {isDemoMode && (
+            <p className="text-sm text-muted-foreground pt-1">
+              Note: duplicate detection is not available in demo mode.
+            </p>
+          )}
         </CardHeader>
         <CardContent>
           <div className="flex items-center gap-4">
