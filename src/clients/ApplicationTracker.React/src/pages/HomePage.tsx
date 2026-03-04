@@ -1,13 +1,6 @@
 ﻿import { useEffect, useState } from 'react';
-import {
-  type ApplicationRecord,
-  type CreateRequest,
-  create,
-  getAll,
-  patchStatus,
-  remove,
-  update,
-} from '@/api/applicationRecords';
+import { type ApplicationRecord, type CreateRequest } from '@/api/applicationRecords';
+import { useApplicationRecordsApi } from '@/hooks/use-application-records-api';
 import { ApplicationFormDialog } from
     '@/components/applications/ApplicationFormDialog';
 import { ApplicationTable } from '@/components/applications/ApplicationTable';
@@ -33,6 +26,7 @@ import { Input } from '@/components/ui/input';
 * Contains states (useState), make api calls(useEffect), and call components to display on the page
 * */
 export function HomePage() {
+  const api = useApplicationRecordsApi();
   /*
   * State variables for the page
   * */
@@ -51,17 +45,16 @@ export function HomePage() {
   * useEffect with an empty dependency array [] runs once after the first render,
   * equivalent to Blazor's OnInitializedAsync
   * */
-  // Initial fetch on mount — setState calls are in async callbacks
-  // (.then/.catch/.finally),
-  // not synchronously in the effect body, which satisfies the React Compiler
+  // useEffect on mount — replace getAll() with api.getAll()
   useEffect(() => {
-    getAll()
+    api
+      .getAll()
       .then(setApplications)
       .catch((err: unknown) => {
         setError(err instanceof Error ? err.message : 'Failed to load applications');
       })
       .finally(() => setIsLoading(false));
-  }, []);
+  }, [api]);
 
   /*
   * The difference matters:
@@ -71,11 +64,12 @@ export function HomePage() {
   * Since this method is mainly used in handleCreate, which is fine with asyncm this can be rewritten to be
   * an async method
   * */
-  // Refetch data — only called from event handlers (not effects)
+  // refreshApplications — replace getAll() with api.getAll()
   const refreshApplications = () => {
     setIsLoading(true);
     setError(null);
-    getAll()
+    api
+      .getAll()
       .then(setApplications)
       .catch((err: unknown) => {
         setError(err instanceof Error ? err.message : 'Failed to load applications');
@@ -83,8 +77,9 @@ export function HomePage() {
       .finally(() => setIsLoading(false));
   };
 
+  // handleCreate — replace create() with api.create()
   const handleCreate = async (data: CreateRequest) => {
-    await create(data);
+    await api.create(data);
     refreshApplications();
   };
 
@@ -93,9 +88,10 @@ export function HomePage() {
     setDialogOpen(true);
   };
 
+  // handleUpdate — replace update() with api.update()
   const handleUpdate = async (data: CreateRequest) => {
     if (!editingRecord?.id) return;
-    await update(Number(editingRecord.id), data);
+    await api.update(Number(editingRecord.id), data);
     refreshApplications();
   };
 
@@ -103,9 +99,11 @@ export function HomePage() {
     setDeletingRecord(record);
   };
 
+  // confirmDelete — replace remove() with api.remove()
   const confirmDelete = () => {
     if (!deletingRecord?.id) return;
-    remove(Number(deletingRecord.id))
+    api
+      .remove(Number(deletingRecord.id))
       .then(refreshApplications)
       .catch((err: unknown) => {
         toast.error(err instanceof Error ? err.message : 'Failed to delete application');
@@ -113,9 +111,11 @@ export function HomePage() {
       .finally(() => setDeletingRecord(null));
   };
 
+  // handleStatusChange — replace patchStatus() with api.patchStatus()
   const handleStatusChange = (record: ApplicationRecord, newStatus: number) => {
     if (!record.id) return;
-    patchStatus(Number(record.id), newStatus)
+    api
+      .patchStatus(Number(record.id), newStatus)
       .then(refreshApplications)
       .catch((err: unknown) => {
         toast.error(err instanceof Error ? err.message : 'Failed to update status');

@@ -1,5 +1,6 @@
 ﻿import {useRef, useState} from 'react';
-import {type ExcelImportResult, importExcel} from '@/api/applicationRecords';
+import { type ExcelImportResult } from '@/api/applicationRecords';
+import { useApplicationRecordsApi } from '@/hooks/use-application-records-api';
 import {Button} from '@/components/ui/button';
 import {
   Card,
@@ -20,6 +21,7 @@ import {toast} from 'sonner';
 import {FileUp, Download} from 'lucide-react';
 
 export function ImportPage() {
+  const api = useApplicationRecordsApi();
   const [isUploading, setIsUploading] = useState(false);
   const [result, setResult] = useState<ExcelImportResult | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -34,7 +36,7 @@ export function ImportPage() {
     setIsUploading(true);
     setResult(null);
     try {
-      const importResult = await importExcel(file);
+      const importResult = await api.importExcel(file);
       setResult(importResult);
       toast.success(
         `Imported ${importResult.importedCount} of ${importResult.totalRows} records`

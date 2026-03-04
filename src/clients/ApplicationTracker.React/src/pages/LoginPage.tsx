@@ -18,7 +18,7 @@ interface LoginErrors {
 
 export function LoginPage() {
   const navigate = useNavigate();
-  const { login, isAuthenticated } = useAuth();
+  const { login, isAuthenticated, enterDemoMode } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState<LoginErrors>({});
@@ -79,6 +79,11 @@ export function LoginPage() {
     } catch (err: unknown) {
       setResendMessage(err instanceof Error ? err.message : 'Failed to resend confirmation email');
     }
+  };
+
+  const handleDemoMode = () => {
+    enterDemoMode();
+    navigate('/', { replace: true });
   };
 
   return (
@@ -168,6 +173,21 @@ export function LoginPage() {
               </Link>
             </p>
           </form>
+          <div className="relative my-4">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-card px-2 text-muted-foreground">or</span>
+            </div>
+          </div>
+
+          <Button type="button" variant="outline" className="w-full" onClick={handleDemoMode}>
+            Try Demo
+          </Button>
+          <p className="text-center text-xs text-muted-foreground mt-2">
+            No account needed — data is temporary and resets when you close the browser.
+          </p>
         </CardContent>
       </Card>
     </div>
