@@ -87,14 +87,14 @@ export async function importExcel(file: File): Promise<ExcelImportResult> {
   const existing = getDemoApplications();
   const now = new Date().toISOString();
 
-  const newRecords: ApplicationRecord[] = parseResult.parsedRecords.map((r) => ({
+  const newRecords: ApplicationRecord[] = (parseResult.parsedRecords ?? []).map((r) => ({
     id: getNextDemoId(),
-    companyName: r.companyName,
+    companyName: r.companyName ?? 'Unavailable',
     jobTitle: null,
-    status: r.status,
-    appliedDate: r.appliedDate,
-    postingUrl: r.postingUrl,
-    notes: r.notes,
+    status: typeof r.status === 'number' ? r.status : 0,
+    appliedDate: r.appliedDate ?? null,
+    postingUrl: r.postingUrl ?? null,
+    notes: r.notes ?? null,
     createdAt: now,
     lastModified: now,
   }));
@@ -105,6 +105,6 @@ export async function importExcel(file: File): Promise<ExcelImportResult> {
     importedCount: parseResult.parsedCount,
     totalRows: parseResult.totalRows,
     failedCount: parseResult.failedCount,
-    errors: parseResult.errors,
+    errors: parseResult.errors ?? [],
   };
 }

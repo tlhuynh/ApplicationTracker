@@ -6,6 +6,7 @@ type ApplicationRecord = components['schemas']['ApplicationRecordDto'];
 type CreateRequest = components['schemas']['CreateApplicationRecordRequest'];
 type UpdateRequest = components['schemas']['UpdateApplicationRecordRequest'];
 type ExcelImportResult = components['schemas']['ExcelImportResultDto'];
+type ParseExcelResult = components['schemas']['ParseExcelResultDto'];
 
 const BASE_URL = '/api/applicationrecords';
 
@@ -69,25 +70,6 @@ export async function importExcel(file: File): Promise<ExcelImportResult> {
     body: formData,
   });
   return handleResponse<ExcelImportResult>(response);
-}
-
-/** Shape of the response from the public /parse endpoint. */
-interface ParseExcelResult {
-  totalRows: number;
-  parsedCount: number;
-  failedCount: number;
-  parsedRecords: Array<{
-    companyName: string;
-    status: number;
-    appliedDate: string | null;
-    postingUrl: string | null;
-    notes: string | null;
-  }>;
-  errors: Array<{
-    rowNumber: number;
-    companyName: string | null;
-    errorMessage: string;
-  }>;
 }
 
 /**
