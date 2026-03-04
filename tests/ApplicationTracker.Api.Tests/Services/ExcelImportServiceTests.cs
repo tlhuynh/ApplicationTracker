@@ -256,4 +256,68 @@ public class ExcelImportServiceTests {
 		Assert.Contains("applied date", result.Errors[0].ErrorMessage);
 		_repositoryMock.Verify(r => r.AddAsync(It.IsAny<ApplicationRecord>()), Times.Never);
 	}
+
+	[Fact]
+	public async Task ParseAsync_WithValidRows_ReturnsParsedRowsWithoutSavingToDatabase() {
+		// Arrange
+		await using MemoryStream stream = CreateExcelStream(
+			["Acme", "Applied", "2025-01-15", "https://acme.com", "Great place"],
+			["Globex", "Interviewing", "2025-01-15", "", ""]
+		);
+
+		// Act
+		ParseExcelResult result = await _service.ParseAsync(stream);
+
+		// Assert
+		Assert.Equal(2, result.TotalRows);
+		Assert.Equal(2, result.ParsedCount);
+		Assert.Equal(0, result.FailedCount);
+		Assert.Equal(2, result.ParsedRows.Count);
+		Assert.Empty(result.Errors);
+		Assert.Equal("Acme", result.ParsedRows[0].CompanyName);
+		Assert.Equal("Globex", result.ParsedRows[1].CompanyName);
+		// Verify the repository is never touched
+		_repositoryMock.Verify(r => r.AddAsync(It.IsAny<ApplicationRecord>()), Times.Never);
+		_repositoryMock.Verify(r => r.SaveChangesAsync(), Times.Never);
+		_repositoryMock.Verify(r => r.ExistsAsync(
+				It.IsAny<string>(), It.IsAny<DateTime>(), It.IsAny<string?>(), It.IsAny<string>()),
+			Times.Never);
+	}
+
+	[Fact]
+	public async Task ParseAsync_WithInvalidRow_SkipsRowAndReportsError() {
+		// Arrange
+		await using MemoryStream stream = CreateExcelStream(
+			["Acme", "BadStatus", "2025-01-15", "", ""]
+		);
+
+		// Act
+		ParseExcelResult result = await _service.ParseAsync(stream);
+
+		// Assert
+		Assert.Equal(1, result.TotalRows);
+		Assert.Equal(0, result.ParsedCount);
+		Assert.Equal(1, result.FailedCount);
+		Assert.Empty(result.ParsedRows);
+		Assert.Single(result.Errors);
+		Assert.Contains("BadStatus", result.Errors[0].ErrorMessage);
+		_repositoryMock.Verify(r => r.AddAsync(It.IsAny<ApplicationRecord>()), Times.Never);
+		_repositoryMock.Verify(r => r.SaveChangesAsync(), Times.Never);
+	}
+
+	[Fact]
+	public async Task ParseAsync_WithEmptySheet_ReturnsZeroCounts() {
+		// Arrange — header only, no data rows
+		await using MemoryStream stream = CreateExcelStream();
+
+		// Act
+		ParseExcelResult result = await _service.ParseAsync(stream);
+
+		// Assert
+		Assert.Equal(0, result.TotalRows);
+		Assert.Equal(0, result.ParsedCount);
+		Assert.Equal(0, result.FailedCount);
+		Assert.Empty(result.ParsedRows);
+		Assert.Empty(result.Errors);
+	}
 }

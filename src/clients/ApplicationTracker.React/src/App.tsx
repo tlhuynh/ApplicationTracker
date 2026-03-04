@@ -11,11 +11,16 @@ import { Button } from '@/components/ui/button';
 import { LogOut } from 'lucide-react';
 
 export function App() {
-  const { user, logout } = useAuth();
+  const { user, logout, isDemoMode, exitDemoMode } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = () => {
     logout();
+    navigate('/login', { replace: true });
+  };
+
+  const handleExitDemo = () => {
+    exitDemoMode();
     navigate('/login', { replace: true });
   };
 
@@ -32,19 +37,36 @@ export function App() {
               <div className="ml-auto flex items-center gap-2">
                 <span className="text-sm text-muted-foreground">{user}</span>
                 <ThemeToggle />
-                <Button variant="ghost" size="icon" onClick={handleLogout} aria-label="Log out">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={isDemoMode ? handleExitDemo : handleLogout}
+                  aria-label={isDemoMode ? 'Exit demo mode' : 'Log out'}
+                >
                   <LogOut className="h-4 w-4" />
                 </Button>
               </div>
             </header>
+
+            {isDemoMode && (
+              <div className="flex items-center justify-between border-b border-amber-500/30 bg-amber-500/10 px-4 py-2
+  text-sm text-amber-700 dark:text-amber-400">
+                  <span>
+                    Demo mode — data is temporary and will be lost when you close the browser.
+                  </span>
+                <Button variant="outline" size="sm" onClick={handleExitDemo}>
+                  Sign In
+                </Button>
+              </div>
+            )}
+
             <main className="flex-1 p-4">
               <Outlet />
             </main>
           </SidebarInset>
         </SidebarProvider>
       </TooltipProvider>
-      <Toaster /> {/*Not inside sidebar and tooltip because it render a portal which is a floating element attached to
-  body*/}
+      <Toaster />
     </ThemeProvider>
   );
 }

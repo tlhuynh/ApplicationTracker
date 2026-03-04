@@ -14,4 +14,12 @@ public interface IExcelImportService {
 	/// <param name="userId">The user identifier to associate with imported records.</param>
 	/// <returns>The import result containing counts and any row-level errors.</returns>
 	Task<ExcelImportResult> ImportAsync(Stream fileStream, string userId);
+
+	/// <summary>
+	/// Parses and validates an Excel file stream without saving to the database.
+	/// Used for demo mode — returns the parsed rows so the caller can store them locally.
+	/// </summary>
+	/// <param name="fileStream">The Excel file stream to parse.</param>
+	/// <returns>The parse result containing validated rows and any row-level errors.</returns>
+	Task<ParseExcelResult> ParseAsync(Stream fileStream);
 }

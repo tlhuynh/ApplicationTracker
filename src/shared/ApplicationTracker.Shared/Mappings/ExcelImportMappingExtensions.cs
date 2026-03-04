@@ -29,4 +29,23 @@ public static class ExcelImportMappingExtensions {
 			ErrorMessage = error.ErrorMessage
 		};
 	}
+
+	/// <summary>
+	/// Maps a <see cref="ParseExcelResult"/> to a <see cref="ParseExcelResultDto"/>.
+	/// </summary>
+	public static ParseExcelResultDto ToDto(this ParseExcelResult result) {
+		return new() {
+			TotalRows = result.TotalRows,
+			ParsedCount = result.ParsedCount,
+			FailedCount = result.FailedCount,
+			ParsedRecords = result.ParsedRows.Select(r => new CreateApplicationRecordRequest {
+				CompanyName = r.CompanyName,
+				Status = r.Status,
+				AppliedDate = r.AppliedDate,
+				PostingUrl = r.PostingUrl,
+				Notes = r.Notes
+			}).ToList(),
+			Errors = result.Errors.Select(e => e.ToDto()).ToList()
+		};
+	}
 }

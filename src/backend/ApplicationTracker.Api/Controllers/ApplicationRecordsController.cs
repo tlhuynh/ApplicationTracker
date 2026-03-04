@@ -140,4 +140,26 @@ public class ApplicationRecordsController(
 		ExcelImportResult result = await excelImportService.ImportAsync(stream, userId);
 		return Ok(result.ToDto());
 	}
+
+	/// <summary>
+	/// Parses and validates an Excel file without saving to the database.
+	/// Intended for demo mode — returns the parsed rows so the client can store them locally.
+	/// </summary>
+	/// <param name="file">The .xlsx file to parse.</param>
+	[AllowAnonymous]
+	[HttpPost("parse")]
+	public async Task<ActionResult<ParseExcelResultDto>> Parse(IFormFile file) {
+		if (file.Length == 0) {
+			return BadRequest("No file uploaded.");
+		}
+
+		string extension = Path.GetExtension(file.FileName);
+		if (!string.Equals(extension, ".xlsx", StringComparison.OrdinalIgnoreCase)) {
+			return BadRequest("Only .xlsx files are supported.");
+		}
+
+		await using Stream stream = file.OpenReadStream();
+		ParseExcelResult result = await excelImportService.ParseAsync(stream);
+		return Ok(result.ToDto());
+	}
 }
