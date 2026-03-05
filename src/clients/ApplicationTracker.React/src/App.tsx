@@ -66,7 +66,7 @@ export function App() {
           </SidebarInset>
         </SidebarProvider>
       </TooltipProvider>
-      <Toaster />
+      <Toaster toastOptions={{ duration: 6000 }} />
     </ThemeProvider>
   );
 }

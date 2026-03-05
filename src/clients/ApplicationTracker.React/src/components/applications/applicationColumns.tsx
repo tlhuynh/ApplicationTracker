@@ -17,6 +17,7 @@ interface ColumnActions {
   onEdit: (record: ApplicationRecord) => void;
   onDelete: (record: ApplicationRecord) => void;
   onStatusChange: (record: ApplicationRecord, newStatus: number) => void;
+  pendingStatusId: number | null;
 }
 
 /*
@@ -34,7 +35,7 @@ interface ColumnActions {
 *   cell contains the custom render function to transform value into what we want to display
 *     e.g status on frontend is presented as number, we need to transform it into texts
 * */
-export function createColumns({onEdit, onDelete, onStatusChange}: ColumnActions): ColumnDef<ApplicationRecord>[] {
+export function createColumns({onEdit, onDelete, onStatusChange, pendingStatusId}: ColumnActions): ColumnDef<ApplicationRecord>[] {
   return [
     {
       accessorKey: "companyName",
@@ -62,7 +63,7 @@ export function createColumns({onEdit, onDelete, onStatusChange}: ColumnActions)
               size="icon"
               className="h-6 w-6"
               aria-label="Advance status"
-              disabled={isTerminal || isMaxProgression}
+              disabled={isTerminal || isMaxProgression || Number(row.original.id) === pendingStatusId}
               onClick={() => onStatusChange(row.original, status + 1)}>
               <Check className="h-3 w-3" />
             </Button>
@@ -71,7 +72,7 @@ export function createColumns({onEdit, onDelete, onStatusChange}: ColumnActions)
               size="icon"
               className="h-6 w-6"
               aria-label="Reject application"
-              disabled={isTerminal}
+              disabled={isTerminal || Number(row.original.id) === pendingStatusId}
               onClick={() => onStatusChange(row.original, 3)}>
               <X className="h-3 w-3" />
             </Button>

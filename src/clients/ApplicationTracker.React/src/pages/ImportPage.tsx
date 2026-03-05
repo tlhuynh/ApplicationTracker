@@ -1,7 +1,7 @@
 ﻿import {useRef, useState} from 'react';
 import {useAuth} from '@/hooks/use-auth';
-import { type ExcelImportResult } from '@/api/applicationRecords';
-import { useApplicationRecordsApi } from '@/hooks/use-application-records-api';
+import {type ExcelImportResult} from '@/api/applicationRecords';
+import {useApplicationRecordsApi} from '@/hooks/use-application-records-api';
 import {Button} from '@/components/ui/button';
 import {
   Card,
@@ -20,9 +20,10 @@ import {
 } from '@/components/ui/table';
 import {toast} from 'sonner';
 import {FileUp, Download} from 'lucide-react';
+import {getToastErrorMessage} from '@/lib/utils';
 
 export function ImportPage() {
-  const { isDemoMode } = useAuth();
+  const {isDemoMode} = useAuth();
   const api = useApplicationRecordsApi();
   const [isUploading, setIsUploading] = useState(false);
   const [result, setResult] = useState<ExcelImportResult | null>(null);
@@ -44,7 +45,7 @@ export function ImportPage() {
         `Imported ${importResult.importedCount} of ${importResult.totalRows} records`
       );
     } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : 'Import failed');
+      toast.error(getToastErrorMessage(err, 'Import failed'));
     } finally {
       setIsUploading(false);
     }
@@ -72,8 +73,9 @@ export function ImportPage() {
               ref={fileInputRef}
               type="file"
               accept=".xlsx"
+              disabled={isUploading}
               className="text-sm file:mr-4 file:rounded-md file:border file:border-input file:bg-background
-              file:px-4 file:py-2 file:text-sm file:font-medium file:text-foreground hover:file:bg-accent"/>
+                file:px-4 file:py-2 file:text-sm file:font-medium file:text-foreground hover:file:bg-accent"/>
           </div>
 
           <div className="mt-4 flex items-center gap-4">
