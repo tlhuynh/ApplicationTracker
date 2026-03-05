@@ -242,23 +242,6 @@ When running in Development, the interactive Scalar API reference is available a
 dotnet run --project src/backend/ApplicationTracker.Api
 # Then open https://localhost:{port}/scalar/v1
 ```
-
-
-## Features (React Client)
-
-- **Dashboard** — view all application records in a sortable, filterable, paginated table
-- **CRUD** — create, edit, and delete applications via form dialogs
-- **Quick status updates** — advance or reject applications with one click (PATCH endpoint)
-- **Form validation** — client-side validation with red borders and error text
-- **Excel import** — upload `.xlsx` files to bulk import records, with row-level validation (required fields, enum matching, date parsing, URL format), duplicate detection (by company + URL or company + date), and error reporting
-- **Toast notifications** — success/error feedback via Sonner, with sanitized error messages (5xx/network errors show a generic message; 4xx errors show the API message) and 6-second duration
-- **Loading feedback** — semi-transparent overlays on auth pages during form submission; spinner on the Save button in the form dialog (X and Escape blocked while saving); Delete dialog stays open with a spinner while the request is in flight; status buttons on a row are disabled while a status update is pending; file input disabled during Excel upload
-- **Dark/light theme** — toggle with system preference detection, persisted in localStorage
-- **Responsive sidebar** — collapsible navigation with Dashboard and Import pages
-- **Authentication** — register, login, and token refresh via ASP.NET Core Identity + JWT. Email confirmation required before login (console-logged links in development). Password reset via email link. React frontend with login/register pages, protected routes, in-memory access token with silent refresh, automatic session restore on page reload, 401 retry with transparent token refresh, logged-in user redirect away from auth pages, "Remember me" option (session-only vs persistent), server-side refresh token revocation on logout, email confirmation page, forgot password page, and reset password page
-- **Per-user data isolation** — each user only sees their own application records. Records are stamped with the user's ID on creation/import, and all queries filter by user
-- **Demo mode** — "Try Demo" button on the login page lets visitors explore the full app without creating an account. Pre-seeded with sample data stored in `sessionStorage` (survives page refresh, clears when the browser closes). Excel import uses the real backend parser via a public endpoint — no DB write, just validation and parse. Duplicate detection is not available in demo mode
-
 ## Resources
 
 - [.NET 10](https://dotnet.microsoft.com/download/dotnet/10.0)
