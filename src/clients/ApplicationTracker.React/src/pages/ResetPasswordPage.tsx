@@ -5,6 +5,7 @@ import {Button} from '@/components/ui/button';
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from '@/components/ui/card';
 import {Input} from '@/components/ui/input';
 import {Label} from '@/components/ui/label';
+import {Loader2} from 'lucide-react';
 
 interface ResetErrors {
   newPassword?: string;
@@ -89,7 +90,7 @@ export function ResetPasswordPage() {
   if (successMessage) {
     return (
       <div className="flex min-h-screen items-center justify-center p-4">
-        <Card className="w-full max-w-md">
+        <Card className="w-full max-w-md relative">
           <CardHeader>
             <CardTitle className="text-2xl">Password reset</CardTitle>
             <CardDescription>{successMessage}</CardDescription>
@@ -156,6 +157,11 @@ export function ResetPasswordPage() {
             </Button>
           </form>
         </CardContent>
+        {isSubmitting && (
+          <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-background/80 z-10">
+            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+          </div>
+        )}
       </Card>
     </div>
   );
