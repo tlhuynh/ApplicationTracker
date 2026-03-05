@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, Loader2 } from 'lucide-react';
 
 interface LoginErrors {
   email?: string;
@@ -88,7 +88,7 @@ export function LoginPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center p-4">
-      <Card className="w-full max-w-md">
+      <Card className="w-full max-w-md relative">
         <CardHeader>
           <CardTitle className="text-2xl">Login</CardTitle>
           <CardDescription>Enter your credentials to access your account</CardDescription>
@@ -189,6 +189,11 @@ export function LoginPage() {
             No account needed — data is temporary and resets when you close the browser.
           </p>
         </CardContent>
+        {isSubmitting && (
+          <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-background/80 z-10">
+            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+          </div>
+        )}
       </Card>
     </div>
   );

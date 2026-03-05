@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ApiError } from '@/api/client';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, Loader2 } from 'lucide-react';
 interface RegisterErrors {
   email?: string;
   password?: string;
@@ -81,7 +81,7 @@ export function RegisterPage() {
   if (isRegistered) {
     return (
       <div className="flex min-h-screen items-center justify-center p-4">
-        <Card className="w-full max-w-md">
+        <Card className="w-full max-w-md relative">
           <CardHeader>
             <CardTitle className="text-2xl">Check your email</CardTitle>
             <CardDescription>
@@ -176,6 +176,11 @@ export function RegisterPage() {
             </p>
           </form>
         </CardContent>
+        {isSubmitting && (
+          <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-background/80 z-10">
+            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+          </div>
+        )}
       </Card>
     </div>
   );
