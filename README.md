@@ -251,7 +251,8 @@ dotnet run --project src/backend/ApplicationTracker.Api
 - **Quick status updates** — advance or reject applications with one click (PATCH endpoint)
 - **Form validation** — client-side validation with red borders and error text
 - **Excel import** — upload `.xlsx` files to bulk import records, with row-level validation (required fields, enum matching, date parsing, URL format), duplicate detection (by company + URL or company + date), and error reporting
-- **Toast notifications** — success/error feedback via Sonner
+- **Toast notifications** — success/error feedback via Sonner, with sanitized error messages (5xx/network errors show a generic message; 4xx errors show the API message) and 6-second duration
+- **Loading feedback** — semi-transparent overlays on auth pages during form submission; spinner on the Save button in the form dialog (X and Escape blocked while saving); Delete dialog stays open with a spinner while the request is in flight; status buttons on a row are disabled while a status update is pending; file input disabled during Excel upload
 - **Dark/light theme** — toggle with system preference detection, persisted in localStorage
 - **Responsive sidebar** — collapsible navigation with Dashboard and Import pages
 - **Authentication** — register, login, and token refresh via ASP.NET Core Identity + JWT. Email confirmation required before login (console-logged links in development). Password reset via email link. React frontend with login/register pages, protected routes, in-memory access token with silent refresh, automatic session restore on page reload, 401 retry with transparent token refresh, logged-in user redirect away from auth pages, "Remember me" option (session-only vs persistent), server-side refresh token revocation on logout, email confirmation page, forgot password page, and reset password page

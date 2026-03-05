@@ -96,6 +96,7 @@ This is a snapshot of the Claude Code memory from the Windows development machin
 - Tests: ApplicationTable (9 tests), HomePage (3 tests), LoginPage (6 tests), RegisterPage (6 tests), ProtectedRoute (3 tests), App (1 test), NotFoundPage (1 test) — 29 total
 - Auth error handling: shadcn `Alert` (destructive variant) replaces plain `<p>` for server errors on Login/Register. Status-code-based messages: 5xx/405 → generic server error, 4xx → API message passthrough, no `ApiError` → connection error
 - Demo mode — done (see MEMORY.md for full details). Key files: `demoStore.ts`, `demoApplicationRecords.ts`, `use-application-records-api.ts`, `ParseExcelResult`/`ParsedApplicationRow` Core models, `ParseExcelResultDto`, public `POST /api/applicationrecords/parse` endpoint
+- Loading overlay + toast improvements — done (see MEMORY.md for full details). Key patterns: `getToastErrorMessage` in `utils.ts`, `Loader2` overlays on auth pages, `handleOpenChange` wrapper in `ApplicationFormDialog`, `isDeletingRef` (ref) + `isDeletingPending` (state) for delete dialog, `pendingStatusId` for status buttons
 - CI/CD + Azure deployment — done:
   - GitHub Actions: `.github/workflows/deploy-api.yml` (test → deploy to App Service), `.github/workflows/azure-static-web-apps-mango-rock-06c415c0f.yml` (test → deploy to Static Web Apps)
   - API workflow: restores/tests `ApplicationTracker.Api.Tests`, publishes API, deploys via publish profile (`AZURE_APP_SERVICE_NAME`, `AZURE_APP_SERVICE_PUBLISH_PROFILE` secrets)
@@ -164,8 +165,7 @@ This is a snapshot of the Claude Code memory from the Windows development machin
 
 ## Pending Work (in order)
 1. ~~Demo mode~~ — done
-2. **Loading overlay** — prevent background interaction during slow API responses (login, register, and other pages)
-3. **Toast notification improvements** — persist/extend toast duration; sanitize error messages shown to users (avoid exposing technical details)
+2. ~~Loading overlay + toast improvements~~ — done (see MEMORY.md for full details)
 
 ## Mac Development Notes
 - Node.js path on Mac may differ from Windows — check with `which node` if needed
