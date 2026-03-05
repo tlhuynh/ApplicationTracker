@@ -20,6 +20,8 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { STATUS_OPTIONS } from '@/lib/constants';
 import { toast } from 'sonner';
+import { Loader2 } from 'lucide-react';
+import { getToastErrorMessage } from '@/lib/utils';
 
 /** Default form values for a new application */
 const EMPTY_FORM: CreateRequest = {
@@ -133,14 +135,19 @@ export function ApplicationFormDialog({
       await onSubmit(form);
       onOpenChange(false);
     } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : 'Something went wrong');
+      toast.error(getToastErrorMessage(err, 'Something went wrong'));
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  const handleOpenChange = (isOpen: boolean) => {
+    if (!isOpen && isSubmitting) return;
+    onOpenChange(isOpen);
+  };
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-[500px]" onInteractOutside={(e) => e.preventDefault()}>
         <DialogHeader>
           <DialogTitle>{isEditMode ? 'Edit Application' : 'New Application'}</DialogTitle>
@@ -214,7 +221,14 @@ export function ApplicationFormDialog({
 
             <DialogFooter>
               <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? 'Saving...' : 'Save'}
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    Saving...
+                  </>
+                ) : (
+                  'Save'
+                )}
               </Button>
             </DialogFooter>
           </form>

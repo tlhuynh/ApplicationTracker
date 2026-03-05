@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from 'react';
+﻿import { useEffect, useRef, useState } from 'react';
 import { type ApplicationRecord, type CreateRequest } from '@/api/applicationRecords';
 import { useApplicationRecordsApi } from '@/hooks/use-application-records-api';
 import { ApplicationFormDialog } from
@@ -17,8 +17,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Search } from 'lucide-react';
+import { Loader2, Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import { getToastErrorMessage } from '@/lib/utils';
 
 /*
 * Page is where we put everything together
@@ -37,6 +38,9 @@ export function HomePage() {
   const [editingRecord, setEditingRecord] = useState<ApplicationRecord | null>(null);
   const [deletingRecord, setDeletingRecord] = useState<ApplicationRecord | null>(null);
   const [searchFilter, setSearchFilter] = useState('');
+  const [isDeletingPending, setIsDeletingPending] = useState(false);
+  const [pendingStatusId, setPendingStatusId] = useState<number | null>(null);
+  const isDeletingRef = useRef(false);
 
   /*
   * useEffect for API calls
@@ -102,30 +106,39 @@ export function HomePage() {
   // confirmDelete — replace remove() with api.remove()
   const confirmDelete = () => {
     if (!deletingRecord?.id) return;
+    isDeletingRef.current = true;
+    setIsDeletingPending(true);
     api
       .remove(Number(deletingRecord.id))
       .then(refreshApplications)
       .catch((err: unknown) => {
-        toast.error(err instanceof Error ? err.message : 'Failed to delete application');
+        toast.error(getToastErrorMessage(err, 'Failed to delete application'));
       })
-      .finally(() => setDeletingRecord(null));
+      .finally(() => {
+        isDeletingRef.current = false;
+        setIsDeletingPending(false);
+        setDeletingRecord(null);
+      });
   };
 
   // handleStatusChange — replace patchStatus() with api.patchStatus()
   const handleStatusChange = (record: ApplicationRecord, newStatus: number) => {
     if (!record.id) return;
+    setPendingStatusId(Number(record.id));
     api
       .patchStatus(Number(record.id), newStatus)
       .then(refreshApplications)
       .catch((err: unknown) => {
-        toast.error(err instanceof Error ? err.message : 'Failed to update status');
-      });
+        toast.error(getToastErrorMessage(err, 'Failed to update status'));
+      })
+      .finally(() => setPendingStatusId(null));
   };
 
   const tableColumns = createColumns({
     onEdit: handleEdit,
     onDelete: handleDelete,
     onStatusChange: handleStatusChange,
+    pendingStatusId,
   });
 
   const handleDialogClose = (open: boolean) => {
@@ -160,7 +173,7 @@ export function HomePage() {
         onOpenChange={handleDialogClose}
         onSubmit={editingRecord ? handleUpdate : handleCreate}
         initialData={editingRecord ?? undefined} />
-      <AlertDialog open={!!deletingRecord} onOpenChange={(open) => { if (!open) setDeletingRecord(null); }}>
+      <AlertDialog open={!!deletingRecord} onOpenChange={(open) => { if (!open && !isDeletingRef.current) setDeletingRecord(null); }}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Application</AlertDialogTitle>
@@ -169,8 +182,17 @@ export function HomePage() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDelete}>Delete</AlertDialogAction>
+            <AlertDialogCancel disabled={isDeletingPending}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} disabled={isDeletingPending}>
+              {isDeletingPending ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  Deleting...
+                </>
+              ) : (
+                'Delete'
+              )}
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

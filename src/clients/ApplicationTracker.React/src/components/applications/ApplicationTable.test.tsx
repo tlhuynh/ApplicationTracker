@@ -30,6 +30,7 @@ const columns = createColumns({
   onEdit: () => {},
   onDelete: () => {},
   onStatusChange: () => {},
+  pendingStatusId: null,
 });
 
 describe('ApplicationTable', () => {
@@ -86,6 +87,7 @@ describe('ApplicationTable', () => {
       onEdit: () => {},
       onDelete: () => {},
       onStatusChange,
+      pendingStatusId: null,
     });
 
     render(<ApplicationTable columns={cols} data={mockApplications} />);
@@ -103,6 +105,7 @@ describe('ApplicationTable', () => {
       onEdit: () => {},
       onDelete: () => {},
       onStatusChange,
+      pendingStatusId: null,
     });
 
     render(<ApplicationTable columns={cols} data={mockApplications} />);
@@ -121,6 +124,7 @@ describe('ApplicationTable', () => {
       onEdit: () => {},
       onDelete: () => {},
       onStatusChange: () => {},
+      pendingStatusId: null,
     });
 
     render(<ApplicationTable columns={cols} data={rejectedData} />);
@@ -137,6 +141,7 @@ describe('ApplicationTable', () => {
       onEdit: () => {},
       onDelete: () => {},
       onStatusChange: () => {},
+      pendingStatusId: null,
     });
 
     render(<ApplicationTable columns={cols} data={offeredData} />);
