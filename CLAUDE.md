@@ -173,6 +173,30 @@ public class ExampleService {
 }
 ```
 
+### TypeScript / Angular
+
+- **Strict type checking** — strict mode enabled, no `any`; use `unknown` when type is uncertain
+- **Prefer type inference** when the type is obvious from context
+- **Standalone components** — always use standalone; do NOT set `standalone: true` explicitly (default in Angular v20+)
+- **`inject()` function** for dependency injection — not constructor injection
+- **Signals for state** — `signal()` for local state, `computed()` for derived state; never use `mutate()`, use `update()` or `set()` instead
+- **`input()` and `output()` functions** instead of `@Input()` / `@Output()` decorators
+- **`ChangeDetectionStrategy.OnPush`** on every component
+- **Reactive Forms** — `FormGroup` / `FormControl` / `Validators`; avoid template-driven forms
+- **Native control flow** — `@if`, `@for`, `@switch` in templates; never use `*ngIf`, `*ngFor`, `*ngSwitch`
+- **No `ngClass`** — use `class` bindings instead
+- **No `ngStyle`** — use `style` bindings instead
+- **No `@HostBinding` / `@HostListener`** — put host bindings inside the `host` object of `@Component` or `@Directive`
+- **Lazy loading** — feature routes loaded lazily via `loadComponent()` or `loadChildren()`
+- **`providedIn: 'root'`** for singleton services
+- **`NgOptimizedImage`** for all static images (not for inline base64)
+- **Async pipe** to handle observables in templates
+- **Accessibility** — must pass AXE checks and meet WCAG AA minimums (focus management, color contrast, ARIA attributes)
+- **Angular Material** for UI components — Azure/Blue theme
+- **SCSS** for component styles
+- **`inject()` for DI**, paths relative to component TS file for external templates/styles
+- **Explicit access modifiers** on all methods (`public`, `private`, `protected`) — never omit
+
 ### TypeScript / React
 
 - **TypeScript** — strict mode, no `any` unless unavoidable
