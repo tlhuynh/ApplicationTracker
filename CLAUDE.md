@@ -273,3 +273,4 @@ npm run test:watch
 - For file edits: ask "Should I make this change, or would you like to handle it?"
 - **React concepts**: see `docs/react-concepts.md` for topics already covered — don't re-explain these from scratch
 - **Project context**: see `docs/windows-memory.md` for implementation progress, setup details, and troubleshooting notes
+- **Code comments**: all generated code must include comments — inline comments, block/section comments, and doc comments (XML `/// <summary>` for C#, JSDoc `/** */` for TypeScript). Avoid one-liner comments. Only comment complex or non-obvious logic — skip self-evident lines like `return Ok(result)` or simple assignments
