@@ -22,13 +22,13 @@ export const routes: Routes = [
     path: 'login',
     canActivate: [guestGuard],
     loadComponent: () =>
-      import('./features/auth/login/login.component').then((m) => m.LoginComponent),
+      import('./features/auth/login/login').then((m) => m.Login),
   },
   {
     path: 'register',
     canActivate: [guestGuard],
     loadComponent: () =>
-      import('./features/auth/register/register.component').then((m) => m.RegisterComponent),
+      import('./features/auth/register/register').then((m) => m.Register),
   },
 
   // ── Protected routes ─────────────────────────────────────────────────────
@@ -40,17 +40,17 @@ export const routes: Routes = [
      * Child routes render inside the shell's <router-outlet>.
      */
     loadComponent: () =>
-      import('./features/shell/shell.component').then((m) => m.ShellComponent),
+      import('./features/shell/shell').then((m) => m.ShellComponent), // shell uses .component convention (manually created)
     children: [
       {
         path: '',
         loadComponent: () =>
-          import('./features/applications/home/home.component').then((m) => m.HomeComponent),
+          import('./features/applications/home/home').then((m) => m.Home),
       },
       {
         path: 'import',
         loadComponent: () =>
-          import('./features/applications/import/import.component').then((m) => m.ImportComponent),
+          import('./features/applications/import/import').then((m) => m.Import),
       },
     ],
   },
@@ -59,6 +59,6 @@ export const routes: Routes = [
   {
     path: '**',
     loadComponent: () =>
-      import('./shared/not-found/not-found.component').then((m) => m.NotFoundComponent),
+      import('./shared/not-found/not-found').then((m) => m.NotFound),
   },
 ];

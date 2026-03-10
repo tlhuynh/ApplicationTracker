@@ -196,6 +196,7 @@ public class ExampleService {
 - **SCSS** for component styles
 - **`inject()` for DI**, paths relative to component TS file for external templates/styles
 - **Explicit access modifiers** on all methods (`public`, `private`, `protected`) — never omit
+- **Angular 21 file naming**: CLI-generated files omit `.component` suffix — `login.ts` not `login.component.ts`, class name is `Login` not `LoginComponent`. Manually created files (written without CLI) may use the `.component` convention — check actual filenames before importing
 
 ### TypeScript / React
 

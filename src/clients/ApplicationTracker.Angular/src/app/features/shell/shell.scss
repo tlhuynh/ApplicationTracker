@@ -1,0 +1,44 @@
+﻿// Full viewport height container
+.shell-container {
+  height: 100vh;
+}
+
+// Fixed-width sidebar
+.shell-sidenav {
+  width: 220px;
+
+  .sidenav-header {
+    padding: 16px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+
+    .app-title {
+      font-size: 1.2rem;
+      font-weight: 600;
+    }
+  }
+
+  // Highlight the active nav item using Angular Material's theme color
+  .active-link {
+    background-color: rgba(var(--mat-sys-primary), 0.12);
+    color: var(--mat-sys-primary);
+
+    mat-icon {
+      color: var(--mat-sys-primary);
+    }
+  }
+}
+
+// Pushes user info and logout to the right side of the toolbar
+.toolbar-spacer {
+  flex: 1;
+}
+
+.current-user {
+  margin-right: 8px;
+  font-size: 0.875rem;
+}
+
+// Page content padding
+.shell-content {
+  padding: 24px;
+}

@@ -14,10 +14,11 @@ describe('App', () => {
     expect(app).toBeTruthy();
   });
 
-  it('should render title', async () => {
+  it('should contain a router outlet', () => {
     const fixture = TestBed.createComponent(App);
-    await fixture.whenStable();
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('h1')?.textContent).toContain('Hello, ApplicationTracker.Angular');
+
+    // App component is purely a router shell — its only content is router-outlet
+    expect(compiled.querySelector('router-outlet')).not.toBeNull();
   });
 });
