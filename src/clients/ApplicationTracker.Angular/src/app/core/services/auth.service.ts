@@ -141,7 +141,6 @@ export class AuthService {
     }
 
     return this.refresh().pipe(
-      tap(() => {}),
       catchError(() => {
         // Token expired or revoked — clear stale storage and continue as unauthenticated
         this.clearAuth();
