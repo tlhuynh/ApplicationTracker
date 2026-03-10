@@ -197,6 +197,8 @@ public class ExampleService {
 - **`inject()` for DI**, paths relative to component TS file for external templates/styles
 - **Explicit access modifiers** on all methods (`public`, `private`, `protected`) — never omit
 - **Angular 21 file naming**: CLI-generated files omit `.component` suffix — `login.ts` not `login.component.ts`, class name is `Login` not `LoginComponent`. Manually created files (written without CLI) may use the `.component` convention — check actual filenames before importing
+- **Angular Material card titles**: `mat-card-title` and `mat-card-subtitle` render as `div` by default — always use them as directives on semantic elements: `<h2 mat-card-title>` and `<p mat-card-subtitle>` for proper heading roles and WCAG AA compliance
+- **Angular Material tests**: always include `provideNoopAnimations()` in providers for any component that uses Angular Material — required for components to render their content correctly in tests
 
 ### TypeScript / React
 
