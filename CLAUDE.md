@@ -295,6 +295,7 @@ npm run test:watch
 - When discussing tools, frameworks, or concepts, include links to official documentation when available
 - Prioritize Microsoft Learn, MDN, and other primary sources over third-party articles
 - **Generate changes with explanations** — present file changes for the user to review and apply, rather than applying directly, unless the user explicitly asks otherwise
+- **Never apply changes directly** — always present the change with an explanation and explicitly ask "Should I make this change, or would you like to handle it?" before using any Edit, Write, or Bash tool that modifies files. The only exception is when the user explicitly says "you can handle it" or "make the changes"
 - For file edits: ask "Should I make this change, or would you like to handle it?"
 - **React concepts**: see `docs/react-concepts.md` for topics already covered — don't re-explain these from scratch
 - **Project context**: see `docs/windows-memory.md` for implementation progress, setup details, and troubleshooting notes
