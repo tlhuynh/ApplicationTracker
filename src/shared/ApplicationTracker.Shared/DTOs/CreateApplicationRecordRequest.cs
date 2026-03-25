@@ -35,4 +35,10 @@ public class CreateApplicationRecordRequest {
 	/// </summary>
 	[MaxLength(5000)]
 	public string? Notes { get; set; }
+
+	/// <summary>
+	/// Gets or sets max salary from the job posting
+	/// </summary>
+	[Range(0, (double)decimal.MaxValue)]
+	public decimal? SalaryMax { get; set; }
 }
