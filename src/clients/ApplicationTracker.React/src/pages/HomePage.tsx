@@ -1,4 +1,5 @@
 ﻿import { useEffect, useRef, useState } from 'react';
+import { type SortingState } from '@tanstack/react-table';
 import { type ApplicationRecord, type CreateRequest } from '@/api/applicationRecords';
 import { useApplicationRecordsApi } from '@/hooks/use-application-records-api';
 import { ApplicationFormDialog } from
@@ -21,6 +22,10 @@ import { Loader2, Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { getToastErrorMessage } from '@/lib/utils';
 
+/** sessionStorage keys for persisting table UI state across navigation. */
+const TABLE_SORT_KEY = 'table_sorting';
+const TABLE_FILTER_KEY = 'table_filter';
+
 /*
 * Page is where we put everything together
 *
@@ -37,7 +42,12 @@ export function HomePage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingRecord, setEditingRecord] = useState<ApplicationRecord | null>(null);
   const [deletingRecord, setDeletingRecord] = useState<ApplicationRecord | null>(null);
-  const [searchFilter, setSearchFilter] = useState('');
+  const [searchFilter, setSearchFilter] = useState<string>(
+    () => sessionStorage.getItem(TABLE_FILTER_KEY) ?? ''
+  );
+  const [sorting, setSorting] = useState<SortingState>(
+    () => JSON.parse(sessionStorage.getItem(TABLE_SORT_KEY) ?? '[]') as SortingState
+  );
   const [isDeletingPending, setIsDeletingPending] = useState(false);
   const [pendingStatusId, setPendingStatusId] = useState<number | null>(null);
   const isDeletingRef = useRef(false);
@@ -59,6 +69,10 @@ export function HomePage() {
       })
       .finally(() => setIsLoading(false));
   }, [api]);
+
+  // Persist table UI state to sessionStorage so it survives navigation but clears on page refresh.
+  useEffect(() => { sessionStorage.setItem(TABLE_FILTER_KEY, searchFilter); }, [searchFilter]);
+  useEffect(() => { sessionStorage.setItem(TABLE_SORT_KEY, JSON.stringify(sorting)); }, [sorting]);
 
   /*
   * The difference matters:
@@ -167,7 +181,9 @@ export function HomePage() {
       {!isLoading && !error && <ApplicationTable columns={tableColumns}
                                                  data={applications}
                                                  globalFilter={searchFilter}
-                                                 onGlobalFilterChange={setSearchFilter}/>}
+                                                 onGlobalFilterChange={setSearchFilter}
+                                                 sorting={sorting}
+                                                 onSortingChange={setSorting}/>}
       <ApplicationFormDialog
         open={dialogOpen}
         onOpenChange={handleDialogClose}
