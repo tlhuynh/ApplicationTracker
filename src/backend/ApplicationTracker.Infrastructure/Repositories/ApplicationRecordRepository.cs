@@ -11,6 +11,14 @@ namespace ApplicationTracker.Infrastructure.Repositories;
 public class ApplicationRecordRepository(ApplicationDbContext context) : Repository<ApplicationRecord>(context),
 	IApplicationRecordRepository {
 	/// <inheritdoc />
+	public override async Task<List<ApplicationRecord>> GetAllAsync(string userId) {
+		return await _dbSet
+			.Where(e => e.UserId == userId)
+			.OrderByDescending(r => r.AppliedDate)
+			.ToListAsync();
+	}
+
+	/// <inheritdoc />
 	public async Task<bool> ExistsAsync(string companyName, DateTime appliedDate, string? postingUrl, string userId) {
 		if (postingUrl is not null) {
 			return await _dbSet.AnyAsync(r =>
