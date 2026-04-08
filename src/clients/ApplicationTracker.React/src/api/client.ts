@@ -51,18 +51,35 @@ export function getAccessToken(): string | null {
   return accessToken;
 }
 
-/** Exchanges a refresh token for a new access + refresh token pair. */
+/**
+ * Shared in-flight refresh promise.
+ *
+ * Deduplicates concurrent refresh calls: if both the proactive timer and a reactive
+ * 401-retry fire at the same time, they share one HTTP call instead of each sending
+ * a request with the same (soon-to-be-rotated) token. The second caller to arrive
+ * simply awaits the promise already in flight.
+ */
+let pendingRefresh: Promise<AuthResponse> | null = null;
+
+/**
+ * Exchanges a refresh token for a new access + refresh token pair.
+ *
+ * If a refresh is already in flight, returns the existing promise so concurrent
+ * callers don't each rotate the token independently.
+ */
 export async function refreshToken(token: string): Promise<AuthResponse> {
-  const response = await fetch(`${API_BASE_URL}/api/auth/refresh`, {
+  if (pendingRefresh) return pendingRefresh;
+  pendingRefresh = fetch(`${API_BASE_URL}/api/auth/refresh`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(token),
-  });
-  return handleResponse<AuthResponse>(response);
+  })
+    .then(handleResponse<AuthResponse>)
+    .finally(() => {
+      pendingRefresh = null;
+    });
+  return pendingRefresh;
 }
-
-/** Tracks whether a 401 retry is already in progress to prevent infinite loops. */
-let isRefreshing = false;
 
 /**
  * Fetch wrapper that attaches the Authorization header when a token is available.
@@ -70,6 +87,9 @@ let isRefreshing = false;
  * If the server responds with 401 (token expired), attempts a single token refresh
  * and retries the original request. If the refresh also fails, clears auth state
  * so the user is redirected to login.
+ *
+ * The retry uses plain `fetch` (not `authFetch`), so there is no risk of infinite recursion.
+ * Concurrent 401-retries are deduplicated inside `refreshToken`.
  */
 export async function authFetch(url: string, options: RequestInit = {}): Promise<Response> {
   const headers = new Headers(options.headers);
@@ -80,18 +100,15 @@ export async function authFetch(url: string, options: RequestInit = {}): Promise
 
   const response = await fetch(`${API_BASE_URL}${url}`, { ...options, headers });
 
-  // Retry logic to try refreshing the token, log out user if this retry failed.
-  if (response.status === 401 && !isRefreshing) {
+  if (response.status === 401) {
     const storedRefreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
     if (storedRefreshToken) {
-      isRefreshing = true;
       try {
         const result = await refreshToken(storedRefreshToken);
         const newAccessToken = result.accessToken ?? '';
-        const newRefreshToken = result.refreshToken ?? '';
 
         setAccessToken(newAccessToken);
-        localStorage.setItem(REFRESH_TOKEN_KEY, newRefreshToken);
+        localStorage.setItem(REFRESH_TOKEN_KEY, result.refreshToken ?? '');
 
         // Retry the original request with the new token
         const retryHeaders = new Headers(options.headers);
@@ -101,8 +118,6 @@ export async function authFetch(url: string, options: RequestInit = {}): Promise
         // Refresh failed — clear auth state so ProtectedRoute redirects to login
         setAccessToken(null);
         localStorage.removeItem(REFRESH_TOKEN_KEY);
-      } finally {
-        isRefreshing = false;
       }
     }
   }
