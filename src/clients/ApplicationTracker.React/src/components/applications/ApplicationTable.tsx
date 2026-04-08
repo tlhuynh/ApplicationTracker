@@ -1,6 +1,6 @@
-﻿import {useState} from 'react';
-import {
+﻿import {
   type ColumnDef,
+  type OnChangeFn,
   type SortingState,
   flexRender,
   getCoreRowModel,
@@ -29,6 +29,10 @@ interface ApplicationTableProps<TData, TValue> {
   data: TData[];
   globalFilter?: string;
   onGlobalFilterChange?: (value: string) => void;
+  /** Controlled sort state lifted from the parent for session persistence. */
+  sorting?: SortingState;
+  /** Called by TanStack Table when the user changes the sort order. */
+  onSortingChange?: OnChangeFn<SortingState>;
 }
 
 export function ApplicationTable<TData, TValue>({
@@ -36,8 +40,9 @@ export function ApplicationTable<TData, TValue>({
   data,
   globalFilter,
   onGlobalFilterChange,
+  sorting = [],
+  onSortingChange,
 }: ApplicationTableProps<TData, TValue>) {
-  const [sorting, setSorting] = useState<SortingState>([]);
 
   /*
   * Notes about useReactTable: a hook from tanstack table, you provide data and column definition, it will return
@@ -57,7 +62,7 @@ export function ApplicationTable<TData, TValue>({
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
-    onSortingChange: setSorting,
+    onSortingChange: onSortingChange ?? (() => {}),
     onGlobalFilterChange,
     state: {sorting, globalFilter},
   });

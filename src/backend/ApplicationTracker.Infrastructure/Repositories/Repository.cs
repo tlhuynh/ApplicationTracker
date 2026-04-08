@@ -16,7 +16,7 @@ public class Repository<T>(ApplicationDbContext context) : IRepository<T>
 		return await _dbSet.FirstOrDefaultAsync(e => e.Id == id && e.UserId == userId);
 	}
 
-	public async Task<List<T>> GetAllAsync(string userId) {
+	public virtual async Task<List<T>> GetAllAsync(string userId) {
 		return await _dbSet.Where(e => e.UserId == userId).ToListAsync();
 	}
 

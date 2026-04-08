@@ -23,14 +23,25 @@ import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
 import { getToastErrorMessage } from '@/lib/utils';
 
-/** Default form values for a new application */
-const EMPTY_FORM: CreateRequest = {
-  companyName: '',
-  status: 0,
-  appliedDate: null,
-  postingUrl: null,
-  notes: null,
-};
+/** Returns today's date as an ISO datetime string (local time, not UTC). */
+function getTodayIso(): string {
+  const d = new Date();
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  return `${yyyy}-${mm}-${dd}T00:00:00`;
+}
+
+/** Returns default form values for a new application. Called as a function so the date is fresh on each open. */
+function createEmptyForm(): CreateRequest {
+  return {
+    companyName: '',
+    status: 0,
+    appliedDate: getTodayIso(),
+    postingUrl: null,
+    notes: null,
+  };
+}
 
 
 /*
@@ -60,7 +71,7 @@ export function ApplicationFormDialog({
   onSubmit,
   initialData,
 }: ApplicationFormDialogProps) {
-  const [form, setForm] = useState<CreateRequest>(EMPTY_FORM);
+  const [form, setForm] = useState<CreateRequest>(createEmptyForm);
   const [isSubmitting, setIsSubmitting] = useState(false);
   /*
   * an object
@@ -87,7 +98,7 @@ export function ApplicationFormDialog({
             postingUrl: initialData.postingUrl ?? null,
             notes: initialData.notes ?? null,
           }
-          : EMPTY_FORM,
+          : createEmptyForm(),
       );
     }
   }, [open, initialData]);

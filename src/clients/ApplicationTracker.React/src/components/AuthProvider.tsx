@@ -48,13 +48,10 @@ export function AuthProvider({children}: AuthProviderProps) {
    * that occurs when a useCallback references itself recursively.
    * The ref always points to the latest version of the function.
    */
-  const scheduleRefreshRef = useRef<(expiresAt: string, currentRefreshToken: string) => void>(
-    () => {
-    },
-  );
+  const scheduleRefreshRef = useRef<(expiresAt: string) => void>(() => {});
 
   useEffect(() => {
-    scheduleRefreshRef.current = (expiresAt: string, currentRefreshToken: string) => {
+    scheduleRefreshRef.current = (expiresAt: string) => {
       if (refreshTimerRef.current) {
         clearTimeout(refreshTimerRef.current);
       }
@@ -64,7 +61,11 @@ export function AuthProvider({children}: AuthProviderProps) {
       const delay = Math.max((expiresMs - nowMs) * 0.8, 10_000);
 
       refreshTimerRef.current = setTimeout(() => {
-        refreshToken(currentRefreshToken)
+        // Read the latest token at execution time to avoid stale closures
+        const latestToken = localStorage.getItem(REFRESH_TOKEN_KEY);
+        if (!latestToken) return;
+
+        refreshToken(latestToken)
           .then((response) => {
             const newAccessToken = response.accessToken ?? '';
             const newRefreshToken = response.refreshToken ?? '';
@@ -74,7 +75,7 @@ export function AuthProvider({children}: AuthProviderProps) {
             localStorage.setItem(REFRESH_TOKEN_KEY, newRefreshToken);
 
             if (response.expiresAt) {
-              scheduleRefreshRef.current(response.expiresAt, newRefreshToken);
+              scheduleRefreshRef.current(response.expiresAt);
             }
           })
           .catch(() => {
