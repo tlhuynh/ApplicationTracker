@@ -448,3 +448,8 @@ coverage/
 # Windows NUL device artifact
 ###############################
 nul
+
+###############################
+# Sensitive docs
+###############################
+docs/windows-memory.md
