@@ -122,6 +122,7 @@ jobs:
 
       - name: Run EF database update
         run: |
+          export ConnectionStrings__DefaultConnection="${{ secrets.AZURE_SQL_CONNECTION_STRING }}"
           dotnet ef database update \
             --project src/backend/ApplicationTracker.Infrastructure \
             --startup-project src/backend/ApplicationTracker.Api \
