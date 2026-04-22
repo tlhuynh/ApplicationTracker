@@ -3,8 +3,9 @@ using ApplicationTracker.Core.Interfaces.Services;
 using ApplicationTracker.Core.Models;
 using ApplicationTracker.Shared.DTOs;
 using ApplicationTracker.Shared.Mappings;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using System.Security.Claims;
 
 namespace ApplicationTracker.Api.Controllers;
@@ -17,12 +18,47 @@ namespace ApplicationTracker.Api.Controllers;
 [Route("api/[controller]")]
 public class ApplicationRecordsController(
 	IApplicationRecordService service,
-	IExcelImportService excelImportService) : ControllerBase {
+	IExcelImportService excelImportService,
+	IConfiguration configuration) : ControllerBase {
+	private readonly long _maxExcelUploadBytes = configuration.GetValue<long?>("App:MaxExcelUploadBytes") ?? 5_242_880;
+
 	/// <summary>
-	/// Extracts the authenticated user's identifier from the JWT claims.
+	/// Resolves the authenticated user's identifier from the JWT claims.
 	/// </summary>
-	private string GetUserId() {
-		return User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+	private bool TryGetUserId(out string userId) {
+		string? id = User.FindFirstValue(ClaimTypes.NameIdentifier);
+		if (string.IsNullOrEmpty(id)) {
+			userId = string.Empty;
+			return false;
+		}
+
+		userId = id;
+		return true;
+	}
+
+	/// <summary>
+	/// Validates extension and size for Excel uploads.
+	/// </summary>
+	private bool TryValidateExcelFile(IFormFile file, out string errorMessage) {
+		if (file.Length == 0) {
+			errorMessage = "No file uploaded.";
+			return false;
+		}
+
+		if (file.Length > _maxExcelUploadBytes) {
+			long maxMb = _maxExcelUploadBytes / (1024 * 1024);
+			errorMessage = $"File exceeds maximum size of {maxMb} MB.";
+			return false;
+		}
+
+		string extension = Path.GetExtension(file.FileName);
+		if (!string.Equals(extension, ".xlsx", StringComparison.OrdinalIgnoreCase)) {
+			errorMessage = "Only .xlsx files are supported.";
+			return false;
+		}
+
+		errorMessage = string.Empty;
+		return true;
 	}
 
 	/// <summary>
@@ -30,7 +66,9 @@ public class ApplicationRecordsController(
 	/// </summary>
 	[HttpGet]
 	public async Task<ActionResult<List<ApplicationRecordDto>>> GetAll() {
-		string userId = GetUserId();
+		if (!TryGetUserId(out string userId)) {
+			return Unauthorized();
+		}
 		List<ApplicationRecord> records = await service.GetAllAsync(userId);
 		List<ApplicationRecordDto> dtos = records.Select(r => r.ToDto()).ToList();
 		return Ok(dtos);
@@ -42,7 +80,9 @@ public class ApplicationRecordsController(
 	/// <param name="id">The record identifier.</param>
 	[HttpGet("{id:int}")]
 	public async Task<ActionResult<ApplicationRecordDto>> GetById(int id) {
-		string userId = GetUserId();
+		if (!TryGetUserId(out string userId)) {
+			return Unauthorized();
+		}
 		ApplicationRecord? record = await service.GetByIdAsync(id, userId);
 		if (record is null) {
 			return NotFound();
@@ -57,7 +97,9 @@ public class ApplicationRecordsController(
 	/// <param name="request">The creation request.</param>
 	[HttpPost]
 	public async Task<ActionResult<ApplicationRecordDto>> Create(CreateApplicationRecordRequest request) {
-		string userId = GetUserId();
+		if (!TryGetUserId(out string userId)) {
+			return Unauthorized();
+		}
 		ApplicationRecord entity = request.ToEntity();
 		ApplicationRecord created = await service.CreateAsync(entity, userId);
 		ApplicationRecordDto dto = created.ToDto();
@@ -71,7 +113,9 @@ public class ApplicationRecordsController(
 	/// <param name="request">The update request.</param>
 	[HttpPut("{id:int}")]
 	public async Task<ActionResult<ApplicationRecordDto>> Update(int id, UpdateApplicationRecordRequest request) {
-		string userId = GetUserId();
+		if (!TryGetUserId(out string userId)) {
+			return Unauthorized();
+		}
 		ApplicationRecord updatedFields = new() {
 			CompanyName = request.CompanyName,
 			Status = request.Status,
@@ -95,7 +139,9 @@ public class ApplicationRecordsController(
 	/// <param name="request">The patch request containing the new status.</param>
 	[HttpPatch("{id:int}/status")]
 	public async Task<ActionResult<ApplicationRecordDto>> PatchStatus(int id, PatchStatusRequest request) {
-		string userId = GetUserId();
+		if (!TryGetUserId(out string userId)) {
+			return Unauthorized();
+		}
 		ApplicationRecord? updated = await service.UpdateStatusAsync(id, request.Status, userId);
 		if (updated is null) {
 			return NotFound();
@@ -110,7 +156,9 @@ public class ApplicationRecordsController(
 	/// <param name="id">The identifier of the record to delete.</param>
 	[HttpDelete("{id:int}")]
 	public async Task<IActionResult> Delete(int id) {
-		string userId = GetUserId();
+		if (!TryGetUserId(out string userId)) {
+			return Unauthorized();
+		}
 		bool deleted = await service.DeleteAsync(id, userId);
 		if (!deleted) {
 			return NotFound();
@@ -126,16 +174,13 @@ public class ApplicationRecordsController(
 	/// <param name="file">The .xlsx file to import.</param>
 	[HttpPost("import")]
 	public async Task<ActionResult<ExcelImportResultDto>> Import(IFormFile file) {
-		if (file.Length == 0) {
-			return BadRequest("No file uploaded.");
+		if (!TryValidateExcelFile(file, out string validationError)) {
+			return BadRequest(validationError);
 		}
 
-		string extension = Path.GetExtension(file.FileName);
-		if (!string.Equals(extension, ".xlsx", StringComparison.OrdinalIgnoreCase)) {
-			return BadRequest("Only .xlsx files are supported.");
+		if (!TryGetUserId(out string userId)) {
+			return Unauthorized();
 		}
-
-		string userId = GetUserId();
 		await using Stream stream = file.OpenReadStream();
 		ExcelImportResult result = await excelImportService.ImportAsync(stream, userId);
 		return Ok(result.ToDto());
@@ -149,13 +194,8 @@ public class ApplicationRecordsController(
 	[AllowAnonymous]
 	[HttpPost("parse")]
 	public async Task<ActionResult<ParseExcelResultDto>> Parse(IFormFile file) {
-		if (file.Length == 0) {
-			return BadRequest("No file uploaded.");
-		}
-
-		string extension = Path.GetExtension(file.FileName);
-		if (!string.Equals(extension, ".xlsx", StringComparison.OrdinalIgnoreCase)) {
-			return BadRequest("Only .xlsx files are supported.");
+		if (!TryValidateExcelFile(file, out string validationError)) {
+			return BadRequest(validationError);
 		}
 
 		await using Stream stream = file.OpenReadStream();

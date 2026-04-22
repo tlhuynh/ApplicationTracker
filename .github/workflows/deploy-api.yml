@@ -1,4 +1,9 @@
-﻿name: Deploy API to Azure App Service
+﻿# Deploy API to Azure App Service.
+# Migrate job requires secrets: AZURE_CREDENTIALS, AZURE_RESOURCE_GROUP,
+# AZURE_SQL_SERVER_NAME, AZURE_SQL_CONNECTION_STRING (see migrate-database.yml).
+# Manual-only migration: .github/workflows/migrate-database.yml (workflow_dispatch).
+
+name: Deploy API to Azure App Service
 
 on:
   push:
@@ -29,10 +34,69 @@ jobs:
       - name: Run tests
         run: dotnet test tests/ApplicationTracker.Api.Tests -c Release --no-restore --verbosity normal
 
+  migrate:
+    name: Apply EF migrations (Azure SQL)
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.x'
+
+      - name: Install EF Core tools
+        run: |
+          dotnet tool install --global dotnet-ef
+          echo "$HOME/.dotnet/tools" >> "$GITHUB_PATH"
+
+      - name: Restore for EF
+        run: dotnet restore src/backend/ApplicationTracker.Api
+
+      - name: Azure login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Open SQL firewall for this runner
+        id: firewall
+        run: |
+          RUNNER_IP=$(curl -sSf https://api.ipify.org)
+          echo "Runner public IP: $RUNNER_IP"
+          RULE_NAME="github-deploy-migrate-${{ github.run_id }}-${{ github.run_attempt }}"
+          echo "rule_name=$RULE_NAME" >> "$GITHUB_OUTPUT"
+          az sql server firewall-rule create \
+            --resource-group "${{ secrets.AZURE_RESOURCE_GROUP }}" \
+            --server "${{ secrets.AZURE_SQL_SERVER_NAME }}" \
+            --name "$RULE_NAME" \
+            --start-ip-address "$RUNNER_IP" \
+            --end-ip-address "$RUNNER_IP"
+
+      - name: Run EF database update
+        run: |
+          dotnet ef database update \
+            --project src/backend/ApplicationTracker.Infrastructure \
+            --startup-project src/backend/ApplicationTracker.Api \
+            --connection "${{ secrets.AZURE_SQL_CONNECTION_STRING }}"
+
+      - name: Remove SQL firewall rule
+        if: always()
+        run: |
+          RULE_NAME="${{ steps.firewall.outputs.rule_name }}"
+          if [ -n "$RULE_NAME" ]; then
+            az sql server firewall-rule delete \
+              --resource-group "${{ secrets.AZURE_RESOURCE_GROUP }}" \
+              --server "${{ secrets.AZURE_SQL_SERVER_NAME }}" \
+              --name "$RULE_NAME" || true
+          fi
+
   deploy:
     name: Deploy to Azure
     runs-on: ubuntu-latest
-    needs: test
+    needs: [test, migrate]
 
     steps:
       - name: Checkout code
