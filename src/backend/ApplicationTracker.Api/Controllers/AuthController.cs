@@ -1,4 +1,5 @@
-﻿using ApplicationTracker.Core.Entities;
+﻿using ApplicationTracker.Api.Services;
+using ApplicationTracker.Core.Entities;
 using ApplicationTracker.Core.Interfaces.Services;
 using ApplicationTracker.Infrastructure.Data;
 using ApplicationTracker.Shared.DTOs;
@@ -6,6 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace ApplicationTracker.Api.Controllers;
 
@@ -70,8 +72,13 @@ public class AuthController(
 		// Might be better to increase the Access Token a little longer
 		if (request.RememberMe) {
 			refreshTokenValue = tokenService.GenerateRefreshToken();
+			string tokenHash = RefreshTokenHasher.Hash(refreshTokenValue);
+			string? securityStamp = await userManager.GetSecurityStampAsync(user);
 			RefreshToken refreshToken = new() {
-				Token = refreshTokenValue, UserId = user.Id, ExpiresAt = DateTime.UtcNow.AddDays(7)
+				TokenHash = tokenHash,
+				UserId = user.Id,
+				ExpiresAt = DateTime.UtcNow.AddDays(7),
+				SecurityStamp = securityStamp
 			};
 			dbContext.RefreshTokens.Add(refreshToken);
 			await dbContext.SaveChangesAsync();
@@ -89,8 +96,9 @@ public class AuthController(
 	/// </summary>
 	[HttpPost("refresh")]
 	public async Task<ActionResult<AuthResponse>> Refresh([FromBody] string refreshToken) {
+		string tokenHash = RefreshTokenHasher.Hash(refreshToken);
 		RefreshToken? stored = await dbContext.RefreshTokens
-			.FirstOrDefaultAsync(rt => rt.Token == refreshToken
+			.FirstOrDefaultAsync(rt => rt.TokenHash == tokenHash
 			                           && !rt.IsRevoked
 			                           && rt.ExpiresAt > DateTime.UtcNow);
 
@@ -103,13 +111,23 @@ public class AuthController(
 			return Unauthorized("User not found.");
 		}
 
+		string? currentStamp = await userManager.GetSecurityStampAsync(user);
+		if (!string.Equals(stored.SecurityStamp, currentStamp, StringComparison.Ordinal)) {
+			return Unauthorized("Invalid or expired refresh token.");
+		}
+
 		// Revoke old refresh token and issue new ones (rotation)
 		stored.IsRevoked = true;
 		string newAccessToken = tokenService.GenerateAccessToken(user);
 		string newRefreshTokenValue = tokenService.GenerateRefreshToken();
+		string newTokenHash = RefreshTokenHasher.Hash(newRefreshTokenValue);
+		string? newSecurityStamp = await userManager.GetSecurityStampAsync(user);
 
 		dbContext.RefreshTokens.Add(new RefreshToken {
-			Token = newRefreshTokenValue, UserId = user.Id, ExpiresAt = DateTime.UtcNow.AddDays(7)
+			TokenHash = newTokenHash,
+			UserId = user.Id,
+			ExpiresAt = DateTime.UtcNow.AddDays(7),
+			SecurityStamp = newSecurityStamp
 		});
 		await dbContext.SaveChangesAsync();
 
@@ -128,10 +146,20 @@ public class AuthController(
 	[Authorize]
 	[HttpPost("logout")]
 	public async Task<IActionResult> Logout([FromBody] string refreshToken) {
+		string? currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+		if (string.IsNullOrEmpty(currentUserId)) {
+			return Unauthorized();
+		}
+
+		string logoutTokenHash = RefreshTokenHasher.Hash(refreshToken);
 		RefreshToken? stored = await dbContext.RefreshTokens
-			.FirstOrDefaultAsync(rt => rt.Token == refreshToken && !rt.IsRevoked);
+			.FirstOrDefaultAsync(rt => rt.TokenHash == logoutTokenHash && !rt.IsRevoked);
 
 		if (stored is not null) {
+			if (stored.UserId != currentUserId) {
+				return Forbid();
+			}
+
 			stored.IsRevoked = true;
 			await dbContext.SaveChangesAsync();
 		}
@@ -152,6 +180,17 @@ public class AuthController(
         IdentityResult result = await userManager.ConfirmEmailAsync(user, request.Token);
         if (!result.Succeeded) {
                 return BadRequest("Invalid or expired confirmation token.");
+        }
+
+        List<RefreshToken> confirmTokens = await dbContext.RefreshTokens
+                .Where(rt => rt.UserId == user.Id && !rt.IsRevoked)
+                .ToListAsync();
+        foreach (RefreshToken rt in confirmTokens) {
+                rt.IsRevoked = true;
+        }
+
+        if (confirmTokens.Count > 0) {
+                await dbContext.SaveChangesAsync();
         }
 
         return Ok("Email confirmed successfully. You can now log in.");
@@ -220,6 +259,17 @@ public class AuthController(
         IdentityResult result = await userManager.ResetPasswordAsync(user, request.Token, request.NewPassword);
         if (!result.Succeeded) {
                 return BadRequest(result.Errors.Select(e => e.Description));
+        }
+
+        List<RefreshToken> activeTokens = await dbContext.RefreshTokens
+                .Where(rt => rt.UserId == user.Id && !rt.IsRevoked)
+                .ToListAsync();
+        foreach (RefreshToken refreshTokenEntity in activeTokens) {
+                refreshTokenEntity.IsRevoked = true;
+        }
+
+        if (activeTokens.Count > 0) {
+                await dbContext.SaveChangesAsync();
         }
 
         return Ok("Password has been reset successfully. You can now log in.");
