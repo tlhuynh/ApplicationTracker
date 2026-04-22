@@ -2,7 +2,11 @@
 # Run from: Actions → "Migrate database (manual)" → Run workflow.
 #
 # Required repository secrets (Settings → Secrets and variables → Actions):
-#   AZURE_CREDENTIALS          — JSON from `az ad sp create-for-rbac` (service principal with rights to manage SQL firewall + connect)
+#   AZURE_CREDENTIALS          — JSON object azure/login@v2 expects EXACTLY these keys:
+#                                clientId, clientSecret, subscriptionId, tenantId
+#                                CLI output often uses appId, password, tenant — rename to
+#                                clientId, clientSecret, tenantId and add subscriptionId
+#                                (run: az account show --query id -o tsv). One JSON object, no BOM.
 #   AZURE_RESOURCE_GROUP       — Resource group containing the logical SQL server
 #   AZURE_SQL_SERVER_NAME      — Logical server name only (no .database.windows.net)
 #   AZURE_SQL_CONNECTION_STRING — ADO.NET connection string for EF (user must be allowed to apply migrations)
@@ -57,9 +61,49 @@ jobs:
       - name: Restore for EF
         run: dotnet restore src/backend/ApplicationTracker.Api
 
+      - name: Validate AZURE_CREDENTIALS JSON (azure/login format)
+        env:
+          AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+        run: |
+          node <<'NODE'
+          const raw = (process.env.AZURE_CREDENTIALS || '').trim();
+          if (!raw) {
+            console.error('::error::AZURE_CREDENTIALS is empty. Add a repository secret with JSON for azure/login.');
+            process.exit(1);
+          }
+          let j;
+          try {
+            j = JSON.parse(raw);
+          } catch (e) {
+            console.error('::error::AZURE_CREDENTIALS is not valid JSON. Paste a single JSON object, no trailing text.');
+            process.exit(1);
+          }
+          const need = ['clientId', 'clientSecret', 'subscriptionId', 'tenantId'];
+          const empty = (v) =>
+            v == null || (typeof v === 'string' && v.trim() === '') || (typeof v !== 'string' && String(v).trim() === '');
+          const missing = need.filter((k) => empty(j[k]));
+          if (missing.length) {
+            if (j.appId && !j.clientId) {
+              console.error('::error::JSON has appId but azure/login requires clientId (use the same value, key name clientId).');
+            }
+            if (j.password && !j.clientSecret) {
+              console.error('::error::JSON has password but azure/login requires clientSecret (same value).');
+            }
+            if (j.tenant && !j.tenantId) {
+              console.error('::error::JSON has tenant but azure/login requires tenantId (same value).');
+            }
+            if (missing.includes('subscriptionId')) {
+              console.error('::error::Add subscriptionId (GUID). Example: az account show --query id -o tsv');
+            }
+            console.error('::error::Missing keys: ' + missing.join(', '));
+            process.exit(1);
+          }
+          NODE
+
       - name: Azure login
         uses: azure/login@v2
         with:
+          auth-type: SERVICE_PRINCIPAL
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
       - name: Open SQL firewall for this runner
