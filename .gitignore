@@ -413,6 +413,7 @@ FodyWeavers.xsd
 # Claude Code
 ###############################
 .claude/
+AGENTS.md
 
 ###############################
 # Environment / Secrets
@@ -453,3 +454,4 @@ nul
 # Sensitive docs
 ###############################
 docs/windows-memory.md
+docs/session-notes/
