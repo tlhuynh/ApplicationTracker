@@ -1,0 +1,95 @@
+# Manual database migration (safety valve).
+# Run from: Actions → "Migrate database (manual)" → Run workflow.
+#
+# Required repository secrets (Settings → Secrets and variables → Actions):
+#   AZURE_CREDENTIALS          — JSON from `az ad sp create-for-rbac` (service principal with rights to manage SQL firewall + connect)
+#   AZURE_RESOURCE_GROUP       — Resource group containing the logical SQL server
+#   AZURE_SQL_SERVER_NAME      — Logical server name only (no .database.windows.net)
+#   AZURE_SQL_CONNECTION_STRING — ADO.NET connection string for EF (user must be allowed to apply migrations)
+
+name: Migrate database (manual)
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type exactly "yes" after completing the checklist below'
+        required: true
+        default: 'no'
+
+jobs:
+  migrate:
+    name: Apply EF migrations to Azure SQL
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Pre-migration checklist
+        run: |
+          echo "=== Checklist — complete before setting confirm=yes ==="
+          echo "[ ] The branch you selected contains the migrations you intend to apply."
+          echo "[ ] You have already applied this migration to staging or local SQL and smoke-tested."
+          echo "[ ] You understand any data impact (e.g. destructive steps in migration scripts)."
+          echo "[ ] Azure SQL firewall: this workflow will add a temporary rule for the runner IP."
+          echo "[ ] Repository secrets are set: AZURE_CREDENTIALS, AZURE_RESOURCE_GROUP,"
+          echo "    AZURE_SQL_SERVER_NAME, AZURE_SQL_CONNECTION_STRING."
+          echo ""
+          echo "Workflow input confirm is: ${{ github.event.inputs.confirm }}"
+
+      - name: Require confirm=yes
+        if: github.event.inputs.confirm != 'yes'
+        run: |
+          echo "::error::Set the workflow input \"confirm\" to exactly \"yes\" after completing the checklist."
+          exit 1
+
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.x'
+
+      - name: Install EF Core tools
+        run: |
+          dotnet tool install --global dotnet-ef
+          echo "$HOME/.dotnet/tools" >> "$GITHUB_PATH"
+
+      - name: Restore for EF
+        run: dotnet restore src/backend/ApplicationTracker.Api
+
+      - name: Azure login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Open SQL firewall for this runner
+        id: firewall
+        run: |
+          RUNNER_IP=$(curl -sSf https://api.ipify.org)
+          echo "Runner public IP: $RUNNER_IP"
+          RULE_NAME="github-migrate-${{ github.run_id }}-${{ github.run_attempt }}"
+          echo "rule_name=$RULE_NAME" >> "$GITHUB_OUTPUT"
+          az sql server firewall-rule create \
+            --resource-group "${{ secrets.AZURE_RESOURCE_GROUP }}" \
+            --server "${{ secrets.AZURE_SQL_SERVER_NAME }}" \
+            --name "$RULE_NAME" \
+            --start-ip-address "$RUNNER_IP" \
+            --end-ip-address "$RUNNER_IP"
+
+      - name: Run EF database update
+        run: |
+          dotnet ef database update \
+            --project src/backend/ApplicationTracker.Infrastructure \
+            --startup-project src/backend/ApplicationTracker.Api \
+            --connection "${{ secrets.AZURE_SQL_CONNECTION_STRING }}"
+
+      - name: Remove SQL firewall rule
+        if: always()
+        run: |
+          RULE_NAME="${{ steps.firewall.outputs.rule_name }}"
+          if [ -n "$RULE_NAME" ]; then
+            az sql server firewall-rule delete \
+              --resource-group "${{ secrets.AZURE_RESOURCE_GROUP }}" \
+              --server "${{ secrets.AZURE_SQL_SERVER_NAME }}" \
+              --name "$RULE_NAME" || true
+          fi
