@@ -15,7 +15,11 @@ export function ConfirmEmailPage() {
 
   const hasCalledRef = useRef(false);
   useEffect(() => {
-    if (isMissingParams) return;
+    if (isMissingParams) {
+      setStatus('error');
+      setMessage('This confirmation link is invalid or incomplete. Please request a new one.');
+      return;
+    }
     if (hasCalledRef.current) return;
     hasCalledRef.current = true;
 
