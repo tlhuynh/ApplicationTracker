@@ -24,9 +24,6 @@ public class ApplicationRecordConfiguration : IEntityTypeConfiguration<Applicati
 		builder.Property(e => e.UserId)
 			.HasMaxLength(450);
 
-		builder.Property(e => e.SalaryMax)
-			.HasPrecision(18, 2);
-
 		builder.HasQueryFilter(e => !e.IsDeleted);
 	}
 }

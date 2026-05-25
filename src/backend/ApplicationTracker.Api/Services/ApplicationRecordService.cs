@@ -40,7 +40,6 @@ public class ApplicationRecordService(IApplicationRecordRepository repository) :
 		existing.AppliedDate = updatedFields.AppliedDate;
 		existing.PostingUrl = updatedFields.PostingUrl;
 		existing.Notes = updatedFields.Notes;
-		existing.SalaryMax = updatedFields.SalaryMax;
 
 		repository.Update(existing);
 		await repository.SaveChangesAsync();

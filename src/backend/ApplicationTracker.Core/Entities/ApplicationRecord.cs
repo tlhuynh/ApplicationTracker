@@ -31,9 +31,4 @@ public class ApplicationRecord : BaseEntity {
     /// Gets or sets additional notes about the application.
     /// </summary>
     public string? Notes { get; set; }
-
-    /// <summary>
-    /// Gets or sets max salary from the job posting
-    /// </summary>
-    public decimal? SalaryMax { get; set; }
 }

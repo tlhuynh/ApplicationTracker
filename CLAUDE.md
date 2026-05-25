@@ -297,6 +297,7 @@ npm run test:watch
 - When discussing tools, frameworks, or concepts, include links to official documentation when available
 - Prioritize Microsoft Learn, MDN, and other primary sources over third-party articles
 - **Judgment-based edits** — apply changes directly for routine, clear-scope, single-file work; propose first (objective, files, steps, risks) for multi-file, architectural, or non-obvious changes
+- **No database or EF Core commands** — never run `dotnet ef`, `database update`, SQL scripts, or any migration-related commands; flag the need and let the user handle it
 - **React concepts**: see `docs/react-concepts.md` for topics already covered — don't re-explain these from scratch
 - **Code comments**: only when the *why* is non-obvious — a hidden constraint, a subtle invariant, a workaround for a specific bug. Skip self-evident lines. XML `/// <summary>` for C# public members, JSDoc for exported TS functions when intent isn't obvious
 - **New RxJS operators**: when introducing an RxJS operator not previously used in the Angular client, provide a brief explanation of what it does, when to use it, and any important gotchas before or alongside the code

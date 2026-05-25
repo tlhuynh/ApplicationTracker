@@ -121,8 +121,7 @@ public class ApplicationRecordsController(
 			Status = request.Status,
 			AppliedDate = request.AppliedDate,
 			PostingUrl = request.PostingUrl,
-			Notes = request.Notes,
-			SalaryMax = request.SalaryMax
+			Notes = request.Notes
 		};
 
 		ApplicationRecord? updated = await service.UpdateAsync(id, updatedFields, userId);

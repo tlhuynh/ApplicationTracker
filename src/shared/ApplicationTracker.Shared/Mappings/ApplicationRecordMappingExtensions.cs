@@ -19,7 +19,6 @@
               AppliedDate = entity.AppliedDate,
               PostingUrl = entity.PostingUrl,
               Notes = entity.Notes,
-              SalaryMax = entity.SalaryMax,
               CreatedAt = entity.CreatedAt,
               LastModified = entity.LastModified
           };
@@ -36,7 +35,6 @@
               AppliedDate = request.AppliedDate,
               PostingUrl = request.PostingUrl,
               Notes = request.Notes,
-              SalaryMax = request.SalaryMax,
           };
       }
 
@@ -50,6 +48,5 @@
           entity.AppliedDate = request.AppliedDate;
           entity.PostingUrl = request.PostingUrl;
           entity.Notes = request.Notes;
-          entity.SalaryMax = request.SalaryMax;
       }
   }

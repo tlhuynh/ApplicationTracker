@@ -58,10 +58,6 @@ namespace ApplicationTracker.Infrastructure.Migrations
                         .HasMaxLength(2000)
                         .HasColumnType("nvarchar(2000)");
 
-                    b.Property<decimal?>("SalaryMax")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
                     b.Property<int?>("ServerId")
                         .HasColumnType("int");
 
