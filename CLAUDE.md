@@ -4,9 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-ApplicationTracker is a full-stack .NET project for tracking job applications, built as a learning playground to explore modern technologies. The core focus is ASP.NET Core Web API with web frontends (React, Angular planned), alongside a .NET MAUI Blazor Hybrid app for mobile and desktop.
+ApplicationTracker is a full-stack .NET project for tracking job applications, built as a learning playground to explore modern technologies. The core focus is ASP.NET Core Web API with web frontends (React production-deployed, Angular 21 in progress), alongside a .NET MAUI Blazor Hybrid app for mobile and desktop.
 
-**Tech Stack:** .NET 10, C# 13, ASP.NET Core Web API, EF Core, SQL Server, ASP.NET Core Identity, JWT Bearer Auth, .NET MAUI, Blazor Hybrid, MudBlazor, SQLite, Scalar, ClosedXML, React, Vite, Vitest
+**Tech Stack:** .NET 10, C# 13, ASP.NET Core Web API, EF Core, SQL Server, ASP.NET Core Identity, JWT Bearer Auth, .NET MAUI, Blazor Hybrid, MudBlazor, SQLite, Scalar, ClosedXML, React, Angular 21, Vite, Vitest
 
 **Target Platforms:** Web (React), Android, iOS, macOS (Catalyst), Windows
 
@@ -40,6 +40,14 @@ npm run test:watch     # Run tests in watch mode
 npm run generate-types # Generate TypeScript types from OpenAPI spec (backend must be running)
 ```
 
+```bash
+# Angular client (from src/clients/ApplicationTracker.Angular/)
+npm start              # Start dev server on http://localhost:4200 (proxies API to :5021)
+npm run build          # Build for production
+npm test               # Run Vitest tests once
+npm run test:watch     # Run tests in watch mode
+```
+
 ## Backend Setup
 
 - SQL Server 2022 runs via Docker (`docker-compose.yml` at project root)
@@ -66,7 +74,8 @@ src/
 │   └── ApplicationTracker.Infrastructure/# Data access, external services
 ├── clients/
 │   ├── ApplicationTracker.Maui/          # .NET MAUI Blazor app
-│   └── ApplicationTracker.React/         # React SPA (Vite + TypeScript)
+│   ├── ApplicationTracker.React/         # React SPA (Vite + TypeScript)
+│   └── ApplicationTracker.Angular/       # Angular 21 SPA (WIP)
 └── shared/
     └── ApplicationTracker.Shared/        # DTOs shared between API and clients
 ```
@@ -97,6 +106,7 @@ Maui → Shared (gets Core transitively)
 - **Partial Updates**: `PATCH /api/applicationrecords/{id}/status` updates only the status field — uses `PatchStatusRequest` DTO and `UpdateStatusAsync` service method
 - **Authentication**: ASP.NET Core Identity + JWT Bearer tokens. `AuthController` provides register, login, refresh, logout, confirm-email, resend-confirmation, forgot-password, and reset-password endpoints. `TokenService` generates JWT access tokens (15 min) and opaque refresh tokens (7 days); `RefreshTokens` stores **SHA-256 hashes** plus Identity **security stamp** for invalidation on sensitive account changes. Refresh token rotation on each use. `LoginRequest.RememberMe` controls whether a refresh token is issued (false = session-only, no refresh token stored). Logout endpoint (`POST /api/auth/logout`, `[Authorize]`) revokes the refresh token server-side. Email confirmation required before login (403 if unconfirmed). `ConsoleEmailService` logs confirmation/reset links to console (dev); `IEmailService` abstraction for future SMTP. `ApplicationDbContext` extends `IdentityDbContext<IdentityUser>`. `[Authorize]` on `ApplicationRecordsController`; `AuthController` register/login/refresh and email confirmation/reset endpoints are public, logout requires auth. `BearerSecuritySchemeTransformer` adds JWT auth UI to Scalar
 - **Per-User Data**: All repository queries filter by `UserId`. Controller extracts user ID from JWT `sub` claim via `User.FindFirstValue(ClaimTypes.NameIdentifier)`. Service layer passes userId through to repositories. Records are stamped with `UserId` on creation and import. Users can only see/edit/delete their own records
+- **URL Param Validation (React)**: When a page requires URL query params (e.g. `ConfirmEmailPage`, `ResetPasswordPage`), validate them before any `useState` calls and use lazy initializers to set the correct initial state — never call `setStatus`/`setMessage` inside `useEffect` for a condition that's already known on mount. This prevents a flash of "loading" state and avoids the `react-hooks/set-state-in-effect` lint rule. Pattern: read params → derive `isMissingParams` → pass to `useState(() => isMissingParams ? 'error' : 'loading')`. The `useEffect` then guards with `if (isMissingParams) return;` before making any API call.
 - **Frontend Auth**: `AuthProvider` manages in-memory access token + localStorage refresh token. `useAuth()` hook provides `login`, `register`, `logout`, `user`, `isAuthenticated`, `isLoading`, `isDemoMode`, `enterDemoMode`, `exitDemoMode`. `ProtectedRoute` layout route redirects unauthenticated users to `/login`. Silent session restore on page refresh via stored refresh token. Auto-refresh at 80% of token TTL. `authFetch()` wrapper in `client.ts` attaches Bearer header and retries once on 401 (refreshes token transparently). Login/Register pages redirect authenticated users to `/` via `<Navigate>`. "Remember me" checkbox on login — unchecked = session-only (no refresh token), checked = persistent session. Logout calls backend to revoke refresh token (fire-and-forget). Registration shows "check your email" success card. Login handles 403 (unconfirmed email) with resend button. Forgot password and reset password flows via dedicated pages
 - **Demo Mode**: "Try Demo" button on `LoginPage` — no account required. `enterDemoMode()` seeds 6 sample records into `sessionStorage` and sets `isAuthenticated = true`/`user = 'Demo'` so `ProtectedRoute` passes through unchanged. `demoStore.ts` manages sessionStorage keys (`demo_mode`, `demo_applications`). `demoApplicationRecords.ts` mirrors `applicationRecords.ts` signatures but operates on the demo store. `useApplicationRecordsApi()` hook returns real or demo API functions based on `isDemoMode`. Excel import in demo mode calls the public `POST /api/applicationrecords/parse` endpoint (real ClosedXML validation, no DB save) and adds parsed rows to the demo store. Amber banner shown in `App.tsx` with "Sign In" CTA. Demo data survives page refresh (sessionStorage) but clears when browser closes. Duplicate detection not available in demo mode (noted in ImportPage UI)
 - **Frontend Error Handling**: Auth form errors (Login/Register) use shadcn `Alert` (destructive variant) — more visible than plain text. Status-code-based messages: 5xx/405 → `"Something went wrong on our end. Please try again later."`, 4xx → API message passthrough, non-`ApiError` (network/connection) → `"Unable to reach the server. Please check your connection."`. Toast errors use `getToastErrorMessage(err, fallback)` in `src/lib/utils.ts` — same routing logic centralised as a helper. Toast duration set to 6000ms via `toastOptions` on `<Toaster />`
@@ -114,6 +124,30 @@ Located in `src/clients/ApplicationTracker.Maui/`:
 - `Services/` - Business logic and data access (`DatabaseService`)
 - `Utilities/` - Constants and enums
 - `Platforms/` - Platform-specific code (Android, iOS, macOS, Windows)
+
+### Angular App Structure
+
+Located in `src/clients/ApplicationTracker.Angular/`:
+
+- `src/app/app.ts` / `app.config.ts` / `app.routes.ts` — root component, DI config, top-level routes
+- `src/app/core/` — singleton infrastructure
+  - `api/` — generated OpenAPI types (`api.d.ts`) and mapped TypeScript types (`api.types.ts`)
+  - `guards/` — `auth.guard.ts` (redirect to /login if not authenticated), `guest.guard.ts` (redirect to /home if already authenticated)
+  - `interceptors/` — `auth.interceptor.ts` (attaches Bearer token, handles 401 → token refresh → retry)
+  - `services/` — `auth.service.ts` (login/register/logout/token state), `application.service.ts` (CRUD for application records)
+- `src/app/features/` — lazy-loaded feature areas
+  - `auth/login/` — login form (Reactive Forms, Angular Material)
+  - `auth/register/` — registration form
+  - `shell/` — authenticated shell layout (sidebar, nav, router outlet)
+  - `applications/home/` — applications list/table (WIP — placeholder content)
+  - `applications/import/` — Excel import (WIP — empty component)
+  - `applications/application-dialog/` — add/edit dialog (Angular Material `MatDialog`)
+- `src/app/shared/` — shared components used across features
+  - `confirm-dialog/` — generic confirmation dialog
+  - `not-found/` — 404 page
+- `src/test/setup.ts` — Vitest global setup
+
+**Status (2026-05-25):** Auth flows (login, register), shell layout, guards, interceptor, and ApplicationService are complete. Home and Import pages are next to build — see React equivalents for feature reference.
 
 ### React App Structure
 
@@ -137,7 +171,7 @@ Located in `src/clients/ApplicationTracker.React/`:
 
 `BaseEntity` provides common fields: `Id`, `CreatedAt`, `LastModified`, `UserId`, `ServerId`, `NeedsSync`, `IsDeleted` - designed for future server sync capability.
 
-`RefreshToken` is a standalone entity (not extending `BaseEntity`) for auth infrastructure — stores token value, user ID, expiration, and revocation status.
+`RefreshToken` is a standalone entity (not extending `BaseEntity`) for auth infrastructure — stores SHA-256 token hash, user ID, security stamp, expiration, revocation flag, and `CreatedAt` (defaulted to `DateTime.UtcNow` via property initializer; never set explicitly in object initializers).
 
 ## Code Style
 

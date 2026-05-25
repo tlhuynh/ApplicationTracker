@@ -196,6 +196,11 @@ ApplicationTracker/
 │   │   │       ├── pages/                   # Route page components (Home, Import, Login, Register, ConfirmEmail, ForgotPassword, ResetPassword, NotFound)
 │   │   │       ├── test/                    # Test setup
 │   │   │       └── types/                   # Generated API types
+│   │   ├── ApplicationTracker.Angular/      # Angular 21 SPA (WIP)
+│   │   │   └── src/app/
+│   │   │       ├── core/                    # Guards, interceptors, services, generated API types
+│   │   │       ├── features/                # Lazy-loaded feature areas (auth, shell, applications)
+│   │   │       └── shared/                  # Shared components (confirm-dialog, not-found)
 │   │   └── ApplicationTracker.Maui/        # .NET MAUI Blazor app
 │   │       ├── Components/                 # Blazor components
 │   │       │   ├── Layout/                 # Layout components
@@ -261,7 +266,9 @@ dotnet test tests/ApplicationTracker.Api.Tests
 
 ### Frontend (React)
 
-Tests are colocated with source files in `src/clients/ApplicationTracker.React/src/`.
+Tests are colocated with source files (`*.test.tsx` alongside each page/component). The stack is [Vitest](https://vitest.dev/) + [React Testing Library](https://testing-library.com/docs/react-testing-library/intro/) + [`@testing-library/user-event`](https://testing-library.com/docs/user-event/intro/) for realistic event simulation.
+
+Covered: `App`, `ProtectedRoute`, `ApplicationTable`, `HomePage`, `LoginPage`, `RegisterPage`, `ConfirmEmailPage`, `ForgotPasswordPage`, `ResetPasswordPage`, `ImportPage`, `NotFoundPage`
 
 ```bash
 # Run React tests (from src/clients/ApplicationTracker.React/)
@@ -288,11 +295,11 @@ The project is deployed to Azure via GitHub Actions on every push to `main`.
 
 ## API Documentation
 
-When running in Development, the interactive Scalar API reference is available at `/scalar/v1`.
+When running in Development, the interactive Scalar API reference is available at `http://localhost:5021/scalar/v1`. The URL is logged to the console on startup.
 
 ```bash
 dotnet run --project src/backend/ApplicationTracker.Api
-# Then open https://localhost:{port}/scalar/v1
+# → info: Scalar API reference: http://localhost:5021/scalar/v1
 ```
 ## Resources
 

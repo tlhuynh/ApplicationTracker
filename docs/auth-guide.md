@@ -136,7 +136,7 @@ The parts build on each other roughly in this order:
 
 - **RegisterPage** — after success, show "Check your email" card with confirmation message instead of navigating to login
 - **LoginPage** — handle 403 with "Resend confirmation email" button. Add "Forgot password?" link
-- **ConfirmEmailPage** — reads `userId` + `token` from URL query params (`useSearchParams`). Calls API on mount with `useRef` guard (prevents StrictMode double-execution). Shows loading → success → error states
+- **ConfirmEmailPage** — reads `userId` + `token` from URL query params (`useSearchParams`). If either param is missing, shows an error card immediately — validated before `useState` calls using lazy initializers so the page never flashes a "loading" state for an invalid URL. When params are present, calls API on mount with a `useRef` guard (prevents StrictMode double-execution). Shows loading → success → error states
 - **ForgotPasswordPage** — email form → calls forgot-password API → shows "Check your email" success card
 - **ResetPasswordPage** — reads `email` + `token` from URL params. If missing, shows error. Otherwise shows new password + confirm form → calls reset API → shows success card
 - All 3 new pages are public routes (outside `ProtectedRoute` in router config)
