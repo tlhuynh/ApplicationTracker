@@ -296,10 +296,8 @@ npm run test:watch
 
 - When discussing tools, frameworks, or concepts, include links to official documentation when available
 - Prioritize Microsoft Learn, MDN, and other primary sources over third-party articles
-- **Generate changes with explanations** — present file changes for the user to review and apply, rather than applying directly, unless the user explicitly asks otherwise
-- **Never apply changes directly** — always present the change with an explanation and explicitly ask "Should I make this change, or would you like to handle it?" before using any Edit, Write, or Bash tool that modifies files. The only exception is when the user explicitly says "you can handle it" or "make the changes"
-- For file edits: ask "Should I make this change, or would you like to handle it?"
+- **Judgment-based edits** — apply changes directly for routine, clear-scope, single-file work; propose first (objective, files, steps, risks) for multi-file, architectural, or non-obvious changes
 - **React concepts**: see `docs/react-concepts.md` for topics already covered — don't re-explain these from scratch
-- **Project context**: see `docs/windows-memory.md` for implementation progress, setup details, and troubleshooting notes
-- **Code comments**: all generated code must include comments — inline comments, block/section comments, and doc comments (XML `/// <summary>` for C#, JSDoc `/** */` for TypeScript). Avoid one-liner comments. Only comment complex or non-obvious logic — skip self-evident lines like `return Ok(result)` or simple assignments
+- **Code comments**: only when the *why* is non-obvious — a hidden constraint, a subtle invariant, a workaround for a specific bug. Skip self-evident lines. XML `/// <summary>` for C# public members, JSDoc for exported TS functions when intent isn't obvious
 - **New RxJS operators**: when introducing an RxJS operator not previously used in the Angular client, provide a brief explanation of what it does, when to use it, and any important gotchas before or alongside the code
+- **Security checkpoint**: when touching auth code, token handling, or data access boundaries, flag it and offer to run `/security-review`
