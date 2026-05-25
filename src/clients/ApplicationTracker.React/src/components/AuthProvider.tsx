@@ -128,7 +128,7 @@ export function AuthProvider({children}: AuthProviderProps) {
         localStorage.setItem(REFRESH_TOKEN_KEY, newRefreshToken);
 
         if (response.expiresAt) {
-          scheduleRefreshRef.current(response.expiresAt, newRefreshToken);
+          scheduleRefreshRef.current(response.expiresAt);
         }
       })
       .catch(() => {
@@ -159,7 +159,7 @@ export function AuthProvider({children}: AuthProviderProps) {
       localStorage.setItem(REFRESH_TOKEN_KEY, newRefreshToken);
 
       if (response.expiresAt) {
-        scheduleRefreshRef.current(response.expiresAt, newRefreshToken);
+        scheduleRefreshRef.current(response.expiresAt);
       }
     }
   };

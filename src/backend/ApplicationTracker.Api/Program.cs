@@ -1,5 +1,6 @@
 using System.Text;
 using ApplicationTracker.Api.Services;
+using Microsoft.AspNetCore.Http.Features;
 using ApplicationTracker.Api.Transformers;
 using ApplicationTracker.Core.Interfaces.Services;
 using ApplicationTracker.Infrastructure;
@@ -10,6 +11,11 @@ using Microsoft.IdentityModel.Tokens;
 using Scalar.AspNetCore;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+
+long maxExcelUploadBytes = builder.Configuration.GetValue<long?>("App:MaxExcelUploadBytes") ?? 5_242_880;
+builder.Services.Configure<FormOptions>(options => {
+	options.MultipartBodyLengthLimit = maxExcelUploadBytes;
+});
 
 builder.Services.AddControllers();
 builder.Services.AddOpenApi(options => {

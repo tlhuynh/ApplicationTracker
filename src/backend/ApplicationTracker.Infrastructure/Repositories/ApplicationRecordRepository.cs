@@ -20,12 +20,13 @@ public class ApplicationRecordRepository(ApplicationDbContext context) : Reposit
 
 	/// <inheritdoc />
 	public async Task<bool> ExistsAsync(string companyName, DateTime appliedDate, string? postingUrl, string userId) {
-		if (postingUrl is not null) {
+		if (!string.IsNullOrWhiteSpace(postingUrl)) {
 			return await _dbSet.AnyAsync(r =>
-				r.CompanyName == companyName && r.PostingUrl == postingUrl);
+				r.UserId == userId && r.CompanyName == companyName && r.PostingUrl == postingUrl);
 		}
 
 		return await _dbSet.AnyAsync(r =>
-			r.CompanyName == companyName && r.AppliedDate.HasValue && r.AppliedDate.Value.Date == appliedDate.Date);
+			r.UserId == userId && r.CompanyName == companyName && r.AppliedDate.HasValue &&
+			r.AppliedDate.Value.Date == appliedDate.Date);
 	}
 }

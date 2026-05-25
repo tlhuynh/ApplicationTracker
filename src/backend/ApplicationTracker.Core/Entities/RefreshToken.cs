@@ -10,9 +10,14 @@ public class RefreshToken {
 	public int Id { get; set; }
 
 	/// <summary>
-	/// Gets or sets the token value.
+	/// Gets or sets the SHA-256 hash (hex) of the refresh token value (never store the raw token).
 	/// </summary>
-	public string Token { get; set; } = string.Empty;
+	public string TokenHash { get; set; } = string.Empty;
+
+	/// <summary>
+	/// Gets or sets the user security stamp captured when the token was issued; must match on refresh.
+	/// </summary>
+	public string? SecurityStamp { get; set; }
 
 	/// <summary>
 	/// Gets or sets the Identity user ID this token belongs to.

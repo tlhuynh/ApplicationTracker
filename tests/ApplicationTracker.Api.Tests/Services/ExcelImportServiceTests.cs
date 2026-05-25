@@ -232,6 +232,8 @@ public class ExcelImportServiceTests {
 		Assert.Single(result.Errors);
 		Assert.Contains("Duplicate application", result.Errors[0].ErrorMessage);
 		Assert.Contains("posting URL", result.Errors[0].ErrorMessage);
+		_repositoryMock.Verify(r =>
+			r.ExistsAsync("Acme", It.IsAny<DateTime>(), "https://acme.com/jobs/1", TestUserId), Times.Once);
 		_repositoryMock.Verify(r => r.AddAsync(It.IsAny<ApplicationRecord>()), Times.Never);
 	}
 
@@ -254,6 +256,7 @@ public class ExcelImportServiceTests {
 		Assert.Single(result.Errors);
 		Assert.Contains("Duplicate application", result.Errors[0].ErrorMessage);
 		Assert.Contains("applied date", result.Errors[0].ErrorMessage);
+		_repositoryMock.Verify(r => r.ExistsAsync("Acme", It.IsAny<DateTime>(), null, TestUserId), Times.Once);
 		_repositoryMock.Verify(r => r.AddAsync(It.IsAny<ApplicationRecord>()), Times.Never);
 	}
 

@@ -4,8 +4,9 @@ using ApplicationTracker.Core.Enums;
 using ApplicationTracker.Core.Interfaces.Services;
 using ApplicationTracker.Core.Models;
 using ApplicationTracker.Shared.DTOs;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using Moq;
 using System.Security.Claims;
 
@@ -23,8 +24,14 @@ public class ApplicationRecordsControllerTests {
 	public ApplicationRecordsControllerTests() {
 		_applicationRecordServiceMock = new Mock<IApplicationRecordService>();
 		_excelImportServiceMock = new Mock<IExcelImportService>();
+		Dictionary<string, string?> configData = new() {
+			{ "App:MaxExcelUploadBytes", "5242880" }
+		};
+		IConfiguration configuration = new ConfigurationBuilder()
+			.AddInMemoryCollection(configData)
+			.Build();
 		_controller = new ApplicationRecordsController(_applicationRecordServiceMock.Object,
-			_excelImportServiceMock.Object);
+			_excelImportServiceMock.Object, configuration);
 		SetupUserClaims();
 	}
 

@@ -1,46 +1,50 @@
-﻿# Deploy API to Azure App Service.
-# Migrate job requires secrets: AZURE_CREDENTIALS (JSON: clientId, clientSecret,
-# subscriptionId, tenantId — NOT appId/password/tenant alone), AZURE_RESOURCE_GROUP,
-# AZURE_SQL_SERVER_NAME, AZURE_SQL_CONNECTION_STRING (see migrate-database.yml).
-# Manual-only migration: .github/workflows/migrate-database.yml (workflow_dispatch).
+# Manual database migration (safety valve).
+# Run from: Actions → "Migrate database (manual)" → Run workflow.
+#
+# Required repository secrets (Settings → Secrets and variables → Actions):
+#   AZURE_CREDENTIALS          — JSON object azure/login@v2 expects EXACTLY these keys:
+#                                clientId, clientSecret, subscriptionId, tenantId
+#                                CLI output often uses appId, password, tenant — rename to
+#                                clientId, clientSecret, tenantId and add subscriptionId
+#                                (run: az account show --query id -o tsv). One JSON object, no BOM.
+#   AZURE_RESOURCE_GROUP       — Resource group containing the logical SQL server
+#   AZURE_SQL_SERVER_NAME      — Logical server name only (no .database.windows.net)
+#   AZURE_SQL_CONNECTION_STRING — ADO.NET connection string for EF (user must be allowed to apply migrations)
 
-name: Deploy API to Azure App Service
+name: Migrate database (manual)
 
 on:
-  push:
-    branches: [ main ]
-    paths:
-      - 'src/backend/**'
-      - 'tests/**'
-      - '.github/workflows/deploy-api.yml'
   workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type exactly "yes" after completing the checklist below'
+        required: true
+        default: 'no'
 
 jobs:
-  test:
-    name: Run Tests
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v5
-
-      - name: Set up .NET
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: '10.x'
-
-      - name: Restore dependencies
-        run: dotnet restore tests/ApplicationTracker.Api.Tests
-
-      - name: Run tests
-        run: dotnet test tests/ApplicationTracker.Api.Tests -c Release --no-restore --verbosity normal
-
   migrate:
-    name: Apply EF migrations (Azure SQL)
+    name: Apply EF migrations to Azure SQL
     runs-on: ubuntu-latest
-    needs: test
 
     steps:
+      - name: Pre-migration checklist
+        run: |
+          echo "=== Checklist — complete before setting confirm=yes ==="
+          echo "[ ] The branch you selected contains the migrations you intend to apply."
+          echo "[ ] You have already applied this migration to staging or local SQL and smoke-tested."
+          echo "[ ] You understand any data impact (e.g. destructive steps in migration scripts)."
+          echo "[ ] Azure SQL firewall: this workflow will add a temporary rule for the runner IP."
+          echo "[ ] Repository secrets are set: AZURE_CREDENTIALS, AZURE_RESOURCE_GROUP,"
+          echo "    AZURE_SQL_SERVER_NAME, AZURE_SQL_CONNECTION_STRING."
+          echo ""
+          echo "Workflow input confirm is: ${{ github.event.inputs.confirm }}"
+
+      - name: Require confirm=yes
+        if: github.event.inputs.confirm != 'yes'
+        run: |
+          echo "::error::Set the workflow input \"confirm\" to exactly \"yes\" after completing the checklist."
+          exit 1
+
       - name: Checkout code
         uses: actions/checkout@v5
 
@@ -64,14 +68,14 @@ jobs:
           node <<'NODE'
           const raw = (process.env.AZURE_CREDENTIALS || '').trim();
           if (!raw) {
-            console.error('::error::AZURE_CREDENTIALS is empty.');
+            console.error('::error::AZURE_CREDENTIALS is empty. Add a repository secret with JSON for azure/login.');
             process.exit(1);
           }
           let j;
           try {
             j = JSON.parse(raw);
           } catch (e) {
-            console.error('::error::AZURE_CREDENTIALS is not valid JSON.');
+            console.error('::error::AZURE_CREDENTIALS is not valid JSON. Paste a single JSON object, no trailing text.');
             process.exit(1);
           }
           const need = ['clientId', 'clientSecret', 'subscriptionId', 'tenantId'];
@@ -80,16 +84,16 @@ jobs:
           const missing = need.filter((k) => empty(j[k]));
           if (missing.length) {
             if (j.appId && !j.clientId) {
-              console.error('::error::Use clientId (not appId) for azure/login.');
+              console.error('::error::JSON has appId but azure/login requires clientId (use the same value, key name clientId).');
             }
             if (j.password && !j.clientSecret) {
-              console.error('::error::Use clientSecret (not password) for azure/login.');
+              console.error('::error::JSON has password but azure/login requires clientSecret (same value).');
             }
             if (j.tenant && !j.tenantId) {
-              console.error('::error::Use tenantId (not tenant) for azure/login.');
+              console.error('::error::JSON has tenant but azure/login requires tenantId (same value).');
             }
             if (missing.includes('subscriptionId')) {
-              console.error('::error::Add subscriptionId (subscription GUID).');
+              console.error('::error::Add subscriptionId (GUID). Example: az account show --query id -o tsv');
             }
             console.error('::error::Missing keys: ' + missing.join(', '));
             process.exit(1);
@@ -107,7 +111,7 @@ jobs:
         run: |
           RUNNER_IP=$(curl -sSf https://api.ipify.org)
           echo "Runner public IP: $RUNNER_IP"
-          RULE_NAME="github-deploy-migrate-${{ github.run_id }}-${{ github.run_attempt }}"
+          RULE_NAME="github-migrate-${{ github.run_id }}-${{ github.run_attempt }}"
           echo "rule_name=$RULE_NAME" >> "$GITHUB_OUTPUT"
           az sql server firewall-rule create \
             --resource-group "${{ secrets.AZURE_RESOURCE_GROUP }}" \
@@ -134,30 +138,3 @@ jobs:
               --server "${{ secrets.AZURE_SQL_SERVER_NAME }}" \
               --name "$RULE_NAME" || true
           fi
-
-  deploy:
-    name: Deploy to Azure
-    runs-on: ubuntu-latest
-    needs: [test, migrate]
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v5
-
-      - name: Set up .NET
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: '10.x'
-
-      - name: Restore dependencies
-        run: dotnet restore src/backend/ApplicationTracker.Api
-
-      - name: Publish
-        run: dotnet publish src/backend/ApplicationTracker.Api -c Release -o ./publish --no-restore
-
-      - name: Deploy to Azure App Service
-        uses: azure/webapps-deploy@v3
-        with:
-          app-name: ${{ secrets.AZURE_APP_SERVICE_NAME }}
-          publish-profile: ${{ secrets.AZURE_APP_SERVICE_PUBLISH_PROFILE }}
-          package: ./publish
