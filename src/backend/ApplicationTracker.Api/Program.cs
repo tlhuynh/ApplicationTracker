@@ -85,6 +85,8 @@ WebApplication app = builder.Build();
 if (app.Environment.IsDevelopment()) {
 	app.MapOpenApi();
 	app.MapScalarApiReference();
+	app.Lifetime.ApplicationStarted.Register(() =>
+		app.Logger.LogInformation("Scalar API reference: {Url}", "http://localhost:5021/scalar/v1"));
 }
 
 app.UseCors();
