@@ -1,1 +1,120 @@
-<p>import works!</p>
+<h1 class="page-title">Import from Excel</h1>
+
+<!-- Hidden native file input — triggered programmatically -->
+<input
+  #fileInput
+  type="file"
+  accept=".xlsx"
+  hidden
+  aria-hidden="true"
+  (change)="onFileChange($event)"
+/>
+
+<!-- Upload card ─────────────────────────────────────────────────────────── -->
+<mat-card class="upload-card" appearance="outlined">
+  <mat-card-content>
+    <div class="upload-area">
+      <mat-icon class="upload-icon" aria-hidden="true">upload_file</mat-icon>
+
+      <p class="upload-hint">
+        Select an <strong>.xlsx</strong> file exported from the template.
+        Each row must include a company name, status, and applied date.
+      </p>
+
+      @if (selectedFile(); as file) {
+        <p class="selected-file" aria-live="polite">
+          <mat-icon class="file-icon" aria-hidden="true">description</mat-icon>
+          {{ file.name }}
+        </p>
+      }
+
+      <div class="upload-actions">
+        <button
+          mat-stroked-button
+          [disabled]="isUploading()"
+          (click)="triggerFileInput()"
+          aria-label="Choose Excel file"
+        >
+          <mat-icon>folder_open</mat-icon>
+          {{ selectedFile() ? 'Change File' : 'Choose File' }}
+        </button>
+
+        <button
+          mat-raised-button
+          color="primary"
+          [disabled]="!selectedFile() || isUploading()"
+          (click)="onUpload()"
+          aria-label="Upload and import"
+        >
+          @if (isUploading()) {
+            <mat-spinner diameter="20" />
+            Importing…
+          } @else {
+            Import
+          }
+        </button>
+      </div>
+    </div>
+  </mat-card-content>
+</mat-card>
+
+<!-- Server error ────────────────────────────────────────────────────────── -->
+@if (serverError(); as error) {
+  <div class="server-error" role="alert" aria-live="assertive">{{ error }}</div>
+}
+
+<!-- Import result ───────────────────────────────────────────────────────── -->
+@if (importResult(); as result) {
+  @if (+(result.importedCount ?? 0) > 0) {
+    <div
+      class="result-banner result-success"
+      role="status"
+      aria-live="polite"
+    >
+      <mat-icon aria-hidden="true">check_circle</mat-icon>
+      <span>
+        Successfully imported <strong>{{ result.importedCount }}</strong> of
+        <strong>{{ result.totalRows }}</strong> records.
+      </span>
+      <a mat-button routerLink="/" aria-label="View all applications">View Applications</a>
+    </div>
+  } @else {
+    <div class="result-banner result-failure" role="alert" aria-live="assertive">
+      <mat-icon aria-hidden="true">error</mat-icon>
+      <span>No records were imported ({{ result.totalRows }} rows checked).</span>
+    </div>
+  }
+
+  <!-- Error table -->
+  @if (result.errors && result.errors.length > 0) {
+    <div class="errors-section">
+      <h2 class="errors-title">
+        Row errors
+        <span class="errors-count">({{ result.errors.length }})</span>
+      </h2>
+
+      <div class="errors-table-container mat-elevation-z1">
+        <table mat-table [dataSource]="result.errors" aria-label="Import row errors">
+
+          <ng-container matColumnDef="rowNumber">
+            <th mat-header-cell *matHeaderCellDef scope="col">Row</th>
+            <td mat-cell *matCellDef="let error">{{ error.rowNumber }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="companyName">
+            <th mat-header-cell *matHeaderCellDef scope="col">Company</th>
+            <td mat-cell *matCellDef="let error">{{ error.companyName || '—' }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="errorMessage">
+            <th mat-header-cell *matHeaderCellDef scope="col">Error</th>
+            <td mat-cell *matCellDef="let error">{{ error.errorMessage }}</td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="errorColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: errorColumns;"></tr>
+        </table>
+      </div>
+    </div>
+  }
+}

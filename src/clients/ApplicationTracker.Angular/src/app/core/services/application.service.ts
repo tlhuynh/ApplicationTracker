@@ -4,13 +4,14 @@ import { Observable } from 'rxjs';
 import {
   ApplicationRecordDto,
   CreateApplicationRecordRequest,
-  UpdateApplicationRecordRequest,
+  ExcelImportResultDto,
   PatchStatusRequest,
+  UpdateApplicationRecordRequest,
 } from '../api/api.types';
 
 /** Provides CRUD operations for application records via the backend REST API. */
 @Injectable({ providedIn: 'root' })
-export class ApplicationsService {
+export class ApplicationService {
   private readonly _http = inject(HttpClient);
 
   /** Base URL for all application record endpoints. */
@@ -48,5 +49,12 @@ export class ApplicationsService {
    */
   public patchStatus(id: number, request: PatchStatusRequest): Observable<ApplicationRecordDto> {
     return this._http.patch<ApplicationRecordDto>(`${this._baseUrl}/${id}/status`, request);
+  }
+
+  /** Imports application records from an Excel (.xlsx) file. Returns a result summary. */
+  public importRecords(file: File): Observable<ExcelImportResultDto> {
+    const body = new FormData();
+    body.append('file', file);
+    return this._http.post<ExcelImportResultDto>(`${this._baseUrl}/import`, body);
   }
 }

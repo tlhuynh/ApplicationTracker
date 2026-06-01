@@ -19,7 +19,7 @@ import {
   ApplicationRecordDto,
   CreateApplicationRecordRequest,
 } from '../../../core/api/api.types';
-import { ApplicationsService } from '../../../core/services/applications.service';
+import { ApplicationService } from '../../../core/services/application.service';
 
 /** Status option used to populate the status dropdown. */
 interface StatusOption {
@@ -57,11 +57,13 @@ export interface ApplicationDialogData {
 export class ApplicationDialog implements OnInit {
   protected readonly data = inject<ApplicationDialogData>(MAT_DIALOG_DATA);
   private readonly _dialogRef = inject(MatDialogRef<ApplicationDialog>);
-  private readonly _applicationsService = inject(ApplicationsService);
+  private readonly _applicationsService = inject(ApplicationService);
   private readonly _destroyRef = inject(DestroyRef);
 
   /** True when an existing record was passed — switches the dialog to edit mode. */
   protected readonly isEditing = !!this.data.record;
+  // We're using a double negative here to convert data.record which can be record or undefined to a boolean first
+  // then negate it. If we just use the object itself, we will have some problems with type check
 
   /** Status options for the dropdown — mirrors the backend ApplicationStatus enum. */
   protected readonly statusOptions: StatusOption[] = [

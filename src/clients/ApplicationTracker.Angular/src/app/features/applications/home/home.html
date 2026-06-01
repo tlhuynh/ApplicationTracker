@@ -1,1 +1,160 @@
-<p>home works!</p>
+<!-- Page header ─────────────────────────────────────────────────────────── -->
+<div class="page-header">
+  <h1 class="page-title">My Applications</h1>
+  <button
+    mat-raised-button
+    color="primary"
+    (click)="openAddDialog()"
+    aria-label="Add application"
+  >
+    <mat-icon>add</mat-icon>
+    Add Application
+  </button>
+</div>
+
+<!-- Loading ──────────────────────────────────────────────────────────────── -->
+@if (isLoading()) {
+  <div class="loading-container" aria-live="polite" aria-label="Loading applications">
+    <mat-spinner diameter="48" />
+  </div>
+}
+
+<!-- Error ────────────────────────────────────────────────────────────────── -->
+@if (loadError(); as error) {
+  <div class="load-error" role="alert" aria-live="assertive">{{ error }}</div>
+}
+
+<!-- Content ──────────────────────────────────────────────────────────────── -->
+@if (!isLoading() && !loadError()) {
+  @if (records().length === 0) {
+    <!-- Empty state -->
+    <div class="empty-state">
+      <mat-icon class="empty-icon" aria-hidden="true">work_off</mat-icon>
+      <p class="empty-message">
+        No applications yet. Click <strong>Add Application</strong> to get started.
+      </p>
+    </div>
+  } @else {
+    <!-- Table -->
+    <div class="table-container mat-elevation-z1">
+      <table mat-table [dataSource]="records()" aria-label="Job application records">
+
+        <!-- Company Name ─────────────────────────────────────────────────── -->
+        <ng-container matColumnDef="companyName">
+          <th mat-header-cell *matHeaderCellDef scope="col">Company</th>
+          <td mat-cell *matCellDef="let record">{{ record.companyName }}</td>
+        </ng-container>
+
+        <!-- Status ──────────────────────────────────────────────────────── -->
+        <ng-container matColumnDef="status">
+          <th mat-header-cell *matHeaderCellDef scope="col">Status</th>
+          <td mat-cell *matCellDef="let record">
+            <span [class]="'status-badge ' + getStatusClass(record.status)">
+              {{ getStatusLabel(record.status) }}
+            </span>
+          </td>
+        </ng-container>
+
+        <!-- Applied Date ─────────────────────────────────────────────────── -->
+        <ng-container matColumnDef="appliedDate">
+          <th mat-header-cell *matHeaderCellDef scope="col">Applied Date</th>
+          <td mat-cell *matCellDef="let record">
+            {{ record.appliedDate ? (record.appliedDate | date : 'mediumDate') : '—' }}
+          </td>
+        </ng-container>
+
+        <!-- Posting URL ──────────────────────────────────────────────────── -->
+        <ng-container matColumnDef="postingUrl">
+          <th mat-header-cell *matHeaderCellDef scope="col">Posting</th>
+          <td mat-cell *matCellDef="let record">
+            @if (record.postingUrl) {
+              <a
+                [href]="record.postingUrl"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Open job posting (opens in new tab)"
+              >View</a>
+            } @else {
+              <span class="no-value" aria-hidden="true">—</span>
+            }
+          </td>
+        </ng-container>
+
+        <!-- Actions ─────────────────────────────────────────────────────── -->
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef scope="col">
+            <span class="cdk-visually-hidden">Actions</span>
+          </th>
+          <td mat-cell *matCellDef="let record">
+            <div class="actions-cell">
+
+              <!-- Advance: Applied → Interviewing → Offered -->
+              @if (canAdvance(record)) {
+                <button
+                  mat-icon-button
+                  [disabled]="pendingStatusId() === getRecordId(record)"
+                  [matTooltipDisabled]="pendingStatusId() === getRecordId(record)"
+                  (click)="advanceStatus(record)"
+                  matTooltip="Advance status"
+                  [attr.aria-label]="'Advance status for ' + record.companyName"
+                >
+                  @if (pendingStatusId() === getRecordId(record)) {
+                    <mat-spinner diameter="20" />
+                  } @else {
+                    <mat-icon>arrow_forward</mat-icon>
+                  }
+                </button>
+              }
+
+              <!-- Reject -->
+              @if (canReject(record)) {
+                <button
+                  mat-icon-button
+                  color="warn"
+                  [disabled]="pendingStatusId() === getRecordId(record)"
+                  [matTooltipDisabled]="pendingStatusId() === getRecordId(record)"
+                  (click)="rejectRecord(record)"
+                  matTooltip="Reject"
+                  [attr.aria-label]="'Reject ' + record.companyName"
+                >
+                  <mat-icon>cancel</mat-icon>
+                </button>
+              }
+
+              <!-- Edit -->
+              <button
+                mat-icon-button
+                (click)="openEditDialog(record)"
+                matTooltip="Edit"
+                [attr.aria-label]="'Edit ' + record.companyName"
+              >
+                <mat-icon>edit</mat-icon>
+              </button>
+
+              <!-- Delete -->
+              <button
+                mat-icon-button
+                color="warn"
+                [disabled]="isDeletingId() === getRecordId(record)"
+                [matTooltipDisabled]="isDeletingId() === getRecordId(record)"
+                (click)="openDeleteDialog(record)"
+                matTooltip="Delete"
+                [attr.aria-label]="'Delete ' + record.companyName"
+              >
+                @if (isDeletingId() === getRecordId(record)) {
+                  <mat-spinner diameter="20" />
+                } @else {
+                  <mat-icon>delete</mat-icon>
+                }
+              </button>
+
+            </div>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      </table>
+    </div>
+  }
+}
