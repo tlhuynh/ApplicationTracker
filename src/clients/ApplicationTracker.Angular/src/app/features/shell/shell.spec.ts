@@ -2,14 +2,12 @@
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { render, screen } from '@testing-library/angular';
 import { userEvent } from '@testing-library/user-event';
+import { of } from 'rxjs';
+import { MatDialog } from '@angular/material/dialog';
 import { ShellComponent } from './shell';
 import { AuthService } from '../../core/services/auth.service';
 import { signal } from '@angular/core';
 
-/**
- * Creates a minimal AuthService mock with controllable signals.
- * Avoids spinning up the real service and its HttpClient dependency.
- */
 function createAuthServiceMock() {
   return {
     currentUser: signal<string | null>('test@example.com'),
@@ -18,26 +16,25 @@ function createAuthServiceMock() {
   };
 }
 
+function createDialogMock(confirmed: boolean) {
+  return {
+    open: vi.fn().mockReturnValue({
+      afterClosed: vi.fn().mockReturnValue(of(confirmed)),
+    }),
+  };
+}
+
 describe('ShellComponent', () => {
-  /**
-   * Helper that renders ShellComponent with required providers.
-   * provideRouter([]) is needed because RouterLink and RouterLinkActive
-   * require a router context to function.
-   */
-  async function setup(authMock = createAuthServiceMock()) {
+  async function setup(authMock = createAuthServiceMock(), dialogMock = createDialogMock(true)) {
     await render(ShellComponent, {
       providers: [
         provideRouter([]),
-        /**
-         * Angular Material components require animations to be configured.
-         * provideNoopAnimations() disables animations in tests so Material
-         * components render their content immediately without animation delays.
-         */
         provideNoopAnimations(),
         { provide: AuthService, useValue: authMock },
+        { provide: MatDialog, useValue: dialogMock },
       ],
     });
-    return { authMock };
+    return { authMock, dialogMock };
   }
 
   it('should render the app title in the sidebar', async () => {
@@ -56,13 +53,22 @@ describe('ShellComponent', () => {
     expect(screen.getByText('test@example.com')).toBeInTheDocument();
   });
 
-  it('should call logout when the logout button is clicked', async () => {
+  it('should call logout when the logout button is clicked and confirmed', async () => {
     const { authMock } = await setup();
     const user = userEvent.setup();
 
     await user.click(screen.getByRole('button', { name: 'Log out' }));
 
     expect(authMock.logout).toHaveBeenCalledOnce();
+  });
+
+  it('should not call logout when the confirm dialog is dismissed', async () => {
+    const { authMock } = await setup(createAuthServiceMock(), createDialogMock(false));
+    const user = userEvent.setup();
+
+    await user.click(screen.getByRole('button', { name: 'Log out' }));
+
+    expect(authMock.logout).not.toHaveBeenCalled();
   });
 
   it('should render the router outlet for child routes', async () => {

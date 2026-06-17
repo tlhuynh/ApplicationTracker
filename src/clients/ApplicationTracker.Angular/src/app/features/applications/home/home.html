@@ -42,7 +42,14 @@
         <!-- Company Name ─────────────────────────────────────────────────── -->
         <ng-container matColumnDef="companyName">
           <th mat-header-cell *matHeaderCellDef scope="col">Company</th>
-          <td mat-cell *matCellDef="let record">{{ record.companyName }}</td>
+          <td mat-cell *matCellDef="let record">
+            <button
+              mat-button
+              class="company-name-btn"
+              (click)="openDetailDialog(record)"
+              [attr.aria-label]="'View details for ' + record.companyName"
+            >{{ record.companyName }}</button>
+          </td>
         </ng-container>
 
         <!-- Status ──────────────────────────────────────────────────────── -->

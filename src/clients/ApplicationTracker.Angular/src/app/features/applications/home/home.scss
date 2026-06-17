@@ -66,41 +66,31 @@ td.mat-column-actions {
   padding-bottom: 4px;
 }
 
-// ── Status badge ──────────────────────────────────────────────────────────────
+// Status badge styles live in styles.scss (shared with detail-dialog)
 
-.status-badge {
-  display: inline-block;
-  padding: 2px 10px;
-  border-radius: 12px;
-  font-size: 0.75rem;
+// ── Company name button ───────────────────────────────────────────────────────
+
+.company-name-btn {
+  font-size: inherit;
   font-weight: 500;
-  line-height: 1.6;
-  white-space: nowrap;
+  padding: 0 4px;
+  min-width: unset;
+  letter-spacing: normal;
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  transition: text-decoration-color 0.2s;
+
+  &:hover {
+    text-decoration-color: currentColor;
+  }
 }
 
-.status-applied {
-  background-color: var(--mat-sys-primary-container);
-  color: var(--mat-sys-on-primary-container);
-}
+.mat-column-companyName {
+  text-align: center;
 
-.status-interviewing {
-  background-color: var(--mat-sys-secondary-container);
-  color: var(--mat-sys-on-secondary-container);
-}
-
-.status-offered {
-  background-color: var(--mat-sys-tertiary-container);
-  color: var(--mat-sys-on-tertiary-container);
-}
-
-.status-rejected {
-  background-color: var(--mat-sys-error-container);
-  color: var(--mat-sys-on-error-container);
-}
-
-.status-withdrawn {
-  background-color: var(--mat-sys-surface-variant);
-  color: var(--mat-sys-on-surface-variant);
+  &.mat-header-cell {
+    text-align: center;
+  }
 }
 
 // ── Status action buttons ─────────────────────────────────────────────────────

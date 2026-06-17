@@ -14,8 +14,10 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
+import { MatDialog } from '@angular/material/dialog';
 import { AuthService } from '../../core/services/auth.service';
 import { ThemeService } from '../../core/services/theme.service';
+import { ConfirmDialog, ConfirmDialogData } from '../../shared/confirm-dialog/confirm-dialog';
 
 /**
  * Shell component — the persistent app layout for authenticated users.
@@ -45,6 +47,7 @@ export class ShellComponent implements OnInit {
   protected readonly authService = inject(AuthService);
   protected readonly themeService = inject(ThemeService);
   private readonly _breakpointObserver = inject(BreakpointObserver);
+  private readonly _dialog = inject(MatDialog);
 
   protected readonly sidenav = viewChild.required<MatSidenav>('sidenav');
 
@@ -72,5 +75,19 @@ export class ShellComponent implements OnInit {
 
   protected toggleSidenav(): void {
     this.sidenav().toggle();
+  }
+
+  protected confirmLogout(): void {
+    const ref = this._dialog.open<ConfirmDialog, ConfirmDialogData, boolean>(ConfirmDialog, {
+      data: {
+        title: 'Log Out',
+        message: 'Are you sure you want to log out?',
+        confirmLabel: 'Log Out',
+      },
+    });
+
+    ref.afterClosed().subscribe((confirmed) => {
+      if (confirmed) this.authService.logout();
+    });
   }
 }

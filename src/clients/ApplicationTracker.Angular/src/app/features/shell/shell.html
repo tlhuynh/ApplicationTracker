@@ -39,6 +39,10 @@
 
       <span class="toolbar-spacer"></span>
 
+      <span class="current-user" aria-label="Logged in as {{ authService.currentUser() }}">
+        {{ authService.currentUser() }}
+      </span>
+
       <button
         mat-icon-button
         (click)="themeService.toggle()"
@@ -48,13 +52,9 @@
         <mat-icon>{{ themeService.isDark() ? 'light_mode' : 'dark_mode' }}</mat-icon>
       </button>
 
-      <span class="current-user" aria-label="Logged in as {{ authService.currentUser() }}">
-        {{ authService.currentUser() }}
-      </span>
-
       <button
         mat-icon-button
-        (click)="authService.logout()"
+        (click)="confirmLogout()"
         aria-label="Log out"
         matTooltip="Log out"
       >
