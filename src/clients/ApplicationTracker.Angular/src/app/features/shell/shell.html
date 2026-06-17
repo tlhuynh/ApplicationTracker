@@ -39,6 +39,15 @@
 
       <span class="toolbar-spacer"></span>
 
+      <button
+        mat-icon-button
+        (click)="themeService.toggle()"
+        [attr.aria-label]="themeService.isDark() ? 'Switch to light mode' : 'Switch to dark mode'"
+        [matTooltip]="themeService.isDark() ? 'Light mode' : 'Dark mode'"
+      >
+        <mat-icon>{{ themeService.isDark() ? 'light_mode' : 'dark_mode' }}</mat-icon>
+      </button>
+
       <span class="current-user" aria-label="Logged in as {{ authService.currentUser() }}">
         {{ authService.currentUser() }}
       </span>

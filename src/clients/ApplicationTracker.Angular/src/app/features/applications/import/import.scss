@@ -58,11 +58,6 @@
   justify-content: center;
 }
 
-// Explicit blue fill when enabled — M3 color attribute on raised buttons is unreliable
-.btn-import:not([disabled]) {
-  background-color: var(--mat-sys-primary);
-  color: var(--mat-sys-on-primary);
-}
 
 // ── Server error ──────────────────────────────────────────────────────────────
 

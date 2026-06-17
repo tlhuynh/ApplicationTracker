@@ -13,6 +13,16 @@
       rel="stylesheet"
     />
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+    <!-- Apply saved theme before Angular boots to prevent flash of wrong theme -->
+    <script>
+      try {
+        const t = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const scheme = t === 'dark' || (!t && prefersDark) ? 'dark' : 'light';
+        document.documentElement.style.colorScheme = scheme;
+        document.body && (document.body.style.colorScheme = scheme);
+      } catch (e) {}
+    </script>
   </head>
   <body>
     <app-root></app-root>

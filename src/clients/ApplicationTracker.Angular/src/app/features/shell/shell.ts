@@ -15,6 +15,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 import { AuthService } from '../../core/services/auth.service';
+import { ThemeService } from '../../core/services/theme.service';
 
 /**
  * Shell component — the persistent app layout for authenticated users.
@@ -42,6 +43,7 @@ import { AuthService } from '../../core/services/auth.service';
 })
 export class ShellComponent implements OnInit {
   protected readonly authService = inject(AuthService);
+  protected readonly themeService = inject(ThemeService);
   private readonly _breakpointObserver = inject(BreakpointObserver);
 
   protected readonly sidenav = viewChild.required<MatSidenav>('sidenav');

@@ -20,10 +20,7 @@ html {
 }
 
 body {
-  // Default the application to a light color theme. This can be changed to
-  // `dark` to enable the dark color theme, or to `light dark` to defer to the
-  // user's system settings.
-  color-scheme: light;
+  // color-scheme is controlled at runtime by ThemeService — do not hardcode here.
 
   // Set a default background, font and text colors for the application using
   // Angular Material's system-level CSS variables. Learn more about these
@@ -37,3 +34,10 @@ body {
   height: 100%;
 }
 /* You can add global styles to this file, and also import other style files */
+
+// mat-raised-button color="primary" is unreliable in Angular Material M3 — use this class
+// on any filled primary button to guarantee blue background + white text in both themes.
+.btn-primary-filled:not([disabled]) {
+  background-color: var(--mat-sys-primary) !important;
+  color: var(--mat-sys-on-primary) !important;
+}
