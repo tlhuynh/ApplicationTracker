@@ -221,6 +221,23 @@ export class Home implements OnInit {
       });
   }
 
+  /** Sets the record's status to Withdrawn (4). */
+  protected withdrawRecord(record: ApplicationRecordDto): void {
+    const id = this.getRecordId(record);
+
+    this.pendingStatusId.set(id);
+    this._applicationService
+      .patchStatus(id, { status: 4 })
+      .pipe(takeUntilDestroyed(this._destroyRef))
+      .subscribe({
+        next: (updated) => {
+          this.records.update((current) => current.map((r) => (r.id === updated.id ? updated : r)));
+          this.pendingStatusId.set(null);
+        },
+        error: () => this.pendingStatusId.set(null),
+      });
+  }
+
   /** Sets the record's status to Rejected (3). */
   protected rejectRecord(record: ApplicationRecordDto): void {
     const id = this.getRecordId(record);
@@ -249,6 +266,11 @@ export class Home implements OnInit {
   protected canReject(record: ApplicationRecordDto): boolean {
     const status = record.status ?? 0;
     return status !== 3 && status !== 4;
+  }
+
+  /** True only when the record is Offered — the user can choose to withdraw. */
+  protected canWithdraw(record: ApplicationRecordDto): boolean {
+    return (record.status ?? 0) === 2;
   }
 
   protected getStatusLabel(status: number | undefined): string {

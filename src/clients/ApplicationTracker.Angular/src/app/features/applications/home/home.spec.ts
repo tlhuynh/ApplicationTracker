@@ -196,6 +196,14 @@ describe('Home', () => {
     expect(serviceMock.patchStatus).toHaveBeenCalledWith(1, { status: 3 });
   });
 
+  it('should call patchStatus with status 4 when withdraw is clicked on an Offered record', async () => {
+    const { serviceMock, user } = await setup({ records: [OFFERED] });
+
+    await user.click(screen.getByRole('button', { name: /withdraw application for gamma llc/i }));
+
+    expect(serviceMock.patchStatus).toHaveBeenCalledWith(3, { status: 4 });
+  });
+
   // ── Button visibility ──────────────────────────────────────────────────────
 
   it('should hide advance button for Offered, Rejected, and Withdrawn records', async () => {
@@ -220,5 +228,22 @@ describe('Home', () => {
     expect(screen.getByRole('button', { name: /reject acme corp/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /advance status for beta inc/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /reject beta inc/i })).toBeInTheDocument();
+  });
+
+  it('should show both reject and withdraw buttons for an Offered record', async () => {
+    await setup({ records: [OFFERED] });
+
+    expect(screen.getByRole('button', { name: /reject gamma llc/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /withdraw application for gamma llc/i })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /advance status for gamma llc/i })).not.toBeInTheDocument();
+  });
+
+  it('should hide withdraw button for non-Offered records', async () => {
+    await setup({ records: [APPLIED, INTERVIEWING, REJECTED, WITHDRAWN] });
+
+    expect(screen.queryByRole('button', { name: /withdraw application for acme corp/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /withdraw application for beta inc/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /withdraw application for delta co/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /withdraw application for echo ltd/i })).not.toBeInTheDocument();
   });
 });

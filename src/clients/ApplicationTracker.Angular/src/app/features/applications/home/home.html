@@ -78,6 +78,24 @@
                 </button>
               }
 
+              <!-- Withdraw: only when Offered -->
+              @if (canWithdraw(record)) {
+                <button
+                  mat-icon-button
+                  [disabled]="pendingStatusId() === getRecordId(record)"
+                  [matTooltipDisabled]="pendingStatusId() === getRecordId(record)"
+                  (click)="withdrawRecord(record)"
+                  matTooltip="Withdraw"
+                  [attr.aria-label]="'Withdraw application for ' + record.companyName"
+                >
+                  @if (pendingStatusId() === getRecordId(record)) {
+                    <mat-spinner diameter="20" />
+                  } @else {
+                    <mat-icon>undo</mat-icon>
+                  }
+                </button>
+              }
+
               <!-- Advance: Applied → Interviewing → Offered -->
               @if (canAdvance(record)) {
                 <button
