@@ -1,4 +1,5 @@
 ﻿using ApplicationTracker.Core.Entities;
+  using ApplicationTracker.Core.Models;
   using ApplicationTracker.Shared.DTOs;
 
   namespace ApplicationTracker.Shared.Mappings;
@@ -48,5 +49,18 @@
           entity.AppliedDate = request.AppliedDate;
           entity.PostingUrl = request.PostingUrl;
           entity.Notes = request.Notes;
+      }
+
+      /// <summary>
+      /// Maps a <see cref="PagedResult{ApplicationRecord}"/> to a <see cref="PagedResultDto{ApplicationRecordDto}"/>.
+      /// </summary>
+      public static PagedResultDto<ApplicationRecordDto> ToDto(this PagedResult<ApplicationRecord> result) {
+          return new() {
+              Items = result.Items.Select(r => r.ToDto()).ToList(),
+              TotalCount = result.TotalCount,
+              Page = result.Page,
+              PageSize = result.PageSize,
+              TotalPages = result.TotalPages,
+          };
       }
   }

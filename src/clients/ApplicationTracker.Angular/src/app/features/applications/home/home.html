@@ -37,11 +37,11 @@
   } @else {
     <!-- Table -->
     <div class="table-container mat-elevation-z1">
-      <table mat-table [dataSource]="records()" aria-label="Job application records">
+      <table mat-table [dataSource]="records()" matSort (matSortChange)="onSortChange($event)" aria-label="Job application records">
 
         <!-- Company Name ─────────────────────────────────────────────────── -->
         <ng-container matColumnDef="companyName">
-          <th mat-header-cell *matHeaderCellDef scope="col">Company</th>
+          <th mat-header-cell *matHeaderCellDef mat-sort-header="companyName" scope="col">Company</th>
           <td mat-cell *matCellDef="let record">
             <button
               mat-button
@@ -54,7 +54,7 @@
 
         <!-- Status ──────────────────────────────────────────────────────── -->
         <ng-container matColumnDef="status">
-          <th mat-header-cell *matHeaderCellDef scope="col">Status</th>
+          <th mat-header-cell *matHeaderCellDef mat-sort-header="status" scope="col">Status</th>
           <td mat-cell *matCellDef="let record">
             <span [class]="'status-badge ' + getStatusClass(record.status)">
               {{ getStatusLabel(record.status) }}
@@ -128,7 +128,7 @@
 
         <!-- Applied Date ─────────────────────────────────────────────────── -->
         <ng-container matColumnDef="appliedDate">
-          <th mat-header-cell *matHeaderCellDef scope="col">Applied Date</th>
+          <th mat-header-cell *matHeaderCellDef mat-sort-header="appliedDate" scope="col">Applied Date</th>
           <td mat-cell *matCellDef="let record">
             {{ record.appliedDate ? (record.appliedDate | date : 'mediumDate') : '—' }}
           </td>
@@ -216,6 +216,15 @@
         <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
         <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
       </table>
+
+      <mat-paginator
+        [length]="totalCount()"
+        [pageSize]="_pageSize()"
+        [pageSizeOptions]="pageSizeOptions"
+        [pageIndex]="_pageIndex()"
+        (page)="onPageChange($event)"
+        aria-label="Select page"
+      />
     </div>
   }
 }

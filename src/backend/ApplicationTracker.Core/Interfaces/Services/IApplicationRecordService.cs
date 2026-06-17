@@ -1,5 +1,6 @@
 ﻿using ApplicationTracker.Core.Entities;
 using ApplicationTracker.Core.Enums;
+using ApplicationTracker.Core.Models;
 
 namespace ApplicationTracker.Core.Interfaces.Services;
 
@@ -9,10 +10,10 @@ namespace ApplicationTracker.Core.Interfaces.Services;
 /// </summary>
 public interface IApplicationRecordService {
 	/// <summary>
-	/// Retrieves all application records for the specified user.
+	/// Returns a sorted, paginated page of application records for the specified user.
 	/// </summary>
-	/// <param name="userId">The user identifier.</param>
-	Task<List<ApplicationRecord>> GetAllAsync(string userId);
+	Task<PagedResult<ApplicationRecord>> GetPagedAsync(
+		string userId, int page, int pageSize, string sortBy, string sortDir);
 
 	/// <summary>
 	/// Retrieves a single application record by its identifier, scoped to the specified user.

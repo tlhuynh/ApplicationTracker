@@ -62,16 +62,27 @@ public class ApplicationRecordsController(
 	}
 
 	/// <summary>
-	/// Retrieves all application records.
+	/// Retrieves a paginated, sorted page of application records.
 	/// </summary>
+	/// <param name="page">1-based page number (default: 1).</param>
+	/// <param name="pageSize">Records per page — 10, 25, or 50 (default: 10).</param>
+	/// <param name="sortBy">Column to sort by: companyName, status, appliedDate (default: companyName).</param>
+	/// <param name="sortDir">Sort direction: asc or desc (default: asc).</param>
 	[HttpGet]
-	public async Task<ActionResult<List<ApplicationRecordDto>>> GetAll() {
+	public async Task<ActionResult<PagedResultDto<ApplicationRecordDto>>> GetAll(
+		[FromQuery] int page = 1,
+		[FromQuery] int pageSize = 5,
+		[FromQuery] string sortBy = "companyName",
+		[FromQuery] string sortDir = "asc") {
 		if (!TryGetUserId(out string userId)) {
 			return Unauthorized();
 		}
-		List<ApplicationRecord> records = await service.GetAllAsync(userId);
-		List<ApplicationRecordDto> dtos = records.Select(r => r.ToDto()).ToList();
-		return Ok(dtos);
+
+		page = Math.Max(1, page);
+		pageSize = pageSize is 5 or 10 or 25 ? pageSize : 5;
+
+		PagedResult<ApplicationRecord> result = await service.GetPagedAsync(userId, page, pageSize, sortBy, sortDir);
+		return Ok(result.ToDto());
 	}
 
 	/// <summary>

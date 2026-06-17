@@ -129,6 +129,12 @@ td.mat-column-actions {
   color: var(--mat-sys-on-surface-variant);
 }
 
+// ── Paginator ─────────────────────────────────────────────────────────────────
+
+mat-paginator {
+  border-top: 1px solid var(--mat-sys-outline-variant);
+}
+
 // ── Responsive table ──────────────────────────────────────────────────────────
 
 // Hide secondary columns on narrow screens to keep the table usable

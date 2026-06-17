@@ -2,6 +2,7 @@
 using ApplicationTracker.Core.Entities;
 using ApplicationTracker.Core.Enums;
 using ApplicationTracker.Core.Interfaces.Repositories;
+using ApplicationTracker.Core.Models;
 using Moq;
 
 namespace ApplicationTracker.Api.Tests.Services;
@@ -20,21 +21,26 @@ public class ApplicationRecordServiceTests {
 	}
 
 	[Fact]
-	public async Task GetAllAsync_ReturnsAllRecords() {
+	public async Task GetPagedAsync_DelegatesToRepositoryAndReturnsResult() {
 		// Arrange
-		List<ApplicationRecord> records = [
-			new() { Id = 1, CompanyName = "Acme" },
-			new() { Id = 2, CompanyName = "Globex" }
-		];
-		_repositoryMock.Setup(r => r.GetAllAsync(TestUserId)).ReturnsAsync(records);
+		PagedResult<ApplicationRecord> pagedResult = new() {
+			Items = [new() { Id = 1, CompanyName = "Acme" }, new() { Id = 2, CompanyName = "Globex" }],
+			TotalCount = 2,
+			Page = 1,
+			PageSize = 5,
+		};
+		_repositoryMock
+			.Setup(r => r.GetPagedAsync(TestUserId, 1, 5, "companyName", "asc"))
+			.ReturnsAsync(pagedResult);
 
 		// Act
-		List<ApplicationRecord> result = await _service.GetAllAsync(TestUserId);
+		PagedResult<ApplicationRecord> result = await _service.GetPagedAsync(TestUserId, 1, 5, "companyName", "asc");
 
 		// Assert
-		Assert.Equal(2, result.Count);
-		Assert.Equal("Acme", result[0].CompanyName);
-		Assert.Equal("Globex", result[1].CompanyName);
+		Assert.Equal(2, result.TotalCount);
+		Assert.Equal(2, result.Items.Count);
+		Assert.Equal("Acme", result.Items[0].CompanyName);
+		_repositoryMock.Verify(r => r.GetPagedAsync(TestUserId, 1, 5, "companyName", "asc"), Times.Once);
 	}
 
 	[Fact]

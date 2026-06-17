@@ -5,6 +5,7 @@ import {
   OnInit,
   inject,
   signal,
+  viewChild,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DatePipe } from '@angular/common';
@@ -14,6 +15,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialog } from '@angular/material/dialog';
+import { MatSortModule, MatSort, Sort } from '@angular/material/sort';
+import { MatPaginatorModule, MatPaginator, PageEvent } from '@angular/material/paginator';
 import { ApplicationService } from '../../../core/services/application.service';
 import {
   ApplicationDialog,
@@ -66,6 +69,8 @@ const STATUS_CLASSES: Record<number, string> = {
     MatIconModule,
     MatProgressSpinnerModule,
     MatTooltipModule,
+    MatSortModule,
+    MatPaginatorModule,
   ],
 })
 export class Home implements OnInit {
@@ -73,17 +78,30 @@ export class Home implements OnInit {
   private readonly _dialog = inject(MatDialog);
   private readonly _destroyRef = inject(DestroyRef);
 
+  private readonly _paginator = viewChild<MatPaginator>(MatPaginator);
+
   // ── State ─────────────────────────────────────────────────────────────────
 
   protected readonly records = signal<ApplicationRecordDto[]>([]);
   protected readonly isLoading = signal(true);
   protected readonly loadError = signal<string | null>(null);
+  protected readonly totalCount = signal(0);
+
+  /** Pagination state (0-based page index to match MatPaginator). */
+  protected readonly _pageIndex = signal(0);
+  protected readonly _pageSize = signal(5);
+
+  /** Sort state. */
+  private readonly _sortBy = signal('companyName');
+  private readonly _sortDir = signal<'asc' | 'desc'>('asc');
 
   /** ID of the record whose status is currently being patched — disables that row's status buttons. */
   protected readonly pendingStatusId = signal<number | null>(null);
 
   /** ID of the record currently being deleted — disables that row's delete button. */
   protected readonly isDeletingId = signal<number | null>(null);
+
+  protected readonly pageSizeOptions = [5, 10, 25];
 
   protected readonly displayedColumns = [
     'companyName',
@@ -108,11 +126,17 @@ export class Home implements OnInit {
     this.loadError.set(null);
 
     this._applicationService
-      .getAll()
+      .getAll({
+        page: this._pageIndex() + 1,
+        pageSize: this._pageSize(),
+        sortBy: this._sortBy(),
+        sortDir: this._sortDir(),
+      })
       .pipe(takeUntilDestroyed(this._destroyRef))
       .subscribe({
-        next: (records) => {
-          this.records.set(records);
+        next: (result) => {
+          this.records.set(result.items ?? []);
+          this.totalCount.set(result.totalCount ?? 0);
           this.isLoading.set(false);
         },
         error: () => {
@@ -120,6 +144,20 @@ export class Home implements OnInit {
           this.isLoading.set(false);
         },
       });
+  }
+
+  protected onSortChange(sort: Sort): void {
+    this._sortBy.set(sort.active || 'companyName');
+    this._sortDir.set((sort.direction || 'asc') as 'asc' | 'desc');
+    this._pageIndex.set(0);
+    this._paginator()?.firstPage();
+    this.loadRecords();
+  }
+
+  protected onPageChange(event: PageEvent): void {
+    this._pageIndex.set(event.pageIndex);
+    this._pageSize.set(event.pageSize);
+    this.loadRecords();
   }
 
   // ── Dialog actions ────────────────────────────────────────────────────────
@@ -136,7 +174,9 @@ export class Home implements OnInit {
       .pipe(takeUntilDestroyed(this._destroyRef))
       .subscribe((saved) => {
         if (saved) {
-          this.records.update((current) => [saved, ...current]);
+          this._pageIndex.set(0);
+          this._paginator()?.firstPage();
+          this.loadRecords();
         }
       });
   }
@@ -183,8 +223,8 @@ export class Home implements OnInit {
           .pipe(takeUntilDestroyed(this._destroyRef))
           .subscribe({
             next: () => {
-              this.records.update((current) => current.filter((r) => r.id !== record.id));
               this.isDeletingId.set(null);
+              this.loadRecords();
             },
             error: () => this.isDeletingId.set(null),
           });

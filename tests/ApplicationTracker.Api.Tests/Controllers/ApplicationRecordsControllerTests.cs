@@ -48,21 +48,43 @@ public class ApplicationRecordsControllerTests {
 	}
 
 	[Fact]
-	public async Task GetAll_ReturnsOkWithList() {
+	public async Task GetAll_ReturnsOkWithPagedResult() {
 		// Arrange
-		List<ApplicationRecord> records = [
-			new() { Id = 1, CompanyName = "Acme", Status = ApplicationStatus.Applied }
-		];
-		_applicationRecordServiceMock.Setup(s => s.GetAllAsync(TestUserId)).ReturnsAsync(records);
+		PagedResult<ApplicationRecord> pagedResult = new() {
+			Items = [new() { Id = 1, CompanyName = "Acme", Status = ApplicationStatus.Applied }],
+			TotalCount = 1,
+			Page = 1,
+			PageSize = 5,
+		};
+		_applicationRecordServiceMock
+			.Setup(s => s.GetPagedAsync(TestUserId, 1, 5, "companyName", "asc"))
+			.ReturnsAsync(pagedResult);
 
 		// Act
-		ActionResult<List<ApplicationRecordDto>> result = await _controller.GetAll();
+		ActionResult<PagedResultDto<ApplicationRecordDto>> result = await _controller.GetAll();
 
 		// Assert
 		OkObjectResult okResult = Assert.IsType<OkObjectResult>(result.Result);
-		List<ApplicationRecordDto> dtos = Assert.IsType<List<ApplicationRecordDto>>(okResult.Value);
-		Assert.Single(dtos);
-		Assert.Equal("Acme", dtos[0].CompanyName);
+		PagedResultDto<ApplicationRecordDto> dto = Assert.IsType<PagedResultDto<ApplicationRecordDto>>(okResult.Value);
+		Assert.Equal(1, dto.TotalCount);
+		Assert.Single(dto.Items);
+		Assert.Equal("Acme", dto.Items[0].CompanyName);
+	}
+
+	[Fact]
+	public async Task GetAll_WithInvalidPageSize_ClampsToFive() {
+		// Arrange
+		PagedResult<ApplicationRecord> pagedResult = new() { Items = [], TotalCount = 0, Page = 1, PageSize = 5 };
+		_applicationRecordServiceMock
+			.Setup(s => s.GetPagedAsync(TestUserId, 1, 5, "companyName", "asc"))
+			.ReturnsAsync(pagedResult);
+
+		// Act — pageSize=15 is not in {5, 10, 25} so it should be clamped to 5
+		ActionResult<PagedResultDto<ApplicationRecordDto>> result = await _controller.GetAll(pageSize: 15);
+
+		// Assert — service is called with 5, not 15
+		_applicationRecordServiceMock.Verify(s => s.GetPagedAsync(TestUserId, 1, 5, "companyName", "asc"), Times.Once);
+		Assert.IsType<OkObjectResult>(result.Result);
 	}
 
 	[Fact]

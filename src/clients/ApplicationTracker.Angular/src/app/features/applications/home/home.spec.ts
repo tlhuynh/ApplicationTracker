@@ -26,9 +26,16 @@ const WITHDRAWN: ApplicationRecordDto  = { id: 5, companyName: 'Echo Ltd', statu
 
 // ── Mock factories ────────────────────────────────────────────────────────────
 
+function makePagedResult(records: ApplicationRecordDto[]) {
+  return { items: records, totalCount: records.length, page: 1, pageSize: 5, totalPages: records.length > 0 ? 1 : 0 };
+}
+
 function createServiceMock(records: ApplicationRecordDto[] = []) {
   return {
-    getAll: vi.fn().mockReturnValue(of(records)),
+    // First call: initial load; subsequent calls (after mutations): empty list.
+    getAll: vi.fn()
+      .mockReturnValueOnce(of(makePagedResult(records)))
+      .mockReturnValue(of(makePagedResult([]))),
     patchStatus: vi.fn().mockReturnValue(of({ ...APPLIED, status: 1 })),
     delete: vi.fn().mockReturnValue(of(undefined)),
   };
@@ -127,9 +134,16 @@ describe('Home', () => {
 
   // ── Add dialog ─────────────────────────────────────────────────────────────
 
-  it('should prepend a new record when the add dialog closes with a saved record', async () => {
+  it('should reload and show the new record when the add dialog closes with a saved record', async () => {
     const newRecord: ApplicationRecordDto = { id: 99, companyName: 'New Corp', status: 0, appliedDate: null, postingUrl: null, notes: null };
-    const { user } = await setup({ dialogResult: newRecord });
+    const { user } = await setup({
+      dialogResult: newRecord,
+      serviceOverrides: {
+        getAll: vi.fn()
+          .mockReturnValueOnce(of(makePagedResult([])))
+          .mockReturnValue(of(makePagedResult([newRecord]))),
+      },
+    });
 
     await user.click(screen.getByRole('button', { name: /add application/i }));
 

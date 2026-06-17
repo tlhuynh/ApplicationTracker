@@ -18,7 +18,7 @@ export interface DetailDialogData {
 export class DetailDialog {
   protected readonly data = inject<DetailDialogData>(MAT_DIALOG_DATA);
 
-  protected readonly statusLabels: Record<number, string> = {
+  private readonly _statusLabels: Record<number, string> = {
     0: 'Applied',
     1: 'Interviewing',
     2: 'Offered',
@@ -26,11 +26,19 @@ export class DetailDialog {
     4: 'Withdrawn',
   };
 
-  protected readonly statusClasses: Record<number, string> = {
+  private readonly _statusClasses: Record<number, string> = {
     0: 'status-applied',
     1: 'status-interviewing',
     2: 'status-offered',
     3: 'status-rejected',
     4: 'status-withdrawn',
   };
+
+  protected getStatusLabel(status: number | undefined): string {
+    return this._statusLabels[status ?? 0] ?? 'Unknown';
+  }
+
+  protected getStatusClass(status: number | undefined): string {
+    return this._statusClasses[status ?? 0] ?? '';
+  }
 }

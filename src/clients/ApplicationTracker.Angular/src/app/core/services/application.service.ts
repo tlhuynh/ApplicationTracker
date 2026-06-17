@@ -5,6 +5,8 @@ import {
   ApplicationRecordDto,
   CreateApplicationRecordRequest,
   ExcelImportResultDto,
+  GetAllParams,
+  PagedResultDto,
   PatchStatusRequest,
   UpdateApplicationRecordRequest,
 } from '../api/api.types';
@@ -17,9 +19,12 @@ export class ApplicationService {
   /** Base URL for all application record endpoints. */
   private readonly _baseUrl = '/api/applicationrecords';
 
-  /** Fetches all application records for the authenticated user. */
-  public getAll(): Observable<ApplicationRecordDto[]> {
-    return this._http.get<ApplicationRecordDto[]>(this._baseUrl);
+  /** Fetches a paginated, sorted page of application records for the authenticated user. */
+  public getAll(params: GetAllParams): Observable<PagedResultDto<ApplicationRecordDto>> {
+    const { page, pageSize, sortBy, sortDir } = params;
+    return this._http.get<PagedResultDto<ApplicationRecordDto>>(
+      `${this._baseUrl}?page=${page}&pageSize=${pageSize}&sortBy=${sortBy}&sortDir=${sortDir}`,
+    );
   }
 
   /** Creates a new application record and returns the created entity. */

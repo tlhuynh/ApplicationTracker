@@ -2,6 +2,7 @@
 using ApplicationTracker.Core.Enums;
 using ApplicationTracker.Core.Interfaces.Repositories;
 using ApplicationTracker.Core.Interfaces.Services;
+using ApplicationTracker.Core.Models;
 
 namespace ApplicationTracker.Api.Services;
 
@@ -11,8 +12,9 @@ namespace ApplicationTracker.Api.Services;
 /// </summary>
 public class ApplicationRecordService(IApplicationRecordRepository repository) : IApplicationRecordService {
 	/// <inheritdoc />
-	public async Task<List<ApplicationRecord>> GetAllAsync(string userId) {
-		return await repository.GetAllAsync(userId);
+	public async Task<PagedResult<ApplicationRecord>> GetPagedAsync(
+		string userId, int page, int pageSize, string sortBy, string sortDir) {
+		return await repository.GetPagedAsync(userId, page, pageSize, sortBy, sortDir);
 	}
 
 	/// <inheritdoc />

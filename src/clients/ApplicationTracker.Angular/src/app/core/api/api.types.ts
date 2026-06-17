@@ -17,6 +17,23 @@ export type CreateApplicationRecordRequest = components['schemas']['CreateApplic
 export type UpdateApplicationRecordRequest = components['schemas']['UpdateApplicationRecordRequest'];
 export type PatchStatusRequest = components['schemas']['PatchStatusRequest'];
 
+// ── Pagination ────────────────────────────────────────────────────────────
+
+export interface PagedResultDto<T> {
+  items: T[];
+  totalCount: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+}
+
+export interface GetAllParams {
+  page: number;
+  pageSize: number;
+  sortBy: string;
+  sortDir: 'asc' | 'desc';
+}
+
 // ── Excel Import ──────────────────────────────────────────────────────────
 export type ExcelImportResultDto = components['schemas']['ExcelImportResultDto'];
 export type ExcelImportErrorDto = components['schemas']['ExcelImportErrorDto'];

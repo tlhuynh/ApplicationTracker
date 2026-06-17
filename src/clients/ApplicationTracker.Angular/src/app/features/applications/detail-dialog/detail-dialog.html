@@ -5,8 +5,8 @@
 
     <dt>Status</dt>
     <dd>
-      <span [class]="'status-badge ' + (statusClasses[data.record.status ?? 0] ?? '')">
-        {{ statusLabels[data.record.status ?? 0] ?? 'Unknown' }}
+      <span [class]="'status-badge ' + getStatusClass(data.record.status)">
+        {{ getStatusLabel(data.record.status) }}
       </span>
     </dd>
 

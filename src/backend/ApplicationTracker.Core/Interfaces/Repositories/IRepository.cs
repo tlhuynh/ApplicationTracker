@@ -7,7 +7,6 @@ namespace ApplicationTracker.Core.Interfaces.Repositories;
 /// </summary>
 public interface IRepository<T> where T : BaseEntity {
 	Task<T?> GetByIdAsync(int id, string userId);
-	Task<List<T>> GetAllAsync(string userId);
 	Task AddAsync(T entity);
 	void Update(T entity);
 	void Delete(T entity);
