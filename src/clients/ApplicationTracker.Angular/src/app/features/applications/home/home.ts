@@ -9,6 +9,7 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DatePipe } from '@angular/common';
+import { MatCardModule } from '@angular/material/card';
 import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -64,6 +65,7 @@ const STATUS_CLASSES: Record<number, string> = {
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     DatePipe,
+    MatCardModule,
     MatTableModule,
     MatButtonModule,
     MatIconModule,

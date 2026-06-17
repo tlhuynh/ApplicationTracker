@@ -1,8 +1,16 @@
-.page-header {
+.section-card {
+  --mat-card-container-shape: 0px;
+  border-radius: 0 !important;
+  padding: 0;
+  overflow: hidden;
+}
+
+.section-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 12px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--mat-sys-outline-variant);
 
   // Compact Add button to match the dense header row
   button {
@@ -10,12 +18,12 @@
     --mat-icon-size: 16px;
     font-size: var(--fs-label);
   }
-}
 
-.page-title {
-  margin: 0;
-  font-size: var(--fs-heading);
-  font-weight: 500;
+  [mat-card-title] {
+    margin: 0;
+    font-size: var(--fs-heading);
+    font-weight: 500;
+  }
 }
 
 .loading-container {
@@ -27,6 +35,7 @@
 .load-error {
   background-color: var(--mat-sys-error-container);
   color: var(--mat-sys-on-error-container);
+  margin: 12px 16px;
   padding: 12px 16px;
   border-radius: 4px;
   font-size: 0.875rem;
@@ -58,11 +67,10 @@
 
 // ── Table ─────────────────────────────────────────────────────────────────────
 
-.table-container {
+.table-wrapper {
   // Reduce default row heights by ~10% (header 56→50px, data 52→47px)
   --mat-table-header-row-container-height: 50px;
   --mat-table-row-item-container-height: 47px;
-  border-radius: 4px;
   overflow-x: auto;
 
   table {

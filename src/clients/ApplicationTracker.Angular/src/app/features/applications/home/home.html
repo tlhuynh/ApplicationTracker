@@ -1,42 +1,44 @@
-<!-- Page header ─────────────────────────────────────────────────────────── -->
-<div class="page-header">
-  <h1 class="page-title">My Applications</h1>
-  <button
-    mat-raised-button
-    class="btn-primary-filled"
-    (click)="openAddDialog()"
-    aria-label="Add application"
-  >
-    <mat-icon>add</mat-icon>
-    Add
-  </button>
-</div>
+<mat-card class="section-card">
 
-<!-- Loading ──────────────────────────────────────────────────────────────── -->
-@if (isLoading()) {
-  <div class="loading-container" aria-live="polite" aria-label="Loading applications">
-    <mat-spinner diameter="48" />
+  <!-- Section header ─────────────────────────────────────────────────────── -->
+  <div class="section-header">
+    <h2 mat-card-title>My Applications</h2>
+    <button
+      mat-raised-button
+      class="btn-primary-filled"
+      (click)="openAddDialog()"
+      aria-label="Add application"
+    >
+      <mat-icon>add</mat-icon>
+      Add
+    </button>
   </div>
-}
 
-<!-- Error ────────────────────────────────────────────────────────────────── -->
-@if (loadError(); as error) {
-  <div class="load-error" role="alert" aria-live="assertive">{{ error }}</div>
-}
-
-<!-- Content ──────────────────────────────────────────────────────────────── -->
-@if (!isLoading() && !loadError()) {
-  @if (records().length === 0) {
-    <!-- Empty state -->
-    <div class="empty-state">
-      <mat-icon class="empty-icon" aria-hidden="true">work_off</mat-icon>
-      <p class="empty-message">
-        No applications yet. Click <strong>Add Application</strong> to get started.
-      </p>
+  <!-- Loading ────────────────────────────────────────────────────────────── -->
+  @if (isLoading()) {
+    <div class="loading-container" aria-live="polite" aria-label="Loading applications">
+      <mat-spinner diameter="48" />
     </div>
-  } @else {
-    <!-- Table -->
-    <div class="table-container mat-elevation-z1">
+  }
+
+  <!-- Error ──────────────────────────────────────────────────────────────── -->
+  @if (loadError(); as error) {
+    <div class="load-error" role="alert" aria-live="assertive">{{ error }}</div>
+  }
+
+  <!-- Content ────────────────────────────────────────────────────────────── -->
+  @if (!isLoading() && !loadError()) {
+    @if (records().length === 0) {
+      <!-- Empty state -->
+      <div class="empty-state">
+        <mat-icon class="empty-icon" aria-hidden="true">work_off</mat-icon>
+        <p class="empty-message">
+          No applications yet. Click <strong>Add Application</strong> to get started.
+        </p>
+      </div>
+    } @else {
+      <!-- Table -->
+      <div class="table-wrapper">
       <table mat-table [dataSource]="records()" matSort (matSortChange)="onSortChange($event)" aria-label="Job application records">
 
         <!-- Company Name ─────────────────────────────────────────────────── -->
@@ -228,3 +230,5 @@
     </div>
   }
 }
+
+</mat-card>
