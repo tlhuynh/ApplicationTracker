@@ -17,8 +17,8 @@
       <mat-icon class="upload-icon" aria-hidden="true">upload_file</mat-icon>
 
       <p class="upload-hint">
-        Select an <strong>.xlsx</strong> file exported from the template.
-        Each row must include a company name, status, and applied date.
+        Select an <strong>.xlsx</strong> file to upload. Not sure about the format?
+        Download the template below to get started.
       </p>
 
       @if (selectedFile(); as file) {
@@ -29,6 +29,16 @@
       }
 
       <div class="upload-actions">
+        <a
+          mat-stroked-button
+          href="/templates/ApplicationRecords_Import_Template.xlsx"
+          download
+          aria-label="Download import template"
+        >
+          <mat-icon>download</mat-icon>
+          Template
+        </a>
+
         <button
           mat-stroked-button
           [disabled]="isUploading()"
@@ -41,7 +51,7 @@
 
         <button
           mat-raised-button
-          color="primary"
+          class="btn-import"
           [disabled]="!selectedFile() || isUploading()"
           (click)="onUpload()"
           aria-label="Upload and import"
