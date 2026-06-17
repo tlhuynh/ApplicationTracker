@@ -4,12 +4,26 @@
 
 .shell-sidenav {
   width: 200px;
+  border-right: 1px solid var(--mat-sys-outline-variant) !important;
+  border-radius: 0 !important;
 
   .sidenav-header {
-    padding: 16px;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+    height: 64px;
     display: flex;
+    align-items: center;
     justify-content: center;
+    position: relative;
+
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 60%;
+      height: 1px;
+      background-color: var(--mat-sys-outline-variant);
+    }
 
     .app-title {
       font-size: 1.2rem;
@@ -25,6 +39,13 @@
       color: var(--mat-sys-primary);
     }
   }
+}
+
+.shell-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .toolbar-spacer {
