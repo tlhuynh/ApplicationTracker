@@ -38,10 +38,12 @@
       <mat-label>Applied Date</mat-label>
       <input
         matInput
-        type="date"
+        [matDatepicker]="datePicker"
         formControlName="appliedDate"
         aria-label="Date applied"
       />
+      <mat-datepicker-toggle matIconSuffix [for]="datePicker" />
+      <mat-datepicker #datePicker />
     </mat-form-field>
 
     <!-- Posting URL -->
@@ -53,9 +55,13 @@
         formControlName="postingUrl"
         autocomplete="url"
         placeholder="https://"
-
         aria-label="Job posting URL"
+        (focus)="onPostingUrlFocus()"
+        (blur)="onPostingUrlBlur()"
       />
+      @if (getPostingUrlError(); as error) {
+        <mat-error>{{ error }}</mat-error>
+      }
     </mat-form-field>
 
     <!-- Notes — rows="4" gives a comfortable starting height without overflowing -->

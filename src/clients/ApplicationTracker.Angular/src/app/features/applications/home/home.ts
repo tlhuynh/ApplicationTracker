@@ -20,6 +20,7 @@ import {
   ApplicationDialogData,
 } from '../application-dialog/application-dialog';
 import { ConfirmDialog, ConfirmDialogData } from '../../../shared/confirm-dialog/confirm-dialog';
+import { NoteDialog, NoteDialogData } from '../note-dialog/note-dialog';
 import { ApplicationRecordDto } from '../../../core/api/api.types';
 
 /** Human-readable label for each ApplicationStatus numeric value. */
@@ -86,8 +87,10 @@ export class Home implements OnInit {
   protected readonly displayedColumns = [
     'companyName',
     'status',
+    'statusActions',
     'appliedDate',
     'postingUrl',
+    'notes',
     'actions',
   ];
 
@@ -124,7 +127,7 @@ export class Home implements OnInit {
   protected openAddDialog(): void {
     const ref = this._dialog.open<ApplicationDialog, ApplicationDialogData, ApplicationRecordDto>(
       ApplicationDialog,
-      { data: {}, width: '520px' },
+      { data: {}, width: '520px', disableClose: true },
     );
 
     ref
@@ -141,7 +144,7 @@ export class Home implements OnInit {
   protected openEditDialog(record: ApplicationRecordDto): void {
     const ref = this._dialog.open<ApplicationDialog, ApplicationDialogData, ApplicationRecordDto>(
       ApplicationDialog,
-      { data: { record }, width: '520px' },
+      { data: { record }, width: '520px', disableClose: true },
     );
 
     ref
@@ -185,6 +188,17 @@ export class Home implements OnInit {
             error: () => this.isDeletingId.set(null),
           });
       });
+  }
+
+  /** Opens the readonly notes dialog for a record that has notes. */
+  protected openNotesDialog(record: ApplicationRecordDto): void {
+    this._dialog.open<NoteDialog, NoteDialogData>(NoteDialog, {
+      data: {
+        companyName: record.companyName ?? '',
+        notes: record.notes ?? '',
+      },
+      width: '480px',
+    });
   }
 
   // ── Inline status actions ─────────────────────────────────────────────────

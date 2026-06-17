@@ -7,6 +7,7 @@ import {
 import { provideRouter, withComponentInputBinding } from '@angular/router';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
+import { provideNativeDateAdapter } from '@angular/material/core';
 import { routes } from './app.routes';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
 import { AuthService } from './core/services/auth.service';
@@ -23,6 +24,9 @@ export const appConfig: ApplicationConfig = {
 
     /** Required for Angular Material components that use animations. */
     provideAnimationsAsync(),
+
+    /** Provides the native Date adapter used by MatDatepicker across the app. */
+    provideNativeDateAdapter(),
 
     /**
      * Registers HttpClient with the auth interceptor.

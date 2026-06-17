@@ -1,4 +1,4 @@
-﻿import {
+import {
   ChangeDetectionStrategy,
   Component,
   DestroyRef,
@@ -7,12 +7,20 @@
   signal,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  AbstractControl,
+  FormControl,
+  FormGroup,
+  ReactiveFormsModule,
+  ValidationErrors,
+  Validators,
+} from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
+import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { HttpErrorResponse } from '@angular/common/http';
 import {
@@ -20,6 +28,31 @@ import {
   CreateApplicationRecordRequest,
 } from '../../../core/api/api.types';
 import { ApplicationService } from '../../../core/services/application.service';
+
+/** Rejects non-empty values that are not valid http/https URLs. */
+function urlValidator(control: AbstractControl): ValidationErrors | null {
+  const value = control.value as string;
+  if (!value) return null;
+  try {
+    const url = new URL(value);
+    if (url.protocol !== 'http:' && url.protocol !== 'https:') return { invalidUrl: true };
+    if (!url.hostname.includes('.')) return { invalidUrl: true };
+    return null;
+  } catch {
+    return { invalidUrl: true };
+  }
+}
+
+/**
+ * Parses an ISO date string into a local-timezone Date for the datepicker.
+ * Using `new Date(isoString)` directly would interpret UTC midnight as the
+ * previous day in negative-offset timezones — extracting the YYYY-MM-DD parts
+ * and constructing a local Date avoids that off-by-one issue.
+ */
+function parseLocalDate(isoString: string): Date {
+  const [year, month, day] = isoString.substring(0, 10).split('-').map(Number);
+  return new Date(year, month - 1, day);
+}
 
 /** Status option used to populate the status dropdown. */
 interface StatusOption {
@@ -51,6 +84,7 @@ export interface ApplicationDialogData {
     MatFormFieldModule,
     MatInputModule,
     MatSelectModule,
+    MatDatepickerModule,
     MatProgressSpinnerModule,
   ],
 })
@@ -62,8 +96,6 @@ export class ApplicationDialog implements OnInit {
 
   /** True when an existing record was passed — switches the dialog to edit mode. */
   protected readonly isEditing = !!this.data.record;
-  // We're using a double negative here to convert data.record which can be record or undefined to a boolean first
-  // then negate it. If we just use the object itself, we will have some problems with type check
 
   /** Status options for the dropdown — mirrors the backend ApplicationStatus enum. */
   protected readonly statusOptions: StatusOption[] = [
@@ -82,9 +114,9 @@ export class ApplicationDialog implements OnInit {
       validators: [Validators.required],
     }),
     status: new FormControl<number>(0, { nonNullable: true }),
-    /** Stored as 'YYYY-MM-DD' string matching the HTML date input value format. */
-    appliedDate: new FormControl<string>('', { nonNullable: true }),
-    postingUrl: new FormControl<string>('', { nonNullable: true }),
+    /** Datepicker uses a Date object; defaults to today for new records. */
+    appliedDate: new FormControl<Date | null>(new Date()),
+    postingUrl: new FormControl<string>('', { nonNullable: true, validators: [urlValidator] }),
     notes: new FormControl<string>('', { nonNullable: true }),
   });
 
@@ -98,11 +130,7 @@ export class ApplicationDialog implements OnInit {
 
   // ── Lifecycle ─────────────────────────────────────────────────────────────
 
-  /**
-   * Pre-populates the form when editing an existing record.
-   * The appliedDate is trimmed to 'YYYY-MM-DD' format since the HTML date
-   * input only accepts that format, not the full ISO-8601 datetime string.
-   */
+  /** Pre-populates the form when editing an existing record. */
   public ngOnInit(): void {
     const record = this.data.record;
     if (!record) return;
@@ -110,7 +138,7 @@ export class ApplicationDialog implements OnInit {
     this.form.patchValue({
       companyName: record.companyName ?? '',
       status: record.status ?? 0,
-      appliedDate: record.appliedDate ? record.appliedDate.substring(0, 10) : '',
+      appliedDate: record.appliedDate ? parseLocalDate(record.appliedDate) : null,
       postingUrl: record.postingUrl ?? '',
       notes: record.notes ?? '',
     });
@@ -126,6 +154,32 @@ export class ApplicationDialog implements OnInit {
     return null;
   }
 
+  /** Returns the validation error for postingUrl, or null if valid or untouched. */
+  protected getPostingUrlError(): string | null {
+    const control = this.form.get('postingUrl');
+    if (!control?.touched || !control.invalid) return null;
+    if (control.hasError('invalidUrl')) return 'Enter a valid URL (e.g. https://example.com/job)';
+    return null;
+  }
+
+  // ── Posting URL focus helpers ──────────────────────────────────────────────
+
+  /** Pre-fills 'https://' when the field is focused and empty. */
+  protected onPostingUrlFocus(): void {
+    const control = this.form.get('postingUrl');
+    if (!control?.value) {
+      control?.setValue('https://');
+    }
+  }
+
+  /** Clears the field on blur if the user left it as just 'https://'. */
+  protected onPostingUrlBlur(): void {
+    const control = this.form.get('postingUrl');
+    if (control?.value === 'https://') {
+      control.setValue('');
+    }
+  }
+
   // ── Actions ───────────────────────────────────────────────────────────────
 
   /** Submits the form — calls create or update based on whether we are editing. */
@@ -135,20 +189,23 @@ export class ApplicationDialog implements OnInit {
 
     this.serverError.set(null);
     this.isSubmitting.set(true);
-    /** Prevent the dialog from being closed while the request is in flight. */
     this._dialogRef.disableClose = true;
 
     const { companyName, status, appliedDate, postingUrl, notes } = this.form.getRawValue();
 
     /**
-     * The HTML date input returns 'YYYY-MM-DD'. Appending 'T00:00:00.000Z' ensures
-     * the Date constructor treats it as UTC midnight, matching the backend expectation.
-     * An empty string means the field was left blank — send null (the field is optional).
+     * Convert the local Date to UTC midnight so the backend receives a consistent
+     * ISO string regardless of the user's timezone. Date.UTC extracts the local
+     * year/month/day and builds a UTC midnight timestamp from them.
      */
     const request: CreateApplicationRecordRequest = {
       companyName,
       status,
-      appliedDate: appliedDate ? new Date(`${appliedDate}T00:00:00.000Z`).toISOString() : null,
+      appliedDate: appliedDate
+        ? new Date(
+            Date.UTC(appliedDate.getFullYear(), appliedDate.getMonth(), appliedDate.getDate()),
+          ).toISOString()
+        : null,
       postingUrl: postingUrl || null,
       notes: notes || null,
     };
@@ -170,7 +227,6 @@ export class ApplicationDialog implements OnInit {
       next: (saved) => {
         this.isSubmitting.set(false);
         this._dialogRef.disableClose = false;
-        /** Close and pass the saved entity back so the parent can update its list. */
         this._dialogRef.close(saved);
       },
       error: (err: HttpErrorResponse) => {

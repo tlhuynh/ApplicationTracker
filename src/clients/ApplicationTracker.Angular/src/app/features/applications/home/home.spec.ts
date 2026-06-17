@@ -122,7 +122,7 @@ describe('Home', () => {
   it('should render a link for records that have a posting URL', async () => {
     await setup({ records: [APPLIED] }); // APPLIED has postingUrl
 
-    expect(screen.getByRole('link', { name: 'Open job posting (opens in new tab)' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /open job posting for acme corp/i })).toBeInTheDocument();
   });
 
   // ── Add dialog ─────────────────────────────────────────────────────────────

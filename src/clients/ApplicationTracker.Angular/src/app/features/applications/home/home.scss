@@ -103,6 +103,27 @@ td.mat-column-actions {
   color: var(--mat-sys-on-surface-variant);
 }
 
+// ── Status action buttons ─────────────────────────────────────────────────────
+
+// color="warn" is deprecated in Angular Material 18+ (M3 migration) and no longer
+// applies the warn palette to icon buttons — explicit classes are required instead.
+
+.btn-reject {
+  color: #c62828; // Material Red 800
+
+  &:not([disabled]):hover {
+    background-color: rgba(198, 40, 40, 0.08);
+  }
+}
+
+.btn-advance {
+  color: #2e7d32; // Material Green 800
+
+  &:not([disabled]):hover {
+    background-color: rgba(46, 125, 50, 0.08);
+  }
+}
+
 // ── Actions cell ──────────────────────────────────────────────────────────────
 
 .actions-cell {
