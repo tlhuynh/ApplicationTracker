@@ -127,7 +127,7 @@ export class Home implements OnInit {
   protected openAddDialog(): void {
     const ref = this._dialog.open<ApplicationDialog, ApplicationDialogData, ApplicationRecordDto>(
       ApplicationDialog,
-      { data: {}, width: '520px', disableClose: true },
+      { data: {}, width: '520px', maxWidth: '95vw', disableClose: true },
     );
 
     ref
@@ -144,7 +144,7 @@ export class Home implements OnInit {
   protected openEditDialog(record: ApplicationRecordDto): void {
     const ref = this._dialog.open<ApplicationDialog, ApplicationDialogData, ApplicationRecordDto>(
       ApplicationDialog,
-      { data: { record }, width: '520px', disableClose: true },
+      { data: { record }, width: '520px', maxWidth: '95vw', disableClose: true },
     );
 
     ref

@@ -138,3 +138,20 @@ td.mat-column-actions {
 .no-value {
   color: var(--mat-sys-on-surface-variant);
 }
+
+// ── Responsive table ──────────────────────────────────────────────────────────
+
+// Hide secondary columns on narrow screens to keep the table usable
+@media (max-width: 768px) {
+  .mat-column-appliedDate,
+  .mat-column-postingUrl,
+  .mat-column-notes {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .mat-column-statusActions {
+    display: none;
+  }
+}

@@ -1,10 +1,19 @@
-﻿import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+﻿import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit,
+  inject,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
-import { MatSidenavModule } from '@angular/material/sidenav';
+import { MatSidenav, MatSidenavModule } from '@angular/material/sidenav';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatListModule } from '@angular/material/list';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 import { AuthService } from '../../core/services/auth.service';
 
 /**
@@ -28,15 +37,38 @@ import { AuthService } from '../../core/services/auth.service';
     MatListModule,
     MatIconModule,
     MatButtonModule,
+    MatTooltipModule,
   ],
 })
-export class ShellComponent {
-  /** Provides currentUser signal and logout action. */
+export class ShellComponent implements OnInit {
   protected readonly authService = inject(AuthService);
+  private readonly _breakpointObserver = inject(BreakpointObserver);
 
-  /** Navigation items rendered in the sidebar. */
+  protected readonly sidenav = viewChild.required<MatSidenav>('sidenav');
+
+  /** True when the viewport is narrower than the Handset breakpoint (~960px). */
+  protected readonly isMobile = signal(false);
+
   protected readonly navItems = [
     { label: 'Dashboard', icon: 'dashboard', route: '/' },
     { label: 'Import', icon: 'upload_file', route: '/import' },
   ];
+
+  public ngOnInit(): void {
+    this._breakpointObserver
+      .observe([Breakpoints.Handset, Breakpoints.TabletPortrait])
+      .subscribe((result) => {
+        this.isMobile.set(result.matches);
+        // Start open on desktop, closed on mobile
+        if (result.matches) {
+          this.sidenav().close();
+        } else {
+          this.sidenav().open();
+        }
+      });
+  }
+
+  protected toggleSidenav(): void {
+    this.sidenav().toggle();
+  }
 }

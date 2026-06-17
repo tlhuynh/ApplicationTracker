@@ -1,16 +1,11 @@
 ﻿<mat-sidenav-container class="shell-container">
 
   <!-- ── Sidebar ─────────────────────────────────────────────────────── -->
-  <mat-sidenav mode="side" opened class="shell-sidenav" aria-label="Main navigation">
+  <mat-sidenav #sidenav mode="side" opened class="shell-sidenav" aria-label="Main navigation">
     <div class="sidenav-header">
-      <span class="app-title">Job Application Tracker</span>
+      <span class="app-title">Job Apps Tracker</span>
     </div>
 
-    <!--
-      mat-nav-list renders a list optimized for navigation.
-      RouterLinkActive adds the 'active-link' class when the route matches.
-      [routerLinkActiveOptions] with exact: true prevents '/' from matching all routes.
-    -->
     <mat-nav-list>
       @for (item of navItems; track item.route) {
         <a
@@ -30,16 +25,24 @@
   <!-- ── Main content ───────────────────────────────────────────────── -->
   <mat-sidenav-content>
 
-    <!-- Top toolbar with user info and logout -->
     <mat-toolbar color="primary" class="shell-toolbar">
+
+      <!-- Hamburger toggle -->
+      <button
+        mat-icon-button
+        (click)="toggleSidenav()"
+        aria-label="Toggle navigation"
+        matTooltip="Toggle navigation"
+      >
+        <mat-icon>menu</mat-icon>
+      </button>
+
       <span class="toolbar-spacer"></span>
 
-      <!-- Authenticated user's email -->
       <span class="current-user" aria-label="Logged in as {{ authService.currentUser() }}">
-          {{ authService.currentUser() }}
-        </span>
+        {{ authService.currentUser() }}
+      </span>
 
-      <!-- Logout button -->
       <button
         mat-icon-button
         (click)="authService.logout()"
@@ -50,7 +53,6 @@
       </button>
     </mat-toolbar>
 
-    <!-- Child routes render here -->
     <main class="shell-content">
       <router-outlet />
     </main>
