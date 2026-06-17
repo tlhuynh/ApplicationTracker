@@ -89,7 +89,7 @@ export class Home implements OnInit {
 
   /** Pagination state (0-based page index to match MatPaginator). */
   protected readonly _pageIndex = signal(0);
-  protected readonly _pageSize = signal(5);
+  protected readonly _pageSize = signal(10);
 
   /** Sort state. */
   private readonly _sortBy = signal('companyName');

@@ -8,7 +8,7 @@
   border-radius: 0 !important;
 
   .sidenav-header {
-    height: 64px;
+    height: 45px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -20,15 +20,22 @@
       bottom: 0;
       left: 50%;
       transform: translateX(-50%);
-      width: 60%;
+      width: 50%;
       height: 1px;
       background-color: var(--mat-sys-outline-variant);
     }
 
     .app-title {
-      font-size: 1.2rem;
+      font-size: var(--fs-label);
       font-weight: 600;
     }
+  }
+
+  mat-nav-list {
+    // Compact nav items to match the reduced toolbar height
+    --mat-list-list-item-container-height: 40px;
+    --mat-list-list-item-label-text-size: var(--fs-label);
+    --mat-icon-size: 20px;
   }
 
   .active-link {
@@ -42,6 +49,12 @@
 }
 
 .shell-toolbar {
+  // Reduce toolbar from default 64px to ~45px (–30%)
+  --mat-toolbar-standard-height: 45px;
+  --mat-toolbar-mobile-height: 45px;
+  // Scale icon buttons and icons down proportionally
+  --mdc-icon-button-state-layer-size: 34px;
+  --mat-icon-size: 18px;
   position: sticky;
   top: 0;
   z-index: 100;
@@ -55,7 +68,7 @@
 .current-user {
   margin-left: 8px;
   margin-right: 8px;
-  font-size: 0.875rem;
+  font-size: var(--fs-label);
 
   // Hide email on very small screens to avoid overflow
   @media (max-width: 480px) {

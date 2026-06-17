@@ -27,20 +27,20 @@ public class ApplicationRecordServiceTests {
 			Items = [new() { Id = 1, CompanyName = "Acme" }, new() { Id = 2, CompanyName = "Globex" }],
 			TotalCount = 2,
 			Page = 1,
-			PageSize = 5,
+			PageSize = 10,
 		};
 		_repositoryMock
-			.Setup(r => r.GetPagedAsync(TestUserId, 1, 5, "companyName", "asc"))
+			.Setup(r => r.GetPagedAsync(TestUserId, 1, 10, "companyName", "asc"))
 			.ReturnsAsync(pagedResult);
 
 		// Act
-		PagedResult<ApplicationRecord> result = await _service.GetPagedAsync(TestUserId, 1, 5, "companyName", "asc");
+		PagedResult<ApplicationRecord> result = await _service.GetPagedAsync(TestUserId, 1, 10, "companyName", "asc");
 
 		// Assert
 		Assert.Equal(2, result.TotalCount);
 		Assert.Equal(2, result.Items.Count);
 		Assert.Equal("Acme", result.Items[0].CompanyName);
-		_repositoryMock.Verify(r => r.GetPagedAsync(TestUserId, 1, 5, "companyName", "asc"), Times.Once);
+		_repositoryMock.Verify(r => r.GetPagedAsync(TestUserId, 1, 10, "companyName", "asc"), Times.Once);
 	}
 
 	[Fact]

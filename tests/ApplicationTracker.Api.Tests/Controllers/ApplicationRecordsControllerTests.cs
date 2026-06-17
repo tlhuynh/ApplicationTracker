@@ -54,10 +54,10 @@ public class ApplicationRecordsControllerTests {
 			Items = [new() { Id = 1, CompanyName = "Acme", Status = ApplicationStatus.Applied }],
 			TotalCount = 1,
 			Page = 1,
-			PageSize = 5,
+			PageSize = 10,
 		};
 		_applicationRecordServiceMock
-			.Setup(s => s.GetPagedAsync(TestUserId, 1, 5, "companyName", "asc"))
+			.Setup(s => s.GetPagedAsync(TestUserId, 1, 10, "companyName", "asc"))
 			.ReturnsAsync(pagedResult);
 
 		// Act
@@ -72,18 +72,18 @@ public class ApplicationRecordsControllerTests {
 	}
 
 	[Fact]
-	public async Task GetAll_WithInvalidPageSize_ClampsToFive() {
+	public async Task GetAll_WithInvalidPageSize_ClampsToTen() {
 		// Arrange
-		PagedResult<ApplicationRecord> pagedResult = new() { Items = [], TotalCount = 0, Page = 1, PageSize = 5 };
+		PagedResult<ApplicationRecord> pagedResult = new() { Items = [], TotalCount = 0, Page = 1, PageSize = 10 };
 		_applicationRecordServiceMock
-			.Setup(s => s.GetPagedAsync(TestUserId, 1, 5, "companyName", "asc"))
+			.Setup(s => s.GetPagedAsync(TestUserId, 1, 10, "companyName", "asc"))
 			.ReturnsAsync(pagedResult);
 
-		// Act — pageSize=15 is not in {5, 10, 25} so it should be clamped to 5
+		// Act — pageSize=15 is not in {5, 10, 25} so it should be clamped to 10
 		ActionResult<PagedResultDto<ApplicationRecordDto>> result = await _controller.GetAll(pageSize: 15);
 
-		// Assert — service is called with 5, not 15
-		_applicationRecordServiceMock.Verify(s => s.GetPagedAsync(TestUserId, 1, 5, "companyName", "asc"), Times.Once);
+		// Assert — service is called with 10, not 15
+		_applicationRecordServiceMock.Verify(s => s.GetPagedAsync(TestUserId, 1, 10, "companyName", "asc"), Times.Once);
 		Assert.IsType<OkObjectResult>(result.Result);
 	}
 

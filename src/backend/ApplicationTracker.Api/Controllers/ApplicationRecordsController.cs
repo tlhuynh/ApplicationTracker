@@ -71,7 +71,7 @@ public class ApplicationRecordsController(
 	[HttpGet]
 	public async Task<ActionResult<PagedResultDto<ApplicationRecordDto>>> GetAll(
 		[FromQuery] int page = 1,
-		[FromQuery] int pageSize = 5,
+		[FromQuery] int pageSize = 10,
 		[FromQuery] string sortBy = "companyName",
 		[FromQuery] string sortDir = "asc") {
 		if (!TryGetUserId(out string userId)) {
@@ -79,7 +79,7 @@ public class ApplicationRecordsController(
 		}
 
 		page = Math.Max(1, page);
-		pageSize = pageSize is 5 or 10 or 25 ? pageSize : 5;
+		pageSize = pageSize is 5 or 10 or 25 ? pageSize : 10;
 
 		PagedResult<ApplicationRecord> result = await service.GetPagedAsync(userId, page, pageSize, sortBy, sortDir);
 		return Ok(result.ToDto());

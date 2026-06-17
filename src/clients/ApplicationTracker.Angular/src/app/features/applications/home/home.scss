@@ -2,12 +2,19 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 24px;
+  margin-bottom: 12px;
+
+  // Compact Add button to match the dense header row
+  button {
+    --mdc-protected-button-container-height: 22px;
+    --mat-icon-size: 16px;
+    font-size: var(--fs-label);
+  }
 }
 
 .page-title {
   margin: 0;
-  font-size: 1.5rem;
+  font-size: var(--fs-heading);
   font-weight: 500;
 }
 
@@ -52,6 +59,9 @@
 // ── Table ─────────────────────────────────────────────────────────────────────
 
 .table-container {
+  // Reduce default row heights by ~10% (header 56→50px, data 52→47px)
+  --mat-table-header-row-container-height: 50px;
+  --mat-table-row-item-container-height: 47px;
   border-radius: 4px;
   overflow-x: auto;
 

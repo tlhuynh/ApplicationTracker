@@ -27,7 +27,7 @@ const WITHDRAWN: ApplicationRecordDto  = { id: 5, companyName: 'Echo Ltd', statu
 // ── Mock factories ────────────────────────────────────────────────────────────
 
 function makePagedResult(records: ApplicationRecordDto[]) {
-  return { items: records, totalCount: records.length, page: 1, pageSize: 5, totalPages: records.length > 0 ? 1 : 0 };
+  return { items: records, totalCount: records.length, page: 1, pageSize: 10, totalPages: records.length > 0 ? 1 : 0 };
 }
 
 function createServiceMock(records: ApplicationRecordDto[] = []) {

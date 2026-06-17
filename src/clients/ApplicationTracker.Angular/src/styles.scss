@@ -17,6 +17,12 @@ html {
       density: 0,
     )
   );
+
+  // ── Type scale ──────────────────────────────────────────────────────────────
+  --fs-heading: 1.125rem; // 18px — page titles
+  --fs-body:    0.875rem; // 14px — table cells, body text (Material default)
+  --fs-label:   0.8125rem; // 13px — nav items, button labels, toolbar text
+  --fs-caption: 0.75rem;  // 12px — badges, paginator, helper text
 }
 
 body {
@@ -48,7 +54,7 @@ body {
   display: inline-block;
   padding: 2px 10px;
   border-radius: 12px;
-  font-size: 0.75rem;
+  font-size: var(--fs-caption);
   font-weight: 500;
   line-height: 1.6;
   white-space: nowrap;
