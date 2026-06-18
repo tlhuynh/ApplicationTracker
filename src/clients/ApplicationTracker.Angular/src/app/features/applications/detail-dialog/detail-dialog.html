@@ -11,7 +11,7 @@
     </dd>
 
     <dt>Applied Date</dt>
-    <dd>{{ data.record.appliedDate ? (data.record.appliedDate | date : 'mediumDate') : '—' }}</dd>
+    <dd>{{ data.record.appliedDate ? (data.record.appliedDate | date : 'mediumDate' : 'UTC') : '—' }}</dd>
 
     <dt>Posting URL</dt>
     <dd>

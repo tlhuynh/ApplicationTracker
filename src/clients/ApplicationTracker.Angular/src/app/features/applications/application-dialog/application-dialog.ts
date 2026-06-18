@@ -122,6 +122,9 @@ export class ApplicationDialog implements OnInit {
 
   // ── Signals ───────────────────────────────────────────────────────────────
 
+  /** Upper bound for the datepicker — prevents selecting future dates. */
+  protected readonly today = new Date();
+
   /** True while the save request is in flight — disables the form and shows a spinner. */
   protected readonly isSubmitting = signal(false);
 
