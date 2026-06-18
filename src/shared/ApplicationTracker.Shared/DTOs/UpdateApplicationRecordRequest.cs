@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using ApplicationTracker.Core.Enums;
+using ApplicationTracker.Shared.Validation;
 
 namespace ApplicationTracker.Shared.DTOs;
 
@@ -23,6 +24,7 @@ public class UpdateApplicationRecordRequest {
 	/// <summary>
 	/// Gets or sets the date and time when the application was submitted.
 	/// </summary>
+	[NotFutureDate]
 	public DateTime? AppliedDate { get; set; }
 
 	/// <summary>

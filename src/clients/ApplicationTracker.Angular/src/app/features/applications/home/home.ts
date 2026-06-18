@@ -16,7 +16,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialog } from '@angular/material/dialog';
-import { MatSortModule, MatSort, Sort } from '@angular/material/sort';
+import { MatSortModule, Sort } from '@angular/material/sort';
 import { MatPaginatorModule, MatPaginator, PageEvent } from '@angular/material/paginator';
 import { ApplicationService } from '../../../core/services/application.service';
 import {
@@ -94,8 +94,8 @@ export class Home implements OnInit {
   protected readonly _pageSize = signal(10);
 
   /** Sort state. */
-  protected readonly _sortBy = signal('appliedDate');
-  protected readonly _sortDir = signal<'asc' | 'desc'>('desc');
+  protected readonly _sortBy = signal('status');
+  protected readonly _sortDir = signal<'asc' | 'desc'>('asc');
 
   /** ID of the record whose status is currently being patched — disables that row's status buttons. */
   protected readonly pendingStatusId = signal<number | null>(null);
