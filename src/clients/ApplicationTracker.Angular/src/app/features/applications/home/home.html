@@ -39,7 +39,16 @@
     } @else {
       <!-- Table -->
       <div class="table-wrapper">
-      <table mat-table [dataSource]="records()" matSort (matSortChange)="onSortChange($event)" aria-label="Job application records">
+      <table
+        mat-table
+        [dataSource]="records()"
+        matSort
+        [matSortActive]="_sortBy()"
+        [matSortDirection]="_sortDir()"
+        matSortDisableClear
+        (matSortChange)="onSortChange($event)"
+        aria-label="Job application records"
+      >
 
         <!-- Company Name ─────────────────────────────────────────────────── -->
         <ng-container matColumnDef="companyName">

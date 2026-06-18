@@ -1,4 +1,5 @@
 using ApplicationTracker.Core.Entities;
+using ApplicationTracker.Core.Enums;
 using ApplicationTracker.Core.Interfaces.Repositories;
 using ApplicationTracker.Core.Models;
 using ApplicationTracker.Infrastructure.Data;
@@ -16,11 +17,39 @@ public class ApplicationRecordRepository(ApplicationDbContext context) : Reposit
 		string userId, int page, int pageSize, string sortBy, string sortDir) {
 		IQueryable<ApplicationRecord> query = _dbSet.Where(r => r.UserId == userId);
 
+		// Status priority: Offered(2)=0, Interviewing(1)=1, Applied(0)=2, Rejected(3)=3, Withdrawn(4)=4
+		// EF Core translates the nested ternary to a CASE WHEN expression in SQL.
 		bool desc = string.Equals(sortDir, "desc", StringComparison.OrdinalIgnoreCase);
 		query = sortBy.ToLowerInvariant() switch {
-			"status" => desc ? query.OrderByDescending(r => r.Status) : query.OrderBy(r => r.Status),
-			"applieddate" => desc ? query.OrderByDescending(r => r.AppliedDate) : query.OrderBy(r => r.AppliedDate),
-			_ => desc ? query.OrderByDescending(r => r.CompanyName) : query.OrderBy(r => r.CompanyName),
+			"status" => desc
+				? query.OrderByDescending(r =>
+						r.Status == ApplicationStatus.Offered ? 0 :
+						r.Status == ApplicationStatus.Interviewing ? 1 :
+						r.Status == ApplicationStatus.Applied ? 2 :
+						r.Status == ApplicationStatus.Rejected ? 3 : 4)
+					.ThenByDescending(r => r.AppliedDate)
+				: query.OrderBy(r =>
+						r.Status == ApplicationStatus.Offered ? 0 :
+						r.Status == ApplicationStatus.Interviewing ? 1 :
+						r.Status == ApplicationStatus.Applied ? 2 :
+						r.Status == ApplicationStatus.Rejected ? 3 : 4)
+					.ThenByDescending(r => r.AppliedDate),
+			"applieddate" => desc
+				? query.OrderByDescending(r => r.AppliedDate)
+					.ThenBy(r =>
+						r.Status == ApplicationStatus.Offered ? 0 :
+						r.Status == ApplicationStatus.Interviewing ? 1 :
+						r.Status == ApplicationStatus.Applied ? 2 :
+						r.Status == ApplicationStatus.Rejected ? 3 : 4)
+				: query.OrderBy(r => r.AppliedDate)
+					.ThenBy(r =>
+						r.Status == ApplicationStatus.Offered ? 0 :
+						r.Status == ApplicationStatus.Interviewing ? 1 :
+						r.Status == ApplicationStatus.Applied ? 2 :
+						r.Status == ApplicationStatus.Rejected ? 3 : 4),
+			_ => desc
+				? query.OrderByDescending(r => r.CompanyName).ThenByDescending(r => r.AppliedDate)
+				: query.OrderBy(r => r.CompanyName).ThenByDescending(r => r.AppliedDate),
 		};
 
 		int totalCount = await query.CountAsync();
