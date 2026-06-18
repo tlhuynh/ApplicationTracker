@@ -48,6 +48,34 @@ body {
   color: var(--mat-sys-on-primary) !important;
 }
 
+// ── Table wrapper (shared by all section cards that contain a mat-table) ────────
+// overflow: hidden prevents internal horizontal scroll — pagination means rows never
+// need to scroll, and hiding this eliminates the mobile touch-capture jank where a
+// vertical page-scroll attempt on the table registers as a horizontal table scroll.
+
+.table-wrapper {
+  overflow: hidden;
+
+  table {
+    width: 100%;
+
+    // Center all cells. Angular Material M3 (MDC) uses mat-mdc-cell / mat-mdc-header-cell,
+    // not mat-cell / mat-header-cell, so targeting th/td directly is the reliable approach.
+    // Cells are display:flex internally, so justify-content is required (text-align alone
+    // has no effect on flex children).
+    th, td {
+      text-align: center !important;
+      justify-content: center !important;
+    }
+  }
+
+  // mat-sort-header renders its container in its own component view and uses flex —
+  // text-align has no effect; must override justify-content here in global styles.
+  .mat-sort-header-container {
+    justify-content: center !important;
+  }
+}
+
 // ── Status badge (shared between home table and detail dialog) ────────────────
 
 .status-badge {

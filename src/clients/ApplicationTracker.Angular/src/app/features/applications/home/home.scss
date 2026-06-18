@@ -1,6 +1,7 @@
 .section-card {
-  --mat-card-container-shape: 0px;
-  border-radius: 0 !important;
+  --mat-card-container-shape: 6px;
+  border-radius: 6px !important;
+  border: 2px solid var(--mat-sys-primary-container) !important;
   padding: 0;
   overflow: hidden;
 }
@@ -11,6 +12,8 @@
   justify-content: space-between;
   padding: 10px 16px;
   border-bottom: 1px solid var(--mat-sys-outline-variant);
+  background-color: var(--mat-sys-primary-container);
+  color: var(--mat-sys-on-primary-container);
 
   // Compact Add button to match the dense header row
   button {
@@ -71,11 +74,10 @@
   // Reduce default row heights by ~10% (header 56→50px, data 52→47px)
   --mat-table-header-row-container-height: 50px;
   --mat-table-row-item-container-height: 47px;
-  overflow-x: auto;
 
-  table {
-    width: 100%;
-  }
+  // Blue-tinted hover (bumped from default 0.08 so it reads clearly)
+  --mat-table-row-item-hover-state-layer-color: var(--mat-sys-primary);
+  --mat-table-row-item-hover-state-layer-opacity: 0.1;
 }
 
 // Reduce row height in the actions column
@@ -100,14 +102,6 @@ td.mat-column-actions {
 
   &:hover {
     text-decoration-color: currentColor;
-  }
-}
-
-.mat-column-companyName {
-  text-align: center;
-
-  &.mat-header-cell {
-    text-align: center;
   }
 }
 
@@ -137,6 +131,7 @@ td.mat-column-actions {
 .actions-cell {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 4px;
   white-space: nowrap;
 }
@@ -151,6 +146,9 @@ td.mat-column-actions {
 
 mat-paginator {
   border-top: 1px solid var(--mat-sys-outline-variant);
+  // Match the title row blue so header + paginator act as bookends
+  --mat-paginator-container-background-color: var(--mat-sys-primary-container);
+  --mat-paginator-container-text-color: var(--mat-sys-on-primary-container);
 }
 
 // ── Responsive table ──────────────────────────────────────────────────────────
