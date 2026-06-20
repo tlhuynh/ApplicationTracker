@@ -68,6 +68,54 @@
   }
 }
 
+// ── Filter bar ────────────────────────────────────────────────────────────────
+
+.filter-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--mat-sys-outline-variant);
+}
+
+.filter-row-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.search-field {
+  width: 220px;
+  flex-shrink: 0;
+  font-size: var(--fs-label);
+
+  // Scale down the suffix clear button to fit the reduced container
+  button[mat-icon-button] {
+    --mdc-icon-button-state-layer-size: 28px;
+    --mat-icon-button-state-layer-size: 28px;
+    --mat-icon-size: 18px;
+  }
+}
+
+.date-field {
+  width: 148px;
+  flex-shrink: 0;
+  font-size: var(--fs-label);
+
+  // Scale down the datepicker toggle to fit the reduced container
+  mat-datepicker-toggle {
+    --mdc-icon-button-state-layer-size: 28px;
+    --mat-icon-button-state-layer-size: 28px;
+    --mat-icon-size: 18px;
+  }
+}
+
+.status-chips {
+  // Let chips wrap naturally on narrow screens
+  flex-wrap: wrap;
+}
+
 // ── Table ─────────────────────────────────────────────────────────────────────
 
 .table-wrapper {

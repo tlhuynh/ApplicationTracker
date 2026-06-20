@@ -76,6 +76,29 @@ body {
   }
 }
 
+// ── Compact form fields in the home filter bar ────────────────────────────────
+//
+// Angular Material M3 hardcodes `height: 56px` on `.mdc-text-field--outlined`
+// and only drives the floating-label transform via --mat-form-field-container-height.
+// Setting the variable alone moves the label math without shrinking the box,
+// so the override must target the MDC class directly in global styles.
+
+.filter-bar {
+  $compact-height: 36px;
+
+  .mdc-text-field--outlined {
+    height: $compact-height;
+  }
+
+  // Keep the label transform and infix min-height in sync with the new height.
+  // Also reduce vertical padding so content centres inside the smaller container
+  // (default is 16px each side = 32px total, which overflows a 36px container).
+  .mat-mdc-form-field {
+    --mat-form-field-container-height: #{$compact-height};
+    --mat-form-field-container-vertical-padding: 8px;
+  }
+}
+
 // ── Status badge (shared between home table and detail dialog) ────────────────
 
 .status-badge {

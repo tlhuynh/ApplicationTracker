@@ -32,6 +32,10 @@ export interface GetAllParams {
   pageSize: number;
   sortBy: string;
   sortDir: 'asc' | 'desc';
+  search?: string;
+  statuses?: number[];
+  dateFrom?: Date;
+  dateTo?: Date;
 }
 
 // ── Excel Import ──────────────────────────────────────────────────────────

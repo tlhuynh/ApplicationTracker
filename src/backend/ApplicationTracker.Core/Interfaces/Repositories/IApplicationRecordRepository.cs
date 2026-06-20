@@ -1,4 +1,5 @@
 ﻿using ApplicationTracker.Core.Entities;
+using ApplicationTracker.Core.Enums;
 using ApplicationTracker.Core.Models;
 
 namespace ApplicationTracker.Core.Interfaces.Repositories;
@@ -8,10 +9,11 @@ namespace ApplicationTracker.Core.Interfaces.Repositories;
 /// </summary>
 public interface IApplicationRecordRepository : IRepository<ApplicationRecord> {
 	/// <summary>
-	/// Returns a sorted, paginated page of application records for the specified user.
+	/// Returns a filtered, sorted, paginated page of application records for the specified user.
 	/// </summary>
 	Task<PagedResult<ApplicationRecord>> GetPagedAsync(
-		string userId, int page, int pageSize, string sortBy, string sortDir);
+		string userId, int page, int pageSize, string sortBy, string sortDir,
+		string? search, List<ApplicationStatus>? statuses, DateTime? dateFrom, DateTime? dateTo);
 
 	/// <summary>
 	/// Checks whether a duplicate application record exists in the database.

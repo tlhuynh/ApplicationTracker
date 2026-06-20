@@ -10,10 +10,11 @@ namespace ApplicationTracker.Core.Interfaces.Services;
 /// </summary>
 public interface IApplicationRecordService {
 	/// <summary>
-	/// Returns a sorted, paginated page of application records for the specified user.
+	/// Returns a filtered, sorted, paginated page of application records for the specified user.
 	/// </summary>
 	Task<PagedResult<ApplicationRecord>> GetPagedAsync(
-		string userId, int page, int pageSize, string sortBy, string sortDir);
+		string userId, int page, int pageSize, string sortBy, string sortDir,
+		string? search, List<ApplicationStatus>? statuses, DateTime? dateFrom, DateTime? dateTo);
 
 	/// <summary>
 	/// Retrieves a single application record by its identifier, scoped to the specified user.

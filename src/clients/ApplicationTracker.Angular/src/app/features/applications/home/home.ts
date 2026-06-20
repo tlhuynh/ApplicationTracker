@@ -3,21 +3,29 @@ import {
   Component,
   DestroyRef,
   OnInit,
+  computed,
   inject,
   signal,
   viewChild,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DatePipe } from '@angular/common';
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
 import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
+import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatChipsModule, MatChipListboxChange } from '@angular/material/chips';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { provideNativeDateAdapter } from '@angular/material/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSortModule, Sort } from '@angular/material/sort';
 import { MatPaginatorModule, MatPaginator, PageEvent } from '@angular/material/paginator';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { ApplicationService } from '../../../core/services/application.service';
 import {
   ApplicationDialog,
@@ -46,31 +54,44 @@ const STATUS_CLASSES: Record<number, string> = {
   4: 'status-withdrawn',
 };
 
+/** Status options shown as filter chips. */
+const STATUS_OPTIONS = [
+  { value: 0, label: 'Applied' },
+  { value: 1, label: 'Interviewing' },
+  { value: 2, label: 'Offered' },
+  { value: 3, label: 'Rejected' },
+  { value: 4, label: 'Withdrawn' },
+];
+
 /**
  * Home page — displays the authenticated user's application records in a table.
  *
  * Features:
  * - Load all records on init
+ * - Filter by company name (debounced text search), status chips, and applied date range
  * - Add / Edit via ApplicationDialog (create + edit modes)
  * - Advance status (Applied → Interviewing → Offered) and Reject inline
  * - Delete with ConfirmDialog
- *
- * All mutations update the local records signal directly from the API response
- * instead of re-fetching the full list.
  */
 @Component({
   selector: 'app-home',
   templateUrl: './home.html',
   styleUrl: './home.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [provideNativeDateAdapter()],
   imports: [
     DatePipe,
+    ReactiveFormsModule,
     MatCardModule,
     MatTableModule,
     MatButtonModule,
     MatIconModule,
+    MatInputModule,
+    MatFormFieldModule,
     MatProgressSpinnerModule,
     MatTooltipModule,
+    MatChipsModule,
+    MatDatepickerModule,
     MatSortModule,
     MatPaginatorModule,
   ],
@@ -97,6 +118,26 @@ export class Home implements OnInit {
   protected readonly _sortBy = signal('status');
   protected readonly _sortDir = signal<'asc' | 'desc'>('asc');
 
+  /** Filter state — driven by FormControls below; signals keep OnPush in sync. */
+  protected readonly _search = signal('');
+  protected readonly _activeStatuses = signal<number[]>([]);
+  protected readonly _dateFrom = signal<Date | null>(null);
+  protected readonly _dateTo = signal<Date | null>(null);
+
+  /** True when any filter is active — controls the Clear button and empty-state message. */
+  protected readonly hasActiveFilters = computed(
+    () =>
+      this._search().length > 0 ||
+      this._activeStatuses().length > 0 ||
+      this._dateFrom() !== null ||
+      this._dateTo() !== null,
+  );
+
+  /** FormControls bound to the filter inputs. */
+  protected readonly searchControl = new FormControl('', { nonNullable: true });
+  protected readonly dateFromControl = new FormControl<Date | null>(null);
+  protected readonly dateToControl = new FormControl<Date | null>(null);
+
   /** ID of the record whose status is currently being patched — disables that row's status buttons. */
   protected readonly pendingStatusId = signal<number | null>(null);
 
@@ -104,6 +145,7 @@ export class Home implements OnInit {
   protected readonly isDeletingId = signal<number | null>(null);
 
   protected readonly pageSizeOptions = [5, 10, 25];
+  protected readonly statusOptions = STATUS_OPTIONS;
 
   protected readonly displayedColumns = [
     'companyName',
@@ -118,6 +160,27 @@ export class Home implements OnInit {
   // ── Lifecycle ─────────────────────────────────────────────────────────────
 
   public ngOnInit(): void {
+    this.searchControl.valueChanges
+      .pipe(debounceTime(300), distinctUntilChanged(), takeUntilDestroyed(this._destroyRef))
+      .subscribe((value) => {
+        this._search.set(value);
+        this._resetPageAndLoad();
+      });
+
+    this.dateFromControl.valueChanges
+      .pipe(takeUntilDestroyed(this._destroyRef))
+      .subscribe((value) => {
+        this._dateFrom.set(value);
+        this._resetPageAndLoad();
+      });
+
+    this.dateToControl.valueChanges
+      .pipe(takeUntilDestroyed(this._destroyRef))
+      .subscribe((value) => {
+        this._dateTo.set(value);
+        this._resetPageAndLoad();
+      });
+
     this.loadRecords();
   }
 
@@ -133,6 +196,10 @@ export class Home implements OnInit {
         pageSize: this._pageSize(),
         sortBy: this._sortBy(),
         sortDir: this._sortDir(),
+        search: this._search() || undefined,
+        statuses: this._activeStatuses().length > 0 ? this._activeStatuses() : undefined,
+        dateFrom: this._dateFrom() ?? undefined,
+        dateTo: this._dateTo() ?? undefined,
       })
       .pipe(takeUntilDestroyed(this._destroyRef))
       .subscribe({
@@ -148,18 +215,49 @@ export class Home implements OnInit {
       });
   }
 
-  protected onSortChange(sort: Sort): void {
-    this._sortBy.set(sort.active);
-    this._sortDir.set(sort.direction as 'asc' | 'desc');
+  /** Resets to page 1 and reloads. Called whenever a filter changes. */
+  private _resetPageAndLoad(): void {
     this._pageIndex.set(0);
     this._paginator()?.firstPage();
     this.loadRecords();
+  }
+
+  protected onSortChange(sort: Sort): void {
+    this._sortBy.set(sort.active);
+    this._sortDir.set(sort.direction as 'asc' | 'desc');
+    this._resetPageAndLoad();
   }
 
   protected onPageChange(event: PageEvent): void {
     this._pageIndex.set(event.pageIndex);
     this._pageSize.set(event.pageSize);
     this.loadRecords();
+  }
+
+  // ── Filter actions ────────────────────────────────────────────────────────
+
+  protected onStatusChipChange(event: MatChipListboxChange): void {
+    this._activeStatuses.set((event.value as number[]) ?? []);
+    this._resetPageAndLoad();
+  }
+
+  /** Clears only the search field and reloads immediately (no debounce). */
+  protected clearSearch(): void {
+    this.searchControl.reset('', { emitEvent: false });
+    this._search.set('');
+    this._resetPageAndLoad();
+  }
+
+  /** Resets all filters and reloads. */
+  protected clearFilters(): void {
+    this.searchControl.reset('', { emitEvent: false });
+    this.dateFromControl.reset(null, { emitEvent: false });
+    this.dateToControl.reset(null, { emitEvent: false });
+    this._search.set('');
+    this._dateFrom.set(null);
+    this._dateTo.set(null);
+    this._activeStatuses.set([]);
+    this._resetPageAndLoad();
   }
 
   // ── Dialog actions ────────────────────────────────────────────────────────

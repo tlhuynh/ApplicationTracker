@@ -14,8 +14,27 @@ public class ApplicationRecordRepository(ApplicationDbContext context) : Reposit
 	IApplicationRecordRepository {
 	/// <inheritdoc />
 	public async Task<PagedResult<ApplicationRecord>> GetPagedAsync(
-		string userId, int page, int pageSize, string sortBy, string sortDir) {
+		string userId, int page, int pageSize, string sortBy, string sortDir,
+		string? search, List<ApplicationStatus>? statuses, DateTime? dateFrom, DateTime? dateTo) {
 		IQueryable<ApplicationRecord> query = _dbSet.AsNoTracking().Where(r => r.UserId == userId);
+
+		if (!string.IsNullOrWhiteSpace(search)) {
+			query = query.Where(r => r.CompanyName.Contains(search));
+		}
+
+		if (statuses is { Count: > 0 }) {
+			query = query.Where(r => statuses.Contains(r.Status));
+		}
+
+		if (dateFrom.HasValue) {
+			DateTime from = dateFrom.Value.Date;
+			query = query.Where(r => r.AppliedDate >= from);
+		}
+
+		if (dateTo.HasValue) {
+			DateTime to = dateTo.Value.Date.AddDays(1);
+			query = query.Where(r => r.AppliedDate < to);
+		}
 
 		// Status priority: Offered(2)=0, Interviewing(1)=1, Applied(0)=2, Rejected(3)=3, Withdrawn(4)=4
 		// EF Core translates the nested ternary to a CASE WHEN expression in SQL.

@@ -13,8 +13,9 @@ namespace ApplicationTracker.Api.Services;
 public class ApplicationRecordService(IApplicationRecordRepository repository) : IApplicationRecordService {
 	/// <inheritdoc />
 	public async Task<PagedResult<ApplicationRecord>> GetPagedAsync(
-		string userId, int page, int pageSize, string sortBy, string sortDir) {
-		return await repository.GetPagedAsync(userId, page, pageSize, sortBy, sortDir);
+		string userId, int page, int pageSize, string sortBy, string sortDir,
+		string? search, List<ApplicationStatus>? statuses, DateTime? dateFrom, DateTime? dateTo) {
+		return await repository.GetPagedAsync(userId, page, pageSize, sortBy, sortDir, search, statuses, dateFrom, dateTo);
 	}
 
 	/// <inheritdoc />

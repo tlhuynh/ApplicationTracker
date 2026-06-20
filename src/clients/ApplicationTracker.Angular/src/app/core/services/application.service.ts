@@ -1,4 +1,4 @@
-﻿import { HttpClient } from '@angular/common/http';
+﻿import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import {
@@ -19,12 +19,41 @@ export class ApplicationService {
   /** Base URL for all application record endpoints. */
   private readonly _baseUrl = '/api/applicationrecords';
 
-  /** Fetches a paginated, sorted page of application records for the authenticated user. */
+  /** Fetches a filtered, paginated, sorted page of application records for the authenticated user. */
   public getAll(params: GetAllParams): Observable<PagedResultDto<ApplicationRecordDto>> {
-    const { page, pageSize, sortBy, sortDir } = params;
-    return this._http.get<PagedResultDto<ApplicationRecordDto>>(
-      `${this._baseUrl}?page=${page}&pageSize=${pageSize}&sortBy=${sortBy}&sortDir=${sortDir}`,
-    );
+    let httpParams = new HttpParams()
+      .set('page', params.page)
+      .set('pageSize', params.pageSize)
+      .set('sortBy', params.sortBy)
+      .set('sortDir', params.sortDir);
+
+    if (params.search) {
+      httpParams = httpParams.set('search', params.search);
+    }
+
+    params.statuses?.forEach((s) => {
+      httpParams = httpParams.append('statuses', s);
+    });
+
+    if (params.dateFrom) {
+      httpParams = httpParams.set('dateFrom', ApplicationService.formatLocalDate(params.dateFrom));
+    }
+
+    if (params.dateTo) {
+      httpParams = httpParams.set('dateTo', ApplicationService.formatLocalDate(params.dateTo));
+    }
+
+    return this._http.get<PagedResultDto<ApplicationRecordDto>>(this._baseUrl, {
+      params: httpParams,
+    });
+  }
+
+  /** Formats a Date as YYYY-MM-DD in local time to avoid UTC-offset date shifts. */
+  private static formatLocalDate(date: Date): string {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
   }
 
   /** Creates a new application record and returns the created entity. */
