@@ -134,20 +134,22 @@ Located in `src/clients/ApplicationTracker.Angular/`:
   - `api/` — generated OpenAPI types (`api.d.ts`) and mapped TypeScript types (`api.types.ts`)
   - `guards/` — `auth.guard.ts` (redirect to /login if not authenticated), `guest.guard.ts` (redirect to /home if already authenticated)
   - `interceptors/` — `auth.interceptor.ts` (attaches Bearer token, handles 401 → token refresh → retry)
-  - `services/` — `auth.service.ts` (login/register/logout/token state), `application.service.ts` (CRUD for application records)
+  - `services/` — `auth.service.ts` (login/register/logout/token state), `application.service.ts` (getAll with filtering/pagination/sort, CRUD, patchStatus, importRecords), `theme.service.ts` (light/dark toggle)
 - `src/app/features/` — lazy-loaded feature areas
   - `auth/login/` — login form (Reactive Forms, Angular Material)
   - `auth/register/` — registration form
   - `shell/` — authenticated shell layout (sidebar, nav, router outlet)
-  - `applications/home/` — applications list/table (WIP — placeholder content)
-  - `applications/import/` — Excel import (WIP — empty component)
+  - `applications/home/` — applications table with server-side pagination, sorting, filtering (search, status chips, date range)
+  - `applications/import/` — Excel import (.xlsx upload, results table with per-row errors)
   - `applications/application-dialog/` — add/edit dialog (Angular Material `MatDialog`)
+  - `applications/detail-dialog/` — read-only detail view dialog
+  - `applications/note-dialog/` — read-only notes viewer dialog
 - `src/app/shared/` — shared components used across features
   - `confirm-dialog/` — generic confirmation dialog
   - `not-found/` — 404 page
 - `src/test/setup.ts` — Vitest global setup
 
-**Status (2026-05-25):** Auth flows (login, register), shell layout, guards, interceptor, and ApplicationService are complete. Home and Import pages are next to build — see React equivalents for feature reference.
+**Status (2026-06-19):** Auth flows, shell layout, guards, interceptor, home page (with filtering), import page, application CRUD dialogs, detail dialog, note dialog, and all ApplicationService methods are complete. Remaining: Rejected/Withdrawn table, Calendar board, Charts/reports section, CI/CD workflow.
 
 ### React App Structure
 

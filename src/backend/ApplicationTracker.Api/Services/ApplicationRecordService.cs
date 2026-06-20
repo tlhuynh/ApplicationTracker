@@ -3,6 +3,7 @@ using ApplicationTracker.Core.Enums;
 using ApplicationTracker.Core.Interfaces.Repositories;
 using ApplicationTracker.Core.Interfaces.Services;
 using ApplicationTracker.Core.Models;
+using ClosedXML.Excel;
 
 namespace ApplicationTracker.Api.Services;
 
@@ -72,5 +73,35 @@ public class ApplicationRecordService(IApplicationRecordRepository repository) :
 		repository.Delete(existing);
 		await repository.SaveChangesAsync();
 		return true;
+	}
+
+	/// <inheritdoc />
+	public async Task<byte[]> ExportAsync(string userId) {
+		List<ApplicationRecord> records = await repository.GetAllForExportAsync(userId);
+
+		using XLWorkbook workbook = new();
+		IXLWorksheet sheet = workbook.AddWorksheet("Data");
+
+		sheet.Cell(1, 1).Value = "CompanyName";
+		sheet.Cell(1, 2).Value = "Status";
+		sheet.Cell(1, 3).Value = "AppliedDate";
+		sheet.Cell(1, 4).Value = "PostingUrl";
+		sheet.Cell(1, 5).Value = "Notes";
+
+		for (int i = 0; i < records.Count; i++) {
+			ApplicationRecord r = records[i];
+			int row = i + 2;
+			sheet.Cell(row, 1).Value = r.CompanyName;
+			sheet.Cell(row, 2).Value = r.Status.ToString();
+			sheet.Cell(row, 3).Value = r.AppliedDate.HasValue
+				? r.AppliedDate.Value.ToString("yyyy-MM-dd")
+				: string.Empty;
+			sheet.Cell(row, 4).Value = r.PostingUrl ?? string.Empty;
+			sheet.Cell(row, 5).Value = r.Notes ?? string.Empty;
+		}
+
+		using MemoryStream stream = new();
+		workbook.SaveAs(stream);
+		return stream.ToArray();
 	}
 }

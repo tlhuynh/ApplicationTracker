@@ -57,4 +57,11 @@ public interface IApplicationRecordService {
 	/// <param name="userId">The user identifier.</param>
 	/// <returns><c>true</c> if the record was found and deleted; otherwise, <c>false</c>.</returns>
 	Task<bool> DeleteAsync(int id, string userId);
+
+	/// <summary>
+	/// Exports all application records for the specified user as an Excel (.xlsx) byte array.
+	/// Columns match the import template: CompanyName, Status, AppliedDate, PostingUrl, Notes.
+	/// Records are sorted by company name ascending.
+	/// </summary>
+	Task<byte[]> ExportAsync(string userId);
 }

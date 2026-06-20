@@ -86,6 +86,16 @@ public class ApplicationRecordRepository(ApplicationDbContext context) : Reposit
 	}
 
 	/// <inheritdoc />
+	public async Task<List<ApplicationRecord>> GetAllForExportAsync(string userId) {
+		return await _dbSet
+			.AsNoTracking()
+			.Where(r => r.UserId == userId)
+			.OrderBy(r => r.CompanyName)
+			.ThenByDescending(r => r.AppliedDate)
+			.ToListAsync();
+	}
+
+	/// <inheritdoc />
 	public async Task<bool> ExistsAsync(string companyName, DateTime appliedDate, string? postingUrl, string userId) {
 		if (!string.IsNullOrWhiteSpace(postingUrl)) {
 			return await _dbSet.AnyAsync(r =>

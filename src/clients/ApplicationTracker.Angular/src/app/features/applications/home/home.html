@@ -3,15 +3,27 @@
   <!-- Section header ─────────────────────────────────────────────────────── -->
   <div class="section-header">
     <h2 mat-card-title>My Applications</h2>
-    <button
-      mat-raised-button
-      class="btn-primary-filled"
-      (click)="openAddDialog()"
-      aria-label="Add application"
-    >
-      <mat-icon>add</mat-icon>
-      Add
-    </button>
+    <div class="header-actions">
+      <button
+        mat-stroked-button
+        (click)="exportRecords()"
+        [disabled]="isExporting()"
+        aria-label="Export to Excel"
+        matTooltip="Export all records to Excel"
+      >
+        <mat-icon>download</mat-icon>
+        Export
+      </button>
+      <button
+        mat-raised-button
+        class="btn-primary-filled"
+        (click)="openAddDialog()"
+        aria-label="Add application"
+      >
+        <mat-icon>add</mat-icon>
+        Add
+      </button>
+    </div>
   </div>
 
   <!-- Filter bar ─────────────────────────────────────────────────────────── -->

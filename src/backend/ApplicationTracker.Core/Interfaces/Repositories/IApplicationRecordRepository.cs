@@ -16,6 +16,12 @@ public interface IApplicationRecordRepository : IRepository<ApplicationRecord> {
 		string? search, List<ApplicationStatus>? statuses, DateTime? dateFrom, DateTime? dateTo);
 
 	/// <summary>
+	/// Returns all application records for the specified user, sorted by company name ascending.
+	/// Used for data export — no pagination applied.
+	/// </summary>
+	Task<List<ApplicationRecord>> GetAllForExportAsync(string userId);
+
+	/// <summary>
 	/// Checks whether a duplicate application record exists in the database.
 	/// Matches by CompanyName + PostingUrl when a URL is provided, or CompanyName + AppliedDate otherwise.
 	/// </summary>

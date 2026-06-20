@@ -138,6 +138,9 @@ export class Home implements OnInit {
   protected readonly dateFromControl = new FormControl<Date | null>(null);
   protected readonly dateToControl = new FormControl<Date | null>(null);
 
+  /** True while an export request is in flight — disables the export button. */
+  protected readonly isExporting = signal(false);
+
   /** ID of the record whose status is currently being patched — disables that row's status buttons. */
   protected readonly pendingStatusId = signal<number | null>(null);
 
@@ -258,6 +261,28 @@ export class Home implements OnInit {
     this._dateTo.set(null);
     this._activeStatuses.set([]);
     this._resetPageAndLoad();
+  }
+
+  // ── Export ────────────────────────────────────────────────────────────────
+
+  /** Downloads all records as an Excel file. */
+  protected exportRecords(): void {
+    this.isExporting.set(true);
+    this._applicationService
+      .exportRecords()
+      .pipe(takeUntilDestroyed(this._destroyRef))
+      .subscribe({
+        next: (blob) => {
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `applications_${new Date().toISOString().slice(0, 10)}.xlsx`;
+          a.click();
+          URL.revokeObjectURL(url);
+          this.isExporting.set(false);
+        },
+        error: () => this.isExporting.set(false),
+      });
   }
 
   // ── Dialog actions ────────────────────────────────────────────────────────

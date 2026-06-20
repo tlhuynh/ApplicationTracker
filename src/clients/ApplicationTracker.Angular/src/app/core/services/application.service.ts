@@ -91,4 +91,9 @@ export class ApplicationService {
     body.append('file', file);
     return this._http.post<ExcelImportResultDto>(`${this._baseUrl}/import`, body);
   }
+
+  /** Downloads all records as an Excel (.xlsx) blob. Caller is responsible for triggering the browser download. */
+  public exportRecords(): Observable<Blob> {
+    return this._http.get(`${this._baseUrl}/export`, { responseType: 'blob' });
+  }
 }

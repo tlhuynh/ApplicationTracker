@@ -26,7 +26,7 @@ public class ExcelImportServiceTests {
 	/// </summary>
 	private static MemoryStream CreateExcelStream(params string[][] rows) {
 		using XLWorkbook workbook = new();
-		IXLWorksheet sheet = workbook.AddWorksheet("Sheet1");
+		IXLWorksheet sheet = workbook.AddWorksheet("Data");
 
 		// Header row
 		sheet.Cell(1, 1).Value = "CompanyName";

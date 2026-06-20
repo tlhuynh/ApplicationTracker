@@ -102,6 +102,21 @@ public class ApplicationRecordsController(
 	}
 
 	/// <summary>
+	/// Exports all application records for the authenticated user as an Excel (.xlsx) file.
+	/// Columns match the import template: CompanyName, Status, AppliedDate, PostingUrl, Notes.
+	/// </summary>
+	[HttpGet("export")]
+	public async Task<IActionResult> Export() {
+		if (!TryGetUserId(out string userId)) {
+			return Unauthorized();
+		}
+
+		byte[] bytes = await service.ExportAsync(userId);
+		string filename = $"applications_{DateTime.UtcNow:yyyyMMdd}.xlsx";
+		return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", filename);
+	}
+
+	/// <summary>
 	/// Retrieves a single application record by its identifier.
 	/// </summary>
 	/// <param name="id">The record identifier.</param>
