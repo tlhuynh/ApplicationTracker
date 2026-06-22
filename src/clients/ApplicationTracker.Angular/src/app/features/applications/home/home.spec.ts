@@ -1,6 +1,6 @@
 import { Subject, of, throwError } from 'rxjs';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
-import { render, screen } from '@testing-library/angular';
+import { render, screen, within } from '@testing-library/angular';
 import { userEvent } from '@testing-library/user-event';
 import { HttpErrorResponse } from '@angular/common/http';
 import { MatDialog } from '@angular/material/dialog';
@@ -114,15 +114,18 @@ describe('Home', () => {
     await setup({ records: [APPLIED] });
 
     expect(screen.getByText('Acme Corp')).toBeInTheDocument();
-    // Status badge text — "Applied Date" is the column header so there is no collision
-    expect(screen.getByText('Applied')).toBeInTheDocument();
+    // Status label appears in both the filter chips and the table badge — scope to the table
+    const table = screen.getByRole('table');
+    expect(within(table).getByText('Applied')).toBeInTheDocument();
   });
 
   it('should display the correct status label for all statuses', async () => {
     await setup({ records: [APPLIED, INTERVIEWING, OFFERED, REJECTED, WITHDRAWN] });
 
+    // Each label also appears in the status filter chips, so scope assertions to the table
+    const table = screen.getByRole('table');
     for (const label of ['Applied', 'Interviewing', 'Offered', 'Rejected', 'Withdrawn']) {
-      expect(screen.getByText(label)).toBeInTheDocument();
+      expect(within(table).getByText(label)).toBeInTheDocument();
     }
   });
 

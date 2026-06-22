@@ -185,4 +185,35 @@ public class ApplicationRecordServiceTests {
 		_repositoryMock.Verify(r => r.Delete(It.IsAny<ApplicationRecord>()), Times.Never);
 		_repositoryMock.Verify(r => r.SaveChangesAsync(), Times.Never);
 	}
+
+	[Fact]
+	public async Task ExportAsync_DelegatesToRepositoryAndReturnsNonEmptyBytes() {
+		// Arrange
+		List<ApplicationRecord> records = [
+			new() {
+				CompanyName = "Acme",
+				Status = ApplicationStatus.Applied,
+				AppliedDate = new DateTime(2025, 3, 1, 0, 0, 0, DateTimeKind.Utc),
+				PostingUrl = "https://acme.example.com",
+				Notes = "Applied via LinkedIn"
+			},
+			new() {
+				CompanyName = "Globex",
+				Status = ApplicationStatus.Interviewing,
+				AppliedDate = null,
+				PostingUrl = null,
+				Notes = null
+			},
+		];
+		_repositoryMock
+			.Setup(r => r.GetAllForExportAsync(TestUserId))
+			.ReturnsAsync(records);
+
+		// Act
+		byte[] result = await _service.ExportAsync(TestUserId);
+
+		// Assert
+		Assert.NotEmpty(result);
+		_repositoryMock.Verify(r => r.GetAllForExportAsync(TestUserId), Times.Once);
+	}
 }
