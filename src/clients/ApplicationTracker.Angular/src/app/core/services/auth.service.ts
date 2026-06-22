@@ -3,6 +3,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Observable, of, tap, catchError, throwError } from 'rxjs';
 import type { LoginRequest, RegisterRequest, AuthResponse } from '../api/api.types';
+import { environment } from '../../../environments/environment';
 
 /** localStorage key for persisting the refresh token across page refreshes. */
 const REFRESH_TOKEN_KEY = 'refresh_token';
@@ -18,6 +19,8 @@ const REFRESH_TOKEN_KEY = 'refresh_token';
 export class AuthService {
   private readonly http = inject(HttpClient);
   private readonly router = inject(Router);
+
+  private readonly _baseUrl = `${environment.apiUrl}/api/Auth`;
 
   /** In-memory access token — never persisted to storage. */
   private accessToken: string | null = null;
@@ -93,7 +96,7 @@ export class AuthService {
    * Returns the plain-text confirmation message (not JSON) from the server.
    */
   public register(request: RegisterRequest): Observable<string> {
-    return this.http.post('/api/Auth/register', request, { responseType: 'text' });
+    return this.http.post(`${this._baseUrl}/register`, request, { responseType: 'text' });
   }
 
   /**
@@ -101,7 +104,7 @@ export class AuthService {
    * Updates isAuthenticated and currentUser signals on success.
    */
   public login(request: LoginRequest): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>('/api/Auth/login', request).pipe(
+    return this.http.post<AuthResponse>(`${this._baseUrl}/login`, request).pipe(
       tap((response) => this.setTokens(response))
     );
   }
@@ -120,7 +123,7 @@ export class AuthService {
     }
 
     return this.http
-      .post<AuthResponse>('/api/Auth/refresh', JSON.stringify(storedToken), {
+      .post<AuthResponse>(`${this._baseUrl}/refresh`, JSON.stringify(storedToken), {
         headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
       })
       .pipe(tap((response) => this.setTokens(response)));
@@ -166,7 +169,7 @@ export class AuthService {
     // Revoke server-side to invalidate the token in the database
     if (storedToken) {
       this.http
-        .post('/api/Auth/logout', JSON.stringify(storedToken), {
+        .post(`${this._baseUrl}/logout`, JSON.stringify(storedToken), {
           headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
         })
         // eslint-disable-next-line @typescript-eslint/no-empty-function

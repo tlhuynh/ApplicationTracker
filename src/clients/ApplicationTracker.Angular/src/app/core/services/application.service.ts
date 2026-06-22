@@ -1,6 +1,7 @@
 ﻿import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
+import { environment } from '../../../environments/environment';
 import {
   ApplicationRecordDto,
   CreateApplicationRecordRequest,
@@ -17,7 +18,7 @@ export class ApplicationService {
   private readonly _http = inject(HttpClient);
 
   /** Base URL for all application record endpoints. */
-  private readonly _baseUrl = '/api/applicationrecords';
+  private readonly _baseUrl = `${environment.apiUrl}/api/applicationrecords`;
 
   /** Fetches a filtered, paginated, sorted page of application records for the authenticated user. */
   public getAll(params: GetAllParams): Observable<PagedResultDto<ApplicationRecordDto>> {
