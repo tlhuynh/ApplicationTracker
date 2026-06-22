@@ -6,12 +6,17 @@ import {Card, CardContent, CardDescription, CardHeader, CardTitle} from '@/compo
 
 export function ConfirmEmailPage() {
   const [searchParams] = useSearchParams();
-  const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
-  const [message, setMessage] = useState('');
 
   const userId = searchParams.get('userId');
   const token = searchParams.get('token');
   const isMissingParams = !userId || !token;
+
+  const [status, setStatus] = useState<'loading' | 'success' | 'error'>(
+    () => (isMissingParams ? 'error' : 'loading')
+  );
+  const [message, setMessage] = useState(
+    () => isMissingParams ? 'This confirmation link is invalid or incomplete. Please request a new one.' : ''
+  );
 
   const hasCalledRef = useRef(false);
   useEffect(() => {

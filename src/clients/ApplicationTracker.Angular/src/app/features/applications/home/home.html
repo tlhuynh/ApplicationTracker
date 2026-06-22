@@ -1,0 +1,328 @@
+<mat-card class="section-card">
+
+  <!-- Section header ─────────────────────────────────────────────────────── -->
+  <div class="section-header">
+    <h2 mat-card-title>My Applications</h2>
+    <div class="header-actions">
+      <button
+        mat-stroked-button
+        (click)="exportRecords()"
+        [disabled]="isExporting()"
+        aria-label="Export to Excel"
+        matTooltip="Export all records to Excel"
+      >
+        <mat-icon>download</mat-icon>
+        Export
+      </button>
+      <button
+        mat-raised-button
+        class="btn-primary-filled"
+        (click)="openAddDialog()"
+        aria-label="Add application"
+      >
+        <mat-icon>add</mat-icon>
+        Add
+      </button>
+    </div>
+  </div>
+
+  <!-- Filter bar ─────────────────────────────────────────────────────────── -->
+  <div class="filter-bar" role="search" aria-label="Filter applications">
+
+    <!-- Row 1: text search + date range + clear -->
+    <div class="filter-row-top">
+      <mat-form-field appearance="outline" subscriptSizing="dynamic" class="search-field">
+        <mat-icon matPrefix>search</mat-icon>
+        <input
+          matInput
+          placeholder="Search companies..."
+          [formControl]="searchControl"
+          aria-label="Search by company name"
+        />
+        @if (searchControl.value) {
+          <button
+            matSuffix
+            mat-icon-button
+            aria-label="Clear search"
+            (click)="clearSearch()"
+          >
+            <mat-icon>close</mat-icon>
+          </button>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" subscriptSizing="dynamic" class="date-field">
+        <mat-label>From</mat-label>
+        <input matInput [matDatepicker]="fromPicker" [formControl]="dateFromControl" />
+        <mat-datepicker-toggle matIconSuffix [for]="fromPicker" aria-label="Open from-date picker" />
+        <mat-datepicker #fromPicker />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" subscriptSizing="dynamic" class="date-field">
+        <mat-label>To</mat-label>
+        <input matInput [matDatepicker]="toPicker" [formControl]="dateToControl" />
+        <mat-datepicker-toggle matIconSuffix [for]="toPicker" aria-label="Open to-date picker" />
+        <mat-datepicker #toPicker />
+      </mat-form-field>
+
+      @if (hasActiveFilters()) {
+        <button
+          mat-icon-button
+          (click)="clearFilters()"
+          matTooltip="Clear all filters"
+          aria-label="Clear all filters"
+        >
+          <mat-icon>filter_alt_off</mat-icon>
+        </button>
+      }
+    </div>
+
+    <!-- Row 2: status chips -->
+    <mat-chip-listbox
+      multiple
+      [value]="_activeStatuses()"
+      (change)="onStatusChipChange($event)"
+      aria-label="Filter by status"
+      class="status-chips"
+    >
+      @for (option of statusOptions; track option.value) {
+        <mat-chip-option [value]="option.value">{{ option.label }}</mat-chip-option>
+      }
+    </mat-chip-listbox>
+
+  </div>
+
+  <!-- Loading ────────────────────────────────────────────────────────────── -->
+  @if (isLoading()) {
+    <div class="loading-container" aria-live="polite" aria-label="Loading applications">
+      <mat-spinner diameter="48" />
+    </div>
+  }
+
+  <!-- Error ──────────────────────────────────────────────────────────────── -->
+  @if (loadError(); as error) {
+    <div class="load-error" role="alert" aria-live="assertive">{{ error }}</div>
+  }
+
+  <!-- Content ────────────────────────────────────────────────────────────── -->
+  @if (!isLoading() && !loadError()) {
+    @if (records().length === 0) {
+      <!-- Empty state -->
+      <div class="empty-state">
+        <mat-icon class="empty-icon" aria-hidden="true">{{ hasActiveFilters() ? 'search_off' : 'work_off' }}</mat-icon>
+        <p class="empty-message">
+          @if (hasActiveFilters()) {
+            No applications match your filters.
+          } @else {
+            No applications yet. Click <strong>Add Application</strong> to get started.
+          }
+        </p>
+        @if (hasActiveFilters()) {
+          <button mat-button (click)="clearFilters()">Clear filters</button>
+        }
+      </div>
+    } @else {
+      <!-- Table -->
+      <div class="table-wrapper">
+      <table
+        mat-table
+        [dataSource]="records()"
+        matSort
+        [matSortActive]="_sortBy()"
+        [matSortDirection]="_sortDir()"
+        matSortDisableClear
+        (matSortChange)="onSortChange($event)"
+        aria-label="Job application records"
+      >
+
+        <!-- Company Name ─────────────────────────────────────────────────── -->
+        <ng-container matColumnDef="companyName">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header="companyName" scope="col">Company</th>
+          <td mat-cell *matCellDef="let record">
+            <button
+              mat-button
+              class="company-name-btn"
+              (click)="openDetailDialog(record)"
+              [attr.aria-label]="'View details for ' + record.companyName"
+            >{{ record.companyName }}</button>
+          </td>
+        </ng-container>
+
+        <!-- Status ──────────────────────────────────────────────────────── -->
+        <ng-container matColumnDef="status">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header="status" scope="col">Status</th>
+          <td mat-cell *matCellDef="let record">
+            <span [class]="'status-badge ' + getStatusClass(record.status)">
+              {{ getStatusLabel(record.status) }}
+            </span>
+          </td>
+        </ng-container>
+
+        <!-- Status Actions ───────────────────────────────────────────────── -->
+        <ng-container matColumnDef="statusActions">
+          <th mat-header-cell *matHeaderCellDef scope="col">
+            <span class="cdk-visually-hidden">Status actions</span>
+          </th>
+          <td mat-cell *matCellDef="let record">
+            <div class="actions-cell">
+
+              <!-- Reject -->
+              @if (canReject(record)) {
+                <button
+                  mat-icon-button
+                  class="btn-reject"
+                  [disabled]="pendingStatusId() === getRecordId(record)"
+                  [matTooltipDisabled]="pendingStatusId() === getRecordId(record)"
+                  (click)="rejectRecord(record)"
+                  matTooltip="Reject"
+                  [attr.aria-label]="'Reject ' + record.companyName"
+                >
+                  <mat-icon>cancel</mat-icon>
+                </button>
+              }
+
+              <!-- Withdraw: only when Offered -->
+              @if (canWithdraw(record)) {
+                <button
+                  mat-icon-button
+                  [disabled]="pendingStatusId() === getRecordId(record)"
+                  [matTooltipDisabled]="pendingStatusId() === getRecordId(record)"
+                  (click)="withdrawRecord(record)"
+                  matTooltip="Withdraw"
+                  [attr.aria-label]="'Withdraw application for ' + record.companyName"
+                >
+                  @if (pendingStatusId() === getRecordId(record)) {
+                    <mat-spinner diameter="20" />
+                  } @else {
+                    <mat-icon>undo</mat-icon>
+                  }
+                </button>
+              }
+
+              <!-- Advance: Applied → Interviewing → Offered -->
+              @if (canAdvance(record)) {
+                <button
+                  mat-icon-button
+                  class="btn-advance"
+                  [disabled]="pendingStatusId() === getRecordId(record)"
+                  [matTooltipDisabled]="pendingStatusId() === getRecordId(record)"
+                  (click)="advanceStatus(record)"
+                  matTooltip="Advance status"
+                  [attr.aria-label]="'Advance status for ' + record.companyName"
+                >
+                  @if (pendingStatusId() === getRecordId(record)) {
+                    <mat-spinner diameter="20" />
+                  } @else {
+                    <mat-icon>check_circle</mat-icon>
+                  }
+                </button>
+              }
+
+            </div>
+          </td>
+        </ng-container>
+
+        <!-- Applied Date ─────────────────────────────────────────────────── -->
+        <ng-container matColumnDef="appliedDate">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header="appliedDate" scope="col">Applied Date</th>
+          <td mat-cell *matCellDef="let record">
+            {{ record.appliedDate ? (record.appliedDate | date : 'mediumDate' : 'UTC') : '—' }}
+          </td>
+        </ng-container>
+
+        <!-- Posting URL ──────────────────────────────────────────────────── -->
+        <ng-container matColumnDef="postingUrl">
+          <th mat-header-cell *matHeaderCellDef scope="col">Posting</th>
+          <td mat-cell *matCellDef="let record">
+            @if (record.postingUrl) {
+              <a
+                mat-icon-button
+                [href]="record.postingUrl"
+                target="_blank"
+                rel="noopener noreferrer"
+                matTooltip="Open posting"
+                [attr.aria-label]="'Open job posting for ' + record.companyName + ' (opens in new tab)'"
+              >
+                <mat-icon>open_in_new</mat-icon>
+              </a>
+            } @else {
+              <span class="no-value" aria-hidden="true">—</span>
+            }
+          </td>
+        </ng-container>
+
+        <!-- Notes ───────────────────────────────────────────────────────── -->
+        <ng-container matColumnDef="notes">
+          <th mat-header-cell *matHeaderCellDef scope="col">Notes</th>
+          <td mat-cell *matCellDef="let record">
+            @if (record.notes) {
+              <button
+                mat-icon-button
+                (click)="openNotesDialog(record)"
+                matTooltip="View notes"
+                [attr.aria-label]="'View notes for ' + record.companyName"
+              >
+                <mat-icon>sticky_note_2</mat-icon>
+              </button>
+            } @else {
+              <span class="no-value" aria-hidden="true">—</span>
+            }
+          </td>
+        </ng-container>
+
+        <!-- Actions ─────────────────────────────────────────────────────── -->
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef scope="col">
+            <span class="cdk-visually-hidden">Actions</span>
+          </th>
+          <td mat-cell *matCellDef="let record">
+            <div class="actions-cell">
+
+              <!-- Edit -->
+              <button
+                mat-icon-button
+                (click)="openEditDialog(record)"
+                matTooltip="Edit"
+                [attr.aria-label]="'Edit ' + record.companyName"
+              >
+                <mat-icon>edit</mat-icon>
+              </button>
+
+              <!-- Delete -->
+              <button
+                mat-icon-button
+                class="btn-reject"
+                [disabled]="isDeletingId() === getRecordId(record)"
+                [matTooltipDisabled]="isDeletingId() === getRecordId(record)"
+                (click)="openDeleteDialog(record)"
+                matTooltip="Delete"
+                [attr.aria-label]="'Delete ' + record.companyName"
+              >
+                @if (isDeletingId() === getRecordId(record)) {
+                  <mat-spinner diameter="20" />
+                } @else {
+                  <mat-icon>delete</mat-icon>
+                }
+              </button>
+
+            </div>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      </table>
+
+      <mat-paginator
+        [length]="totalCount()"
+        [pageSize]="_pageSize()"
+        [pageSizeOptions]="pageSizeOptions"
+        [pageIndex]="_pageIndex()"
+        (page)="onPageChange($event)"
+        aria-label="Select page"
+      />
+    </div>
+  }
+}
+
+</mat-card>

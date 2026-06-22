@@ -16,12 +16,12 @@
       /// <inheritdoc />
       public async Task<ExcelImportResult> ImportAsync(Stream fileStream, string userId) {
           using XLWorkbook workbook = new(fileStream);
-          IXLWorksheet sheet = workbook.Worksheet(1);
+          IXLWorksheet sheet = workbook.Worksheet("Data");
           List<ExcelImportError> errors = [];
           int importedCount = 0;
 
-          IEnumerable<IXLRow> dataRows = sheet.RowsUsed().Skip(1);
-          int totalRows = dataRows.Count();
+          List<IXLRow> dataRows = sheet.RowsUsed().Skip(1).ToList();
+          int totalRows = dataRows.Count;
 
           foreach (IXLRow row in dataRows) {
               int rowNumber = row.RowNumber();
@@ -65,6 +65,15 @@
               }
 
               appliedDate = DateTime.SpecifyKind(appliedDate, DateTimeKind.Utc);
+
+              if (appliedDate.Date > DateTime.UtcNow.Date) {
+                  errors.Add(new() {
+                      RowNumber = rowNumber,
+                      CompanyName = companyName,
+                      ErrorMessage = "AppliedDate cannot be in the future."
+                  });
+                  continue;
+              }
 
               string? postingUrl = row.Cell(4).GetString().Trim();
               if (string.IsNullOrWhiteSpace(postingUrl)) {
@@ -120,12 +129,12 @@
       /// <inheritdoc />
       public Task<ParseExcelResult> ParseAsync(Stream fileStream) {
           using XLWorkbook workbook = new(fileStream);
-          IXLWorksheet sheet = workbook.Worksheet(1);
+          IXLWorksheet sheet = workbook.Worksheet("Data");
           List<ExcelImportError> errors = [];
           List<ParsedApplicationRow> parsedRows = [];
 
-          IEnumerable<IXLRow> dataRows = sheet.RowsUsed().Skip(1);
-          int totalRows = dataRows.Count();
+          List<IXLRow> dataRows = sheet.RowsUsed().Skip(1).ToList();
+          int totalRows = dataRows.Count;
 
           foreach (IXLRow row in dataRows) {
               int rowNumber = row.RowNumber();
@@ -169,6 +178,15 @@
               }
 
               appliedDate = DateTime.SpecifyKind(appliedDate, DateTimeKind.Utc);
+
+              if (appliedDate.Date > DateTime.UtcNow.Date) {
+                  errors.Add(new() {
+                      RowNumber = rowNumber,
+                      CompanyName = companyName,
+                      ErrorMessage = "AppliedDate cannot be in the future."
+                  });
+                  continue;
+              }
 
               string? postingUrl = row.Cell(4).GetString().Trim();
               if (string.IsNullOrWhiteSpace(postingUrl)) {

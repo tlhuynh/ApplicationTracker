@@ -1,0 +1,41 @@
+<h2 mat-dialog-title>{{ data.record.companyName }}</h2>
+
+<mat-dialog-content>
+  <dl class="detail-list">
+
+    <dt>Status</dt>
+    <dd>
+      <span [class]="'status-badge ' + getStatusClass(data.record.status)">
+        {{ getStatusLabel(data.record.status) }}
+      </span>
+    </dd>
+
+    <dt>Applied Date</dt>
+    <dd>{{ data.record.appliedDate ? (data.record.appliedDate | date : 'mediumDate' : 'UTC') : '—' }}</dd>
+
+    <dt>Posting URL</dt>
+    <dd>
+      @if (data.record.postingUrl) {
+        <a [href]="data.record.postingUrl" target="_blank" rel="noopener noreferrer">
+          {{ data.record.postingUrl }}
+        </a>
+      } @else {
+        —
+      }
+    </dd>
+
+    <dt>Notes</dt>
+    <dd>
+      @if (data.record.notes) {
+        <p class="notes-text">{{ data.record.notes }}</p>
+      } @else {
+        —
+      }
+    </dd>
+
+  </dl>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button mat-dialog-close aria-label="Close">Close</button>
+</mat-dialog-actions>

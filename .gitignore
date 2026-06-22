@@ -414,6 +414,7 @@ FodyWeavers.xsd
 ###############################
 .claude/
 AGENTS.md
+CLAUDE.md
 
 ###############################
 # Environment / Secrets

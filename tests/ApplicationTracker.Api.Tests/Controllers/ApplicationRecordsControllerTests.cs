@@ -48,21 +48,43 @@ public class ApplicationRecordsControllerTests {
 	}
 
 	[Fact]
-	public async Task GetAll_ReturnsOkWithList() {
+	public async Task GetAll_ReturnsOkWithPagedResult() {
 		// Arrange
-		List<ApplicationRecord> records = [
-			new() { Id = 1, CompanyName = "Acme", Status = ApplicationStatus.Applied }
-		];
-		_applicationRecordServiceMock.Setup(s => s.GetAllAsync(TestUserId)).ReturnsAsync(records);
+		PagedResult<ApplicationRecord> pagedResult = new() {
+			Items = [new() { Id = 1, CompanyName = "Acme", Status = ApplicationStatus.Applied }],
+			TotalCount = 1,
+			Page = 1,
+			PageSize = 10,
+		};
+		_applicationRecordServiceMock
+			.Setup(s => s.GetPagedAsync(TestUserId, 1, 10, "companyName", "asc", null, null, null, null))
+			.ReturnsAsync(pagedResult);
 
 		// Act
-		ActionResult<List<ApplicationRecordDto>> result = await _controller.GetAll();
+		ActionResult<PagedResultDto<ApplicationRecordDto>> result = await _controller.GetAll();
 
 		// Assert
 		OkObjectResult okResult = Assert.IsType<OkObjectResult>(result.Result);
-		List<ApplicationRecordDto> dtos = Assert.IsType<List<ApplicationRecordDto>>(okResult.Value);
-		Assert.Single(dtos);
-		Assert.Equal("Acme", dtos[0].CompanyName);
+		PagedResultDto<ApplicationRecordDto> dto = Assert.IsType<PagedResultDto<ApplicationRecordDto>>(okResult.Value);
+		Assert.Equal(1, dto.TotalCount);
+		Assert.Single(dto.Items);
+		Assert.Equal("Acme", dto.Items[0].CompanyName);
+	}
+
+	[Fact]
+	public async Task GetAll_WithInvalidPageSize_ClampsToTen() {
+		// Arrange
+		PagedResult<ApplicationRecord> pagedResult = new() { Items = [], TotalCount = 0, Page = 1, PageSize = 10 };
+		_applicationRecordServiceMock
+			.Setup(s => s.GetPagedAsync(TestUserId, 1, 10, "companyName", "asc", null, null, null, null))
+			.ReturnsAsync(pagedResult);
+
+		// Act — pageSize=15 is not in {5, 10, 25} so it should be clamped to 10
+		ActionResult<PagedResultDto<ApplicationRecordDto>> result = await _controller.GetAll(pageSize: 15);
+
+		// Assert — service is called with 10, not 15
+		_applicationRecordServiceMock.Verify(s => s.GetPagedAsync(TestUserId, 1, 10, "companyName", "asc", null, null, null, null), Times.Once);
+		Assert.IsType<OkObjectResult>(result.Result);
 	}
 
 	[Fact]
@@ -302,5 +324,25 @@ public class ApplicationRecordsControllerTests {
 		BadRequestObjectResult badResult = Assert.IsType<BadRequestObjectResult>(result.Result);
 		Assert.Equal("Only .xlsx files are supported.", badResult.Value);
 		_excelImportServiceMock.Verify(s => s.ParseAsync(It.IsAny<Stream>()), Times.Never);
+	}
+
+	[Fact]
+	public async Task Export_ReturnsFileContentResultWithCorrectContentTypeAndFilename() {
+		// Arrange
+		byte[] fakeBytes = [0x50, 0x4B, 0x03, 0x04]; // PK magic bytes (xlsx zip header)
+		_applicationRecordServiceMock
+			.Setup(s => s.ExportAsync(TestUserId))
+			.ReturnsAsync(fakeBytes);
+
+		// Act
+		IActionResult result = await _controller.Export();
+
+		// Assert
+		FileContentResult fileResult = Assert.IsType<FileContentResult>(result);
+		Assert.Equal("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileResult.ContentType);
+		Assert.StartsWith("applications_", fileResult.FileDownloadName);
+		Assert.EndsWith(".xlsx", fileResult.FileDownloadName);
+		Assert.Equal(fakeBytes, fileResult.FileContents);
+		_applicationRecordServiceMock.Verify(s => s.ExportAsync(TestUserId), Times.Once);
 	}
 }

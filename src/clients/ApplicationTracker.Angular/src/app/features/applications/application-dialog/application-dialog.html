@@ -1,0 +1,106 @@
+<h2 mat-dialog-title>{{ isEditing ? 'Edit Application' : 'Add Application' }}</h2>
+
+<!-- mat-dialog-content is scrollable — keeps the actions footer always visible
+     regardless of how tall the notes textarea grows (fixes the overflow bug). -->
+<mat-dialog-content>
+  <form [formGroup]="form" novalidate class="dialog-form">
+
+    @if (serverError(); as error) {
+      <div class="server-error" role="alert" aria-live="polite">{{ error }}</div>
+    }
+
+    <!-- Company Name -->
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Company Name</mat-label>
+      <input
+        matInput
+        formControlName="companyName"
+        autocomplete="organization"
+        aria-label="Company name"
+      />
+      @if (getCompanyNameError(); as error) {
+        <mat-error>{{ error }}</mat-error>
+      }
+    </mat-form-field>
+
+    <!-- Status -->
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Status</mat-label>
+      <mat-select formControlName="status" aria-label="Application status">
+        @for (option of statusOptions; track option.value) {
+          <mat-option [value]="option.value">{{ option.label }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <!-- Applied Date -->
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Applied Date</mat-label>
+      <input
+        matInput
+        [matDatepicker]="datePicker"
+        [max]="today"
+        formControlName="appliedDate"
+        aria-label="Date applied"
+      />
+      <mat-datepicker-toggle matIconSuffix [for]="datePicker" />
+      <mat-datepicker #datePicker />
+    </mat-form-field>
+
+    <!-- Posting URL -->
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Posting URL</mat-label>
+      <input
+        matInput
+        type="url"
+        formControlName="postingUrl"
+        autocomplete="url"
+        placeholder="https://"
+        aria-label="Job posting URL"
+        (focus)="onPostingUrlFocus()"
+        (blur)="onPostingUrlBlur()"
+      />
+      @if (getPostingUrlError(); as error) {
+        <mat-error>{{ error }}</mat-error>
+      }
+    </mat-form-field>
+
+    <!-- Notes — rows="4" gives a comfortable starting height without overflowing -->
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Notes</mat-label>
+      <textarea
+        matInput
+        formControlName="notes"
+        rows="4"
+        aria-label="Notes"
+      ></textarea>
+    </mat-form-field>
+
+  </form>
+</mat-dialog-content>
+
+<!-- mat-dialog-actions stays pinned to the bottom, outside the scroll region -->
+<mat-dialog-actions align="end">
+  <button
+    mat-button
+    mat-dialog-close
+    [disabled]="isSubmitting()"
+    aria-label="Cancel"
+  >
+    Cancel
+  </button>
+
+  <button
+    mat-raised-button
+    color="primary"
+    [disabled]="isSubmitting()"
+    (click)="onSave()"
+    [attr.aria-label]="isEditing ? 'Save changes' : 'Add application'"
+  >
+    @if (isSubmitting()) {
+      <mat-spinner diameter="20" />
+    } @else {
+      {{ isEditing ? 'Save' : 'Add' }}
+    }
+  </button>
+</mat-dialog-actions>

@@ -1,4 +1,5 @@
 ﻿using ApplicationTracker.Core.Entities;
+using ApplicationTracker.Core.Enums;
 using ApplicationTracker.Core.Interfaces.Services;
 using ApplicationTracker.Core.Models;
 using ApplicationTracker.Shared.DTOs;
@@ -62,16 +63,57 @@ public class ApplicationRecordsController(
 	}
 
 	/// <summary>
-	/// Retrieves all application records.
+	/// Retrieves a filtered, paginated, sorted page of application records.
 	/// </summary>
+	/// <param name="page">1-based page number (default: 1).</param>
+	/// <param name="pageSize">Records per page — 5, 10, or 25 (default: 10).</param>
+	/// <param name="sortBy">Column to sort by: companyName, status, appliedDate (default: companyName).</param>
+	/// <param name="sortDir">Sort direction: asc or desc (default: asc).</param>
+	/// <param name="search">Optional text filter on company name (case-insensitive contains).</param>
+	/// <param name="statuses">Optional status filter — repeat the param for multiple values (e.g. statuses=0&amp;statuses=1).</param>
+	/// <param name="dateFrom">Optional inclusive lower bound on applied date (date only, time ignored).</param>
+	/// <param name="dateTo">Optional inclusive upper bound on applied date (date only, time ignored).</param>
 	[HttpGet]
-	public async Task<ActionResult<List<ApplicationRecordDto>>> GetAll() {
+	public async Task<ActionResult<PagedResultDto<ApplicationRecordDto>>> GetAll(
+		[FromQuery] int page = 1,
+		[FromQuery] int pageSize = 10,
+		[FromQuery] string sortBy = "companyName",
+		[FromQuery] string sortDir = "asc",
+		[FromQuery] string? search = null,
+		[FromQuery] List<int>? statuses = null,
+		[FromQuery] DateTime? dateFrom = null,
+		[FromQuery] DateTime? dateTo = null) {
 		if (!TryGetUserId(out string userId)) {
 			return Unauthorized();
 		}
-		List<ApplicationRecord> records = await service.GetAllAsync(userId);
-		List<ApplicationRecordDto> dtos = records.Select(r => r.ToDto()).ToList();
-		return Ok(dtos);
+
+		page = Math.Max(1, page);
+		pageSize = pageSize is 5 or 10 or 25 ? pageSize : 10;
+
+		List<ApplicationStatus>? statusEnums = statuses?
+			.Where(s => Enum.IsDefined(typeof(ApplicationStatus), s))
+			.Select(s => (ApplicationStatus)s)
+			.ToList();
+
+		PagedResult<ApplicationRecord> result = await service.GetPagedAsync(
+			userId, page, pageSize, sortBy, sortDir,
+			search?.Trim(), statusEnums, dateFrom, dateTo);
+		return Ok(result.ToDto());
+	}
+
+	/// <summary>
+	/// Exports all application records for the authenticated user as an Excel (.xlsx) file.
+	/// Columns match the import template: CompanyName, Status, AppliedDate, PostingUrl, Notes.
+	/// </summary>
+	[HttpGet("export")]
+	public async Task<IActionResult> Export() {
+		if (!TryGetUserId(out string userId)) {
+			return Unauthorized();
+		}
+
+		byte[] bytes = await service.ExportAsync(userId);
+		string filename = $"applications_{DateTime.UtcNow:yyyyMMdd}.xlsx";
+		return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", filename);
 	}
 
 	/// <summary>

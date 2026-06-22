@@ -1,0 +1,85 @@
+﻿.shell-container {
+  height: 100vh;
+}
+
+.shell-sidenav {
+  width: 200px;
+  border-right: 1px solid var(--mat-sys-outline-variant) !important;
+  border-radius: 0 !important;
+
+  .sidenav-header {
+    height: 45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 50%;
+      height: 1px;
+      background-color: var(--mat-sys-outline-variant);
+    }
+
+    .app-title {
+      font-size: var(--fs-label);
+      font-weight: 600;
+    }
+  }
+
+  mat-nav-list {
+    // Compact nav items to match the reduced toolbar height
+    --mat-list-list-item-container-height: 40px;
+    --mat-list-list-item-label-text-size: var(--fs-label);
+    --mat-icon-size: 20px;
+  }
+
+  .active-link {
+    background-color: rgba(var(--mat-sys-primary), 0.12);
+    color: var(--mat-sys-primary);
+
+    mat-icon {
+      color: var(--mat-sys-primary);
+    }
+  }
+}
+
+.shell-toolbar {
+  // Reduce toolbar from default 64px to ~45px (–30%)
+  --mat-toolbar-standard-height: 45px;
+  --mat-toolbar-mobile-height: 45px;
+  // Scale icon buttons and icons down proportionally
+  --mdc-icon-button-state-layer-size: 34px;
+  --mat-icon-size: 18px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.toolbar-spacer {
+  flex: 1;
+}
+
+.current-user {
+  margin-left: 8px;
+  margin-right: 8px;
+  font-size: var(--fs-label);
+
+  // Hide email on very small screens to avoid overflow
+  @media (max-width: 480px) {
+    display: none;
+  }
+}
+
+.shell-content {
+  padding: 24px;
+
+  @media (max-width: 600px) {
+    padding: 16px;
+  }
+}

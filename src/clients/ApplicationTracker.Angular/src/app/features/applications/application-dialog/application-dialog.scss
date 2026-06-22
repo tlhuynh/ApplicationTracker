@@ -1,0 +1,24 @@
+// Consistent vertical spacing between form fields
+mat-form-field {
+  display: block;
+  margin-bottom: 8px;
+}
+
+.full-width {
+  width: 100%;
+}
+
+// Extra top padding so the first field doesn't sit flush against the dialog title
+.dialog-form {
+  padding-top: 8px;
+}
+
+// Matches the server-error style used across auth pages
+.server-error {
+  background-color: var(--mat-sys-error-container);
+  color: var(--mat-sys-on-error-container);
+  padding: 12px 16px;
+  border-radius: 4px;
+  margin-bottom: 16px;
+  font-size: 0.875rem;
+}

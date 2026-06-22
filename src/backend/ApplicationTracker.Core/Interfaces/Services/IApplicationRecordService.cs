@@ -1,5 +1,6 @@
 ﻿using ApplicationTracker.Core.Entities;
 using ApplicationTracker.Core.Enums;
+using ApplicationTracker.Core.Models;
 
 namespace ApplicationTracker.Core.Interfaces.Services;
 
@@ -9,10 +10,11 @@ namespace ApplicationTracker.Core.Interfaces.Services;
 /// </summary>
 public interface IApplicationRecordService {
 	/// <summary>
-	/// Retrieves all application records for the specified user.
+	/// Returns a filtered, sorted, paginated page of application records for the specified user.
 	/// </summary>
-	/// <param name="userId">The user identifier.</param>
-	Task<List<ApplicationRecord>> GetAllAsync(string userId);
+	Task<PagedResult<ApplicationRecord>> GetPagedAsync(
+		string userId, int page, int pageSize, string sortBy, string sortDir,
+		string? search, List<ApplicationStatus>? statuses, DateTime? dateFrom, DateTime? dateTo);
 
 	/// <summary>
 	/// Retrieves a single application record by its identifier, scoped to the specified user.
@@ -55,4 +57,11 @@ public interface IApplicationRecordService {
 	/// <param name="userId">The user identifier.</param>
 	/// <returns><c>true</c> if the record was found and deleted; otherwise, <c>false</c>.</returns>
 	Task<bool> DeleteAsync(int id, string userId);
+
+	/// <summary>
+	/// Exports all application records for the specified user as an Excel (.xlsx) byte array.
+	/// Columns match the import template: CompanyName, Status, AppliedDate, PostingUrl, Notes.
+	/// Records are sorted by company name ascending.
+	/// </summary>
+	Task<byte[]> ExportAsync(string userId);
 }

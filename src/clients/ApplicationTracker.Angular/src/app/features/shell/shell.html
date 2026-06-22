@@ -1,0 +1,71 @@
+﻿<mat-sidenav-container class="shell-container">
+
+  <!-- ── Sidebar ─────────────────────────────────────────────────────── -->
+  <mat-sidenav #sidenav mode="side" opened class="shell-sidenav" aria-label="Main navigation">
+    <div class="sidenav-header">
+      <span class="app-title">Job Apps Tracker</span>
+    </div>
+
+    <mat-nav-list>
+      @for (item of navItems; track item.route) {
+        <a
+          mat-list-item
+          [routerLink]="item.route"
+          routerLinkActive="active-link"
+          [routerLinkActiveOptions]="{ exact: item.route === '/' }"
+          [attr.aria-label]="item.label"
+        >
+          <mat-icon matListItemIcon>{{ item.icon }}</mat-icon>
+          <span matListItemTitle>{{ item.label }}</span>
+        </a>
+      }
+    </mat-nav-list>
+  </mat-sidenav>
+
+  <!-- ── Main content ───────────────────────────────────────────────── -->
+  <mat-sidenav-content>
+
+    <mat-toolbar color="primary" class="shell-toolbar">
+
+      <!-- Hamburger toggle -->
+      <button
+        mat-icon-button
+        (click)="toggleSidenav()"
+        aria-label="Toggle navigation"
+        matTooltip="Toggle navigation"
+      >
+        <mat-icon>menu</mat-icon>
+      </button>
+
+      <span class="toolbar-spacer"></span>
+
+      <span class="current-user" aria-label="Logged in as {{ authService.currentUser() }}">
+        {{ authService.currentUser() }}
+      </span>
+
+      <button
+        mat-icon-button
+        (click)="themeService.toggle()"
+        [attr.aria-label]="themeService.isDark() ? 'Switch to light mode' : 'Switch to dark mode'"
+        [matTooltip]="themeService.isDark() ? 'Light mode' : 'Dark mode'"
+      >
+        <mat-icon>{{ themeService.isDark() ? 'light_mode' : 'dark_mode' }}</mat-icon>
+      </button>
+
+      <button
+        mat-icon-button
+        (click)="confirmLogout()"
+        aria-label="Log out"
+        matTooltip="Log out"
+      >
+        <mat-icon>logout</mat-icon>
+      </button>
+    </mat-toolbar>
+
+    <main class="shell-content">
+      <router-outlet />
+    </main>
+
+  </mat-sidenav-content>
+
+</mat-sidenav-container>

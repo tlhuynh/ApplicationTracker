@@ -2,6 +2,7 @@
 using ApplicationTracker.Core.Entities;
 using ApplicationTracker.Core.Enums;
 using ApplicationTracker.Core.Interfaces.Repositories;
+using ApplicationTracker.Core.Models;
 using Moq;
 
 namespace ApplicationTracker.Api.Tests.Services;
@@ -20,21 +21,26 @@ public class ApplicationRecordServiceTests {
 	}
 
 	[Fact]
-	public async Task GetAllAsync_ReturnsAllRecords() {
+	public async Task GetPagedAsync_DelegatesToRepositoryAndReturnsResult() {
 		// Arrange
-		List<ApplicationRecord> records = [
-			new() { Id = 1, CompanyName = "Acme" },
-			new() { Id = 2, CompanyName = "Globex" }
-		];
-		_repositoryMock.Setup(r => r.GetAllAsync(TestUserId)).ReturnsAsync(records);
+		PagedResult<ApplicationRecord> pagedResult = new() {
+			Items = [new() { Id = 1, CompanyName = "Acme" }, new() { Id = 2, CompanyName = "Globex" }],
+			TotalCount = 2,
+			Page = 1,
+			PageSize = 10,
+		};
+		_repositoryMock
+			.Setup(r => r.GetPagedAsync(TestUserId, 1, 10, "companyName", "asc", null, null, null, null))
+			.ReturnsAsync(pagedResult);
 
 		// Act
-		List<ApplicationRecord> result = await _service.GetAllAsync(TestUserId);
+		PagedResult<ApplicationRecord> result = await _service.GetPagedAsync(TestUserId, 1, 10, "companyName", "asc", null, null, null, null);
 
 		// Assert
-		Assert.Equal(2, result.Count);
-		Assert.Equal("Acme", result[0].CompanyName);
-		Assert.Equal("Globex", result[1].CompanyName);
+		Assert.Equal(2, result.TotalCount);
+		Assert.Equal(2, result.Items.Count);
+		Assert.Equal("Acme", result.Items[0].CompanyName);
+		_repositoryMock.Verify(r => r.GetPagedAsync(TestUserId, 1, 10, "companyName", "asc", null, null, null, null), Times.Once);
 	}
 
 	[Fact]
@@ -178,5 +184,36 @@ public class ApplicationRecordServiceTests {
 		Assert.False(result);
 		_repositoryMock.Verify(r => r.Delete(It.IsAny<ApplicationRecord>()), Times.Never);
 		_repositoryMock.Verify(r => r.SaveChangesAsync(), Times.Never);
+	}
+
+	[Fact]
+	public async Task ExportAsync_DelegatesToRepositoryAndReturnsNonEmptyBytes() {
+		// Arrange
+		List<ApplicationRecord> records = [
+			new() {
+				CompanyName = "Acme",
+				Status = ApplicationStatus.Applied,
+				AppliedDate = new DateTime(2025, 3, 1, 0, 0, 0, DateTimeKind.Utc),
+				PostingUrl = "https://acme.example.com",
+				Notes = "Applied via LinkedIn"
+			},
+			new() {
+				CompanyName = "Globex",
+				Status = ApplicationStatus.Interviewing,
+				AppliedDate = null,
+				PostingUrl = null,
+				Notes = null
+			},
+		];
+		_repositoryMock
+			.Setup(r => r.GetAllForExportAsync(TestUserId))
+			.ReturnsAsync(records);
+
+		// Act
+		byte[] result = await _service.ExportAsync(TestUserId);
+
+		// Assert
+		Assert.NotEmpty(result);
+		_repositoryMock.Verify(r => r.GetAllForExportAsync(TestUserId), Times.Once);
 	}
 }

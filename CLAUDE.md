@@ -4,9 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-ApplicationTracker is a full-stack .NET project for tracking job applications, built as a learning playground to explore modern technologies. The core focus is ASP.NET Core Web API with web frontends (React, Angular planned), alongside a .NET MAUI Blazor Hybrid app for mobile and desktop.
+ApplicationTracker is a full-stack .NET project for tracking job applications, built as a learning playground to explore modern technologies. The core focus is ASP.NET Core Web API with web frontends (React production-deployed, Angular 21 in progress), alongside a .NET MAUI Blazor Hybrid app for mobile and desktop.
 
-**Tech Stack:** .NET 10, C# 13, ASP.NET Core Web API, EF Core, SQL Server, ASP.NET Core Identity, JWT Bearer Auth, .NET MAUI, Blazor Hybrid, MudBlazor, SQLite, Scalar, ClosedXML, React, Vite, Vitest
+**Tech Stack:** .NET 10, C# 13, ASP.NET Core Web API, EF Core, SQL Server, ASP.NET Core Identity, JWT Bearer Auth, .NET MAUI, Blazor Hybrid, MudBlazor, SQLite, Scalar, ClosedXML, React, Angular 21, Vite, Vitest
 
 **Target Platforms:** Web (React), Android, iOS, macOS (Catalyst), Windows
 
@@ -40,6 +40,14 @@ npm run test:watch     # Run tests in watch mode
 npm run generate-types # Generate TypeScript types from OpenAPI spec (backend must be running)
 ```
 
+```bash
+# Angular client (from src/clients/ApplicationTracker.Angular/)
+npm start              # Start dev server on http://localhost:4200 (proxies API to :5021)
+npm run build          # Build for production
+npm test               # Run Vitest tests once
+npm run test:watch     # Run tests in watch mode
+```
+
 ## Backend Setup
 
 - SQL Server 2022 runs via Docker (`docker-compose.yml` at project root)
@@ -66,7 +74,8 @@ src/
 │   └── ApplicationTracker.Infrastructure/# Data access, external services
 ├── clients/
 │   ├── ApplicationTracker.Maui/          # .NET MAUI Blazor app
-│   └── ApplicationTracker.React/         # React SPA (Vite + TypeScript)
+│   ├── ApplicationTracker.React/         # React SPA (Vite + TypeScript)
+│   └── ApplicationTracker.Angular/       # Angular 21 SPA (WIP)
 └── shared/
     └── ApplicationTracker.Shared/        # DTOs shared between API and clients
 ```
@@ -97,6 +106,7 @@ Maui → Shared (gets Core transitively)
 - **Partial Updates**: `PATCH /api/applicationrecords/{id}/status` updates only the status field — uses `PatchStatusRequest` DTO and `UpdateStatusAsync` service method
 - **Authentication**: ASP.NET Core Identity + JWT Bearer tokens. `AuthController` provides register, login, refresh, logout, confirm-email, resend-confirmation, forgot-password, and reset-password endpoints. `TokenService` generates JWT access tokens (15 min) and opaque refresh tokens (7 days); `RefreshTokens` stores **SHA-256 hashes** plus Identity **security stamp** for invalidation on sensitive account changes. Refresh token rotation on each use. `LoginRequest.RememberMe` controls whether a refresh token is issued (false = session-only, no refresh token stored). Logout endpoint (`POST /api/auth/logout`, `[Authorize]`) revokes the refresh token server-side. Email confirmation required before login (403 if unconfirmed). `ConsoleEmailService` logs confirmation/reset links to console (dev); `IEmailService` abstraction for future SMTP. `ApplicationDbContext` extends `IdentityDbContext<IdentityUser>`. `[Authorize]` on `ApplicationRecordsController`; `AuthController` register/login/refresh and email confirmation/reset endpoints are public, logout requires auth. `BearerSecuritySchemeTransformer` adds JWT auth UI to Scalar
 - **Per-User Data**: All repository queries filter by `UserId`. Controller extracts user ID from JWT `sub` claim via `User.FindFirstValue(ClaimTypes.NameIdentifier)`. Service layer passes userId through to repositories. Records are stamped with `UserId` on creation and import. Users can only see/edit/delete their own records
+- **URL Param Validation (React)**: When a page requires URL query params (e.g. `ConfirmEmailPage`, `ResetPasswordPage`), validate them before any `useState` calls and use lazy initializers to set the correct initial state — never call `setStatus`/`setMessage` inside `useEffect` for a condition that's already known on mount. This prevents a flash of "loading" state and avoids the `react-hooks/set-state-in-effect` lint rule. Pattern: read params → derive `isMissingParams` → pass to `useState(() => isMissingParams ? 'error' : 'loading')`. The `useEffect` then guards with `if (isMissingParams) return;` before making any API call.
 - **Frontend Auth**: `AuthProvider` manages in-memory access token + localStorage refresh token. `useAuth()` hook provides `login`, `register`, `logout`, `user`, `isAuthenticated`, `isLoading`, `isDemoMode`, `enterDemoMode`, `exitDemoMode`. `ProtectedRoute` layout route redirects unauthenticated users to `/login`. Silent session restore on page refresh via stored refresh token. Auto-refresh at 80% of token TTL. `authFetch()` wrapper in `client.ts` attaches Bearer header and retries once on 401 (refreshes token transparently). Login/Register pages redirect authenticated users to `/` via `<Navigate>`. "Remember me" checkbox on login — unchecked = session-only (no refresh token), checked = persistent session. Logout calls backend to revoke refresh token (fire-and-forget). Registration shows "check your email" success card. Login handles 403 (unconfirmed email) with resend button. Forgot password and reset password flows via dedicated pages
 - **Demo Mode**: "Try Demo" button on `LoginPage` — no account required. `enterDemoMode()` seeds 6 sample records into `sessionStorage` and sets `isAuthenticated = true`/`user = 'Demo'` so `ProtectedRoute` passes through unchanged. `demoStore.ts` manages sessionStorage keys (`demo_mode`, `demo_applications`). `demoApplicationRecords.ts` mirrors `applicationRecords.ts` signatures but operates on the demo store. `useApplicationRecordsApi()` hook returns real or demo API functions based on `isDemoMode`. Excel import in demo mode calls the public `POST /api/applicationrecords/parse` endpoint (real ClosedXML validation, no DB save) and adds parsed rows to the demo store. Amber banner shown in `App.tsx` with "Sign In" CTA. Demo data survives page refresh (sessionStorage) but clears when browser closes. Duplicate detection not available in demo mode (noted in ImportPage UI)
 - **Frontend Error Handling**: Auth form errors (Login/Register) use shadcn `Alert` (destructive variant) — more visible than plain text. Status-code-based messages: 5xx/405 → `"Something went wrong on our end. Please try again later."`, 4xx → API message passthrough, non-`ApiError` (network/connection) → `"Unable to reach the server. Please check your connection."`. Toast errors use `getToastErrorMessage(err, fallback)` in `src/lib/utils.ts` — same routing logic centralised as a helper. Toast duration set to 6000ms via `toastOptions` on `<Toaster />`
@@ -114,6 +124,32 @@ Located in `src/clients/ApplicationTracker.Maui/`:
 - `Services/` - Business logic and data access (`DatabaseService`)
 - `Utilities/` - Constants and enums
 - `Platforms/` - Platform-specific code (Android, iOS, macOS, Windows)
+
+### Angular App Structure
+
+Located in `src/clients/ApplicationTracker.Angular/`:
+
+- `src/app/app.ts` / `app.config.ts` / `app.routes.ts` — root component, DI config, top-level routes
+- `src/app/core/` — singleton infrastructure
+  - `api/` — generated OpenAPI types (`api.d.ts`) and mapped TypeScript types (`api.types.ts`)
+  - `guards/` — `auth.guard.ts` (redirect to /login if not authenticated), `guest.guard.ts` (redirect to /home if already authenticated)
+  - `interceptors/` — `auth.interceptor.ts` (attaches Bearer token, handles 401 → token refresh → retry)
+  - `services/` — `auth.service.ts` (login/register/logout/token state), `application.service.ts` (getAll with filtering/pagination/sort, CRUD, patchStatus, importRecords), `theme.service.ts` (light/dark toggle)
+- `src/app/features/` — lazy-loaded feature areas
+  - `auth/login/` — login form (Reactive Forms, Angular Material)
+  - `auth/register/` — registration form
+  - `shell/` — authenticated shell layout (sidebar, nav, router outlet)
+  - `applications/home/` — applications table with server-side pagination, sorting, filtering (search, status chips, date range)
+  - `applications/import/` — Excel import (.xlsx upload, results table with per-row errors)
+  - `applications/application-dialog/` — add/edit dialog (Angular Material `MatDialog`)
+  - `applications/detail-dialog/` — read-only detail view dialog
+  - `applications/note-dialog/` — read-only notes viewer dialog
+- `src/app/shared/` — shared components used across features
+  - `confirm-dialog/` — generic confirmation dialog
+  - `not-found/` — 404 page
+- `src/test/setup.ts` — Vitest global setup
+
+**Status (2026-06-19):** Auth flows, shell layout, guards, interceptor, home page (with filtering), import page, application CRUD dialogs, detail dialog, note dialog, and all ApplicationService methods are complete. Remaining: Rejected/Withdrawn table, Calendar board, Charts/reports section, CI/CD workflow.
 
 ### React App Structure
 
@@ -137,7 +173,7 @@ Located in `src/clients/ApplicationTracker.React/`:
 
 `BaseEntity` provides common fields: `Id`, `CreatedAt`, `LastModified`, `UserId`, `ServerId`, `NeedsSync`, `IsDeleted` - designed for future server sync capability.
 
-`RefreshToken` is a standalone entity (not extending `BaseEntity`) for auth infrastructure — stores token value, user ID, expiration, and revocation status.
+`RefreshToken` is a standalone entity (not extending `BaseEntity`) for auth infrastructure — stores SHA-256 token hash, user ID, security stamp, expiration, revocation flag, and `CreatedAt` (defaulted to `DateTime.UtcNow` via property initializer; never set explicitly in object initializers).
 
 ## Code Style
 
@@ -172,6 +208,33 @@ public class ExampleService {
     }
 }
 ```
+
+### TypeScript / Angular
+
+- **Strict type checking** — strict mode enabled, no `any`; use `unknown` when type is uncertain
+- **Prefer type inference** when the type is obvious from context
+- **Standalone components** — always use standalone; do NOT set `standalone: true` explicitly (default in Angular v20+)
+- **`inject()` function** for dependency injection — not constructor injection
+- **Signals for state** — `signal()` for local state, `computed()` for derived state; never use `mutate()`, use `update()` or `set()` instead
+- **`input()` and `output()` functions** instead of `@Input()` / `@Output()` decorators
+- **`ChangeDetectionStrategy.OnPush`** on every component
+- **Reactive Forms** — `FormGroup` / `FormControl` / `Validators`; avoid template-driven forms
+- **Native control flow** — `@if`, `@for`, `@switch` in templates; never use `*ngIf`, `*ngFor`, `*ngSwitch`
+- **No `ngClass`** — use `class` bindings instead
+- **No `ngStyle`** — use `style` bindings instead
+- **No `@HostBinding` / `@HostListener`** — put host bindings inside the `host` object of `@Component` or `@Directive`
+- **Lazy loading** — feature routes loaded lazily via `loadComponent()` or `loadChildren()`
+- **`providedIn: 'root'`** for singleton services
+- **`NgOptimizedImage`** for all static images (not for inline base64)
+- **Async pipe** to handle observables in templates
+- **Accessibility** — must pass AXE checks and meet WCAG AA minimums (focus management, color contrast, ARIA attributes)
+- **Angular Material** for UI components — Azure/Blue theme
+- **SCSS** for component styles
+- **`inject()` for DI**, paths relative to component TS file for external templates/styles
+- **Explicit access modifiers** on all methods (`public`, `private`, `protected`) — never omit
+- **Angular 21 file naming**: CLI-generated files omit `.component` suffix — `login.ts` not `login.component.ts`, class name is `Login` not `LoginComponent`. Manually created files (written without CLI) may use the `.component` convention — check actual filenames before importing
+- **Angular Material card titles**: `mat-card-title` and `mat-card-subtitle` render as `div` by default — always use them as directives on semantic elements: `<h2 mat-card-title>` and `<p mat-card-subtitle>` for proper heading roles and WCAG AA compliance
+- **Angular Material tests**: always include `provideNoopAnimations()` in providers for any component that uses Angular Material — required for components to render their content correctly in tests
 
 ### TypeScript / React
 
@@ -269,7 +332,9 @@ npm run test:watch
 
 - When discussing tools, frameworks, or concepts, include links to official documentation when available
 - Prioritize Microsoft Learn, MDN, and other primary sources over third-party articles
-- **Generate changes with explanations** — present file changes for the user to review and apply, rather than applying directly, unless the user explicitly asks otherwise
-- For file edits: ask "Should I make this change, or would you like to handle it?"
+- **Judgment-based edits** — apply changes directly for routine, clear-scope, single-file work; propose first (objective, files, steps, risks) for multi-file, architectural, or non-obvious changes
+- **No database or EF Core commands** — never run `dotnet ef`, `database update`, SQL scripts, or any migration-related commands; flag the need and let the user handle it
 - **React concepts**: see `docs/react-concepts.md` for topics already covered — don't re-explain these from scratch
-- **Project context**: see `docs/windows-memory.md` for implementation progress, setup details, and troubleshooting notes
+- **Code comments**: only when the *why* is non-obvious — a hidden constraint, a subtle invariant, a workaround for a specific bug. Skip self-evident lines. XML `/// <summary>` for C# public members, JSDoc for exported TS functions when intent isn't obvious
+- **New RxJS operators**: when introducing an RxJS operator not previously used in the Angular client, provide a brief explanation of what it does, when to use it, and any important gotchas before or alongside the code
+- **Security checkpoint**: when touching auth code, token handling, or data access boundaries, flag it and offer to run `/security-review`

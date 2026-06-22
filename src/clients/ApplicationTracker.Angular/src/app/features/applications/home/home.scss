@@ -1,0 +1,224 @@
+.section-card {
+  --mat-card-container-shape: 6px;
+  border-radius: 6px !important;
+  border: 2px solid var(--mat-sys-primary-container) !important;
+  padding: 0;
+  overflow: hidden;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--mat-sys-outline-variant);
+  background-color: var(--mat-sys-primary-container);
+  color: var(--mat-sys-on-primary-container);
+
+  // Compact buttons to match the dense header row
+  button {
+    --mdc-protected-button-container-height: 22px;
+    --mdc-outlined-button-container-height: 22px;
+    --mat-icon-size: 16px;
+    font-size: var(--fs-label);
+  }
+
+  [mat-card-title] {
+    margin: 0;
+    font-size: var(--fs-heading);
+    font-weight: 500;
+  }
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.loading-container {
+  display: flex;
+  justify-content: center;
+  padding: 64px 0;
+}
+
+.load-error {
+  background-color: var(--mat-sys-error-container);
+  color: var(--mat-sys-on-error-container);
+  margin: 12px 16px;
+  padding: 12px 16px;
+  border-radius: 4px;
+  font-size: 0.875rem;
+}
+
+// ── Empty state ───────────────────────────────────────────────────────────────
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 24px;
+  color: var(--mat-sys-on-surface-variant);
+
+  .empty-icon {
+    font-size: 64px;
+    width: 64px;
+    height: 64px;
+    margin-bottom: 16px;
+    opacity: 0.4;
+  }
+
+  .empty-message {
+    margin: 0;
+    font-size: 1rem;
+  }
+}
+
+// ── Filter bar ────────────────────────────────────────────────────────────────
+
+.filter-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--mat-sys-outline-variant);
+}
+
+.filter-row-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.search-field {
+  width: 220px;
+  flex-shrink: 0;
+  font-size: var(--fs-label);
+
+  // Scale down the suffix clear button to fit the reduced container
+  button[mat-icon-button] {
+    --mdc-icon-button-state-layer-size: 28px;
+    --mat-icon-button-state-layer-size: 28px;
+    --mat-icon-size: 18px;
+  }
+}
+
+.date-field {
+  width: 148px;
+  flex-shrink: 0;
+  font-size: var(--fs-label);
+
+  // Scale down the datepicker toggle to fit the reduced container
+  mat-datepicker-toggle {
+    --mdc-icon-button-state-layer-size: 28px;
+    --mat-icon-button-state-layer-size: 28px;
+    --mat-icon-size: 18px;
+  }
+}
+
+.status-chips {
+  // Let chips wrap naturally on narrow screens
+  flex-wrap: wrap;
+}
+
+// ── Table ─────────────────────────────────────────────────────────────────────
+
+.table-wrapper {
+  // Reduce default row heights by ~10% (header 56→50px, data 52→47px)
+  --mat-table-header-row-container-height: 50px;
+  --mat-table-row-item-container-height: 47px;
+
+  // Blue-tinted hover (bumped from default 0.08 so it reads clearly)
+  --mat-table-row-item-hover-state-layer-color: var(--mat-sys-primary);
+  --mat-table-row-item-hover-state-layer-opacity: 0.1;
+}
+
+// Reduce row height in the actions column
+td.mat-column-actions {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+// Status badge styles live in styles.scss (shared with detail-dialog)
+
+// ── Company name button ───────────────────────────────────────────────────────
+
+.company-name-btn {
+  font-size: inherit;
+  font-weight: 500;
+  padding: 0 4px;
+  min-width: unset;
+  letter-spacing: normal;
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  transition: text-decoration-color 0.2s;
+
+  &:hover {
+    text-decoration-color: currentColor;
+  }
+}
+
+// ── Status action buttons ─────────────────────────────────────────────────────
+
+// color="warn" is deprecated in Angular Material 18+ (M3 migration) and no longer
+// applies the warn palette to icon buttons — explicit classes are required instead.
+
+.btn-reject {
+  color: #c62828; // Material Red 800
+
+  &:not([disabled]):hover {
+    background-color: rgba(198, 40, 40, 0.08);
+  }
+}
+
+.btn-advance {
+  color: #2e7d32; // Material Green 800
+
+  &:not([disabled]):hover {
+    background-color: rgba(46, 125, 50, 0.08);
+  }
+}
+
+// ── Actions cell ──────────────────────────────────────────────────────────────
+
+.actions-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+// ── Misc ──────────────────────────────────────────────────────────────────────
+
+.no-value {
+  color: var(--mat-sys-on-surface-variant);
+}
+
+// ── Paginator ─────────────────────────────────────────────────────────────────
+
+mat-paginator {
+  border-top: 1px solid var(--mat-sys-outline-variant);
+  // Match the title row blue so header + paginator act as bookends
+  --mat-paginator-container-background-color: var(--mat-sys-primary-container);
+  --mat-paginator-container-text-color: var(--mat-sys-on-primary-container);
+}
+
+// ── Responsive table ──────────────────────────────────────────────────────────
+
+// Hide secondary columns on narrow screens to keep the table usable
+@media (max-width: 768px) {
+  .mat-column-appliedDate,
+  .mat-column-postingUrl,
+  .mat-column-notes {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .mat-column-statusActions {
+    display: none;
+  }
+}

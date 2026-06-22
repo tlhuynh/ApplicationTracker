@@ -1,0 +1,27 @@
+.detail-list {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 10px 24px;
+  margin: 0;
+  align-items: baseline;
+
+  dt {
+    font-weight: 500;
+    color: var(--mat-sys-on-surface-variant);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+  }
+
+  dd {
+    margin: 0;
+  }
+}
+
+.notes-text {
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  line-height: 1.6;
+}
