@@ -1,59 +1,53 @@
-# ApplicationTrackerAngular
+# ApplicationTracker — Angular Client
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.2.1.
+Angular 21 SPA for the ApplicationTracker project. See the [root README](../../README.md) for full project context.
 
-## Development server
+## Stack
 
-To start a local development server, run:
+- [Angular 21](https://angular.dev/) — standalone components, signals, OnPush change detection
+- [Angular Material](https://material.angular.io/) — UI components (Azure/Blue theme)
+- [Vitest](https://vitest.dev/) + [Angular Testing Library](https://testing-library.com/docs/angular-testing-library/intro/) — unit tests
 
-```bash
-ng serve
-```
-
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
-
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+## Getting Started
 
 ```bash
-ng generate component component-name
+npm install
+npm start        # Dev server at http://localhost:4200 (proxies API calls to :5021)
+npm run build    # Production build
+npm test         # Run tests once
+npm run test:watch
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+The backend API must be running locally for the dev server to function. See the [root README](../../README.md) for API setup.
 
-```bash
-ng generate --help
+## Structure
+
+```
+src/app/
+├── core/
+│   ├── api/            # Generated OpenAPI types (api.d.ts) and mapped TS types (api.types.ts)
+│   ├── guards/         # auth.guard, guest.guard
+│   ├── interceptors/   # auth.interceptor (attaches Bearer token, handles 401 refresh + retry)
+│   └── services/       # auth.service, application.service, theme.service
+├── features/
+│   ├── auth/           # login, register, forgot-password, reset-password
+│   ├── shell/          # Authenticated layout (sidebar, nav, router outlet)
+│   └── applications/
+│       ├── home/               # Applications table (pagination, sort, filter, export)
+│       ├── import/             # Excel import (.xlsx upload + per-row validation)
+│       ├── application-dialog/ # Add / edit record dialog
+│       ├── detail-dialog/      # Read-only record detail
+│       └── note-dialog/        # Read-only notes viewer
+└── shared/
+    ├── confirm-dialog/  # Generic confirmation dialog
+    └── not-found/       # 404 page
 ```
 
-## Building
+## Environment
 
-To build the project run:
+| File | Used when |
+|---|---|
+| `src/environments/environment.ts` | Development (`npm start`) — empty `apiUrl`, relative paths handled by proxy |
+| `src/environments/environment.prod.ts` | Production build — `apiUrl` placeholder replaced by CI before build |
 
-```bash
-ng build
-```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+The dev proxy config is in `proxy.conf.json` — forwards `/api/*` to `http://localhost:5021`.
