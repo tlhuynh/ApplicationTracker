@@ -9,12 +9,14 @@ import { guestGuard } from './core/guards/guest.guard';
  * when the user navigates to that route for the first time.
  *
  * Route structure:
- * /login        — guest only (guestGuard redirects authenticated users to /)
- * /register     — guest only
- * /             — protected shell (authGuard redirects unauthenticated users to /login)
- *   (index)     — applications list (home)
- *   /import     — excel import page
- * **            — 404 not found
+ * /login            — guest only (guestGuard redirects authenticated users to /)
+ * /register         — guest only
+ * /forgot-password  — guest only
+ * /reset-password   — guest only (requires ?email=&token= query params from reset email)
+ * /                 — protected shell (authGuard redirects unauthenticated users to /login)
+ *   (index)         — applications list (home)
+ *   /import         — excel import page
+ * **                — 404 not found
  */
 export const routes: Routes = [
   // ── Guest routes ────────────────────────────────────────────────────────
@@ -29,6 +31,18 @@ export const routes: Routes = [
     canActivate: [guestGuard],
     loadComponent: () =>
       import('./features/auth/register/register').then((m) => m.Register),
+  },
+  {
+    path: 'forgot-password',
+    canActivate: [guestGuard],
+    loadComponent: () =>
+      import('./features/auth/forgot-password/forgot-password').then((m) => m.ForgotPassword),
+  },
+  {
+    path: 'reset-password',
+    canActivate: [guestGuard],
+    loadComponent: () =>
+      import('./features/auth/reset-password/reset-password').then((m) => m.ResetPassword),
   },
 
   // ── Protected routes ─────────────────────────────────────────────────────

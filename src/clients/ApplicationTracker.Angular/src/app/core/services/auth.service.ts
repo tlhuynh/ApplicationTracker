@@ -2,7 +2,7 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Observable, of, tap, catchError, throwError } from 'rxjs';
-import type { LoginRequest, RegisterRequest, AuthResponse } from '../api/api.types';
+import type { LoginRequest, RegisterRequest, AuthResponse, ForgotPasswordRequest, ResetPasswordRequest } from '../api/api.types';
 import { environment } from '../../../environments/environment';
 
 /** localStorage key for persisting the refresh token across page refreshes. */
@@ -159,6 +159,16 @@ export class AuthService {
    * to login immediately. The server revocation call runs in the background
    * and its result is intentionally ignored.
    */
+  /** Sends a password reset email. Always succeeds — does not reveal whether the email exists. */
+  public forgotPassword(request: ForgotPasswordRequest): Observable<string> {
+    return this.http.post(`${this._baseUrl}/forgot-password`, request, { responseType: 'text' });
+  }
+
+  /** Resets the user's password using the token from the reset email. */
+  public resetPassword(request: ResetPasswordRequest): Observable<string> {
+    return this.http.post(`${this._baseUrl}/reset-password`, request, { responseType: 'text' });
+  }
+
   public logout(): void {
     const storedToken = localStorage.getItem(REFRESH_TOKEN_KEY);
 
