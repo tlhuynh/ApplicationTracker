@@ -4,6 +4,17 @@ A full-stack .NET project for tracking job applications, built as a learning pla
 
 **Live Demo**: [jobapptracker.tlhuynh.dev](https://jobapptracker.tlhuynh.dev) (Angular client — active)
 
+## Features
+
+- **Application tracking** — create, view, edit, and delete job applications with fields for company, role, status, applied date, posting URL, and notes
+- **Status management** — advance or reject applications directly from the table; status follows a fixed progression (Applied → Interviewing → Offered → Rejected/Withdrawn)
+- **Server-side pagination, sorting, and filtering** — search by keyword, filter by status chips or date range, multi-column compound sort with status priority
+- **Excel import and export** — upload `.xlsx` files with per-row validation feedback; download all records as a formatted spreadsheet
+- **Full authentication flow** — registration with email confirmation, JWT access tokens (15 min) + refresh tokens (7 days) with rotation, forgot/reset password, per-user data isolation
+- **Security hardening** — email enumeration prevention (consistent 200 responses for all registration cases), IP-based rate limiting (10 req / 15 min), per-email send cap (3 emails / hour), refresh token revocation on password reset
+- **Light/dark theme toggle**
+- **Responsive shell layout** — collapsible sidebar navigation
+
 ## Technologies
 
 ### Frameworks & Languages
@@ -32,9 +43,13 @@ A full-stack .NET project for tracking job applications, built as a learning pla
 - [ESLint](https://eslint.org/) - Linting for TypeScript/React
 - [openapi-typescript](https://openapi-ts.dev/) - TypeScript type generation from OpenAPI spec
 
-### Authentication
-- [ASP.NET Core Identity](https://learn.microsoft.com/aspnet/core/security/authentication/identity) - User management (registration, password hashing)
-- [JWT Bearer Authentication](https://learn.microsoft.com/aspnet/core/security/authentication/jwt-authn) - Token-based API authentication
+### Authentication & Security
+- [ASP.NET Core Identity](https://learn.microsoft.com/aspnet/core/security/authentication/identity) - User management (registration, password hashing, email confirmation)
+- [JWT Bearer Authentication](https://learn.microsoft.com/aspnet/core/security/authentication/jwt-authn) - Access tokens + opaque refresh tokens with rotation
+- [ASP.NET Core Rate Limiting](https://learn.microsoft.com/aspnet/core/performance/rate-limit) - IP-based fixed-window rate limiting on auth endpoints
+
+### Email
+- [Resend](https://resend.com/) - Transactional email (confirmation, password reset, security notices) — console logging in development
 
 ### Data & Infrastructure
 - [Entity Framework Core](https://learn.microsoft.com/ef/core/) - ORM for backend data access
@@ -293,3 +308,4 @@ dotnet run --project src/backend/ApplicationTracker.Api
 - [Sonner](https://sonner.emilkowal.dev/)
 - [openapi-typescript](https://openapi-ts.dev/)
 - [Prettier](https://prettier.io/docs/)
+- [Resend](https://resend.com/docs)
