@@ -27,25 +27,22 @@ public class AuthController(
 	/// </summary>
 	[HttpPost("register")]
 	public async Task<IActionResult> Register(RegisterRequest request) {
-		IdentityUser user = new() { UserName = request.Email, Email = request.Email };
+		// If the email already exists but is unconfirmed, resend rather than reject —
+		// otherwise the user has no path forward (can't register again, can't log in).
+		IdentityUser? existingUser = await userManager.FindByEmailAsync(request.Email);
+		if (existingUser is not null && !await userManager.IsEmailConfirmedAsync(existingUser)) {
+			await SendConfirmationEmailAsync(existingUser);
+			return Ok("Registration successful. Please check your email to confirm your account.");
+		}
 
+		IdentityUser user = new() { UserName = request.Email, Email = request.Email };
 		IdentityResult result = await userManager.CreateAsync(user, request.Password);
 
 		if (!result.Succeeded) {
 			return BadRequest(result.Errors.Select(e => e.Description));
 		}
 
-		string token = await userManager.GenerateEmailConfirmationTokenAsync(user);
-		// Prevent potential issue since token can contains +, /, =
-		string encodedToken = Uri.EscapeDataString(token);
-		string frontendBaseUrl = configuration["App:FrontendBaseUrl"] ?? "http://localhost:5173";
-		string confirmationLink = $"{frontendBaseUrl}/confirm-email?userId={user.Id}&token={encodedToken}";
-
-		await emailService.SendAsync(
-			user.Email!,
-			"Confirm your email",
-			BuildConfirmEmailHtml(confirmationLink));
-
+		await SendConfirmationEmailAsync(user);
 		return Ok("Registration successful. Please check your email to confirm your account.");
 	}
 
@@ -208,16 +205,7 @@ public class AuthController(
                 return Ok("If an account with that email exists and is unconfirmed, a new confirmation link has been sent.");
         }
 
-        string token = await userManager.GenerateEmailConfirmationTokenAsync(user);
-        string encodedToken = Uri.EscapeDataString(token);
-        string frontendBaseUrl = configuration["App:FrontendBaseUrl"] ?? "http://localhost:5173";
-        string confirmationLink = $"{frontendBaseUrl}/confirm-email?userId={user.Id}&token={encodedToken}";
-
-        await emailService.SendAsync(
-                user.Email!,
-                "Confirm your email",
-                BuildConfirmEmailHtml(confirmationLink));
-
+        await SendConfirmationEmailAsync(user);
         return Ok("If an account with that email exists and is unconfirmed, a new confirmation link has been sent.");
   }
 
@@ -273,6 +261,15 @@ public class AuthController(
         }
 
         return Ok("Password has been reset successfully. You can now log in.");
+  }
+
+  private async Task SendConfirmationEmailAsync(IdentityUser user) {
+        string token = await userManager.GenerateEmailConfirmationTokenAsync(user);
+        // Prevent potential issue since token can contain +, /, =
+        string encodedToken = Uri.EscapeDataString(token);
+        string frontendBaseUrl = configuration["App:FrontendBaseUrl"] ?? "http://localhost:5173";
+        string confirmationLink = $"{frontendBaseUrl}/confirm-email?userId={user.Id}&token={encodedToken}";
+        await emailService.SendAsync(user.Email!, "Confirm your email", BuildConfirmEmailHtml(confirmationLink));
   }
 
   private static string BuildConfirmEmailHtml(string confirmationLink) => $"""
