@@ -17,6 +17,7 @@ function createAuthServiceMock() {
   return {
     login: vi.fn().mockReturnValue(of({})),
     isAuthenticated: vi.fn().mockReturnValue(false),
+    resendConfirmation: vi.fn().mockReturnValue(of('Confirmation email sent.')),
   };
 }
 
@@ -119,5 +120,85 @@ describe('Login', () => {
   it('should render a link to the register page', async () => {
     await setup();
     expect(screen.getByRole('link', { name: 'Register' })).toBeInTheDocument();
+  });
+
+  describe('when login returns 403 (unconfirmed email)', () => {
+    async function setup403() {
+      const authMock = createAuthServiceMock();
+      authMock.login.mockReturnValue(
+        throwError(() => new HttpErrorResponse({ status: 403 })),
+      );
+      const { user } = await setup(authMock);
+
+      await user.type(screen.getByLabelText('Email address'), 'test@example.com');
+      await user.type(screen.getByLabelText('Password'), 'password123');
+      await user.click(screen.getByRole('button', { name: 'Log in' }));
+
+      return { authMock, user };
+    }
+
+    it('should show the unconfirmed error message', async () => {
+      await setup403();
+      expect(screen.getByRole('alert')).toHaveTextContent(/not been confirmed/i);
+    });
+
+    it('should show the resend confirmation button', async () => {
+      await setup403();
+      expect(
+        screen.getByRole('button', { name: /resend confirmation email/i }),
+      ).toBeInTheDocument();
+    });
+
+    it('should not show the resend button on non-403 errors', async () => {
+      const authMock = createAuthServiceMock();
+      authMock.login.mockReturnValue(
+        throwError(() => new HttpErrorResponse({ status: 401, error: 'Invalid credentials.' })),
+      );
+      const { user } = await setup(authMock);
+      await user.type(screen.getByLabelText('Email address'), 'test@example.com');
+      await user.type(screen.getByLabelText('Password'), 'wrongpassword');
+      await user.click(screen.getByRole('button', { name: 'Log in' }));
+
+      expect(
+        screen.queryByRole('button', { name: /resend confirmation email/i }),
+      ).not.toBeInTheDocument();
+    });
+
+    it('should call resendConfirmation with the email from the form', async () => {
+      const { authMock, user } = await setup403();
+      await user.click(screen.getByRole('button', { name: /resend confirmation email/i }));
+      expect(authMock.resendConfirmation).toHaveBeenCalledWith({ email: 'test@example.com' });
+    });
+
+    it('should show a success message after resend', async () => {
+      const { user } = await setup403();
+      await user.click(screen.getByRole('button', { name: /resend confirmation email/i }));
+      expect(screen.getByText('Confirmation email sent.')).toBeInTheDocument();
+    });
+
+    it('should disable the resend button after a successful send', async () => {
+      const { user } = await setup403();
+      await user.click(screen.getByRole('button', { name: /resend confirmation email/i }));
+      expect(
+        screen.getByRole('button', { name: /resend confirmation email/i }),
+      ).toBeDisabled();
+    });
+
+    it('should show an error message if resend fails', async () => {
+      const authMock = createAuthServiceMock();
+      authMock.login.mockReturnValue(
+        throwError(() => new HttpErrorResponse({ status: 403 })),
+      );
+      authMock.resendConfirmation.mockReturnValue(
+        throwError(() => new HttpErrorResponse({ status: 500 })),
+      );
+      const { user } = await setup(authMock);
+      await user.type(screen.getByLabelText('Email address'), 'test@example.com');
+      await user.type(screen.getByLabelText('Password'), 'password123');
+      await user.click(screen.getByRole('button', { name: 'Log in' }));
+      await user.click(screen.getByRole('button', { name: /resend confirmation email/i }));
+
+      expect(screen.getByText(/failed to resend/i)).toBeInTheDocument();
+    });
   });
 });

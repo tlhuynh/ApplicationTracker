@@ -70,6 +70,23 @@ mat-form-field {
   border-radius: 4px;
   margin-bottom: 16px;
   font-size: 0.875rem;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.resend-btn {
+  align-self: flex-start;
+  border-color: var(--mat-sys-on-error-container) !important;
+  color: var(--mat-sys-on-error-container) !important;
+  min-height: 32px;
+  height: 32px;
+  font-size: 0.8125rem;
+}
+
+.resend-message {
+  font-size: 0.8125rem;
+  opacity: 0.85;
 }
 
 // Centered register link below the submit button

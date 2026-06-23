@@ -72,6 +72,15 @@ export class Login {
   /** Server-side error message to display above the form, or null when no error. */
   protected readonly serverError = signal<string | null>(null);
 
+  /** True when the last login attempt failed with 403 (email not confirmed). */
+  protected readonly isUnconfirmed = signal(false);
+
+  /** State of the resend confirmation request. */
+  protected readonly resendStatus = signal<'idle' | 'sending' | 'sent' | 'error'>('idle');
+
+  /** Feedback message shown after a resend attempt. */
+  protected readonly resendMessage = signal<string | null>(null);
+
   // ── Helpers ───────────────────────────────────────────────────────────────
 
   /**
@@ -116,6 +125,9 @@ export class Login {
     }
 
     this.serverError.set(null);
+    this.isUnconfirmed.set(false);
+    this.resendStatus.set('idle');
+    this.resendMessage.set(null);
     this.isSubmitting.set(true);
 
     const { email, password, rememberMe } = this.loginForm.getRawValue();
@@ -141,9 +153,30 @@ export class Login {
    * 4xx — pass through the API's message directly
    * No status (network error) — connection error message
    */
+  protected onResend(): void {
+    const email = this.loginForm.getRawValue().email;
+    this.resendStatus.set('sending');
+    this.resendMessage.set(null);
+
+    this.authService
+      .resendConfirmation({ email })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (msg) => {
+          this.resendStatus.set('sent');
+          this.resendMessage.set(msg);
+        },
+        error: () => {
+          this.resendStatus.set('error');
+          this.resendMessage.set('Failed to resend. Please try again.');
+        },
+      });
+  }
+
   private handleError(err: HttpErrorResponse): void {
     if (err.status === 403) {
-      this.serverError.set('Your email address has not been confirmed. Please check your inbox.');
+      this.serverError.set('Your email address has not been confirmed.');
+      this.isUnconfirmed.set(true);
     } else if (err.status >= 500 || err.status === 405) {
       this.serverError.set('Something went wrong on our end. Please try again later.');
     } else if (err.status > 0) {
