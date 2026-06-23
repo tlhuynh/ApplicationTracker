@@ -13,6 +13,7 @@ import { guestGuard } from './core/guards/guest.guard';
  * /register         — guest only
  * /forgot-password  — guest only
  * /reset-password   — guest only (requires ?email=&token= query params from reset email)
+ * /confirm-email    — public (requires ?userId=&token= query params from confirmation email)
  * /                 — protected shell (authGuard redirects unauthenticated users to /login)
  *   (index)         — applications list (home)
  *   /import         — excel import page
@@ -43,6 +44,11 @@ export const routes: Routes = [
     canActivate: [guestGuard],
     loadComponent: () =>
       import('./features/auth/reset-password/reset-password').then((m) => m.ResetPassword),
+  },
+  {
+    path: 'confirm-email',
+    loadComponent: () =>
+      import('./features/auth/confirm-email/confirm-email').then((m) => m.ConfirmEmail),
   },
 
   // ── Protected routes ─────────────────────────────────────────────────────

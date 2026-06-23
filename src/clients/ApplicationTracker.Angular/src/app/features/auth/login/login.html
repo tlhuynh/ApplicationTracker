@@ -15,6 +15,25 @@
         @if (serverError()) {
           <div class="server-error" role="alert" aria-live="polite">
             {{ serverError() }}
+            @if (isUnconfirmed()) {
+              <button
+                mat-stroked-button
+                type="button"
+                class="resend-btn"
+                [disabled]="resendStatus() === 'sending' || resendStatus() === 'sent'"
+                (click)="onResend()"
+                aria-label="Resend confirmation email"
+              >
+                @if (resendStatus() === 'sending') {
+                  <mat-spinner diameter="16" />
+                } @else {
+                  Resend confirmation email
+                }
+              </button>
+              @if (resendMessage()) {
+                <span class="resend-message">{{ resendMessage() }}</span>
+              }
+            }
           </div>
         }
 
