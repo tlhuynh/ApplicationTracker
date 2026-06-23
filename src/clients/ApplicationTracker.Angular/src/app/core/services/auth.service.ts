@@ -2,7 +2,7 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Observable, of, tap, catchError, throwError } from 'rxjs';
-import type { LoginRequest, RegisterRequest, AuthResponse, ForgotPasswordRequest, ResetPasswordRequest } from '../api/api.types';
+import type { LoginRequest, RegisterRequest, AuthResponse, ConfirmEmailRequest, ForgotPasswordRequest, ResetPasswordRequest } from '../api/api.types';
 import { environment } from '../../../environments/environment';
 
 /** localStorage key for persisting the refresh token across page refreshes. */
@@ -159,6 +159,11 @@ export class AuthService {
    * to login immediately. The server revocation call runs in the background
    * and its result is intentionally ignored.
    */
+  /** Confirms the user's email address using the userId and token from the confirmation email. */
+  public confirmEmail(request: ConfirmEmailRequest): Observable<string> {
+    return this.http.post(`${this._baseUrl}/confirm-email`, request, { responseType: 'text' });
+  }
+
   /** Sends a password reset email. Always succeeds — does not reveal whether the email exists. */
   public forgotPassword(request: ForgotPasswordRequest): Observable<string> {
     return this.http.post(`${this._baseUrl}/forgot-password`, request, { responseType: 'text' });

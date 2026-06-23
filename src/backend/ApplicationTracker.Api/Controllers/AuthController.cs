@@ -44,7 +44,7 @@ public class AuthController(
 		await emailService.SendAsync(
 			user.Email!,
 			"Confirm your email",
-			$"Please confirm your email by clicking the link:\n{confirmationLink}");
+			BuildConfirmEmailHtml(confirmationLink));
 
 		return Ok("Registration successful. Please check your email to confirm your account.");
 	}
@@ -216,7 +216,7 @@ public class AuthController(
         await emailService.SendAsync(
                 user.Email!,
                 "Confirm your email",
-                $"Please confirm your email by clicking the link:\n{confirmationLink}");
+                BuildConfirmEmailHtml(confirmationLink));
 
         return Ok("If an account with that email exists and is unconfirmed, a new confirmation link has been sent.");
   }
@@ -241,7 +241,7 @@ public class AuthController(
         await emailService.SendAsync(
                 user.Email!,
                 "Reset your password",
-                $"Reset your password by clicking the link:\n{resetLink}");
+                BuildResetPasswordHtml(resetLink));
 
         return Ok("If an account with that email exists, a password reset link has been sent.");
   }
@@ -274,4 +274,54 @@ public class AuthController(
 
         return Ok("Password has been reset successfully. You can now log in.");
   }
+
+  private static string BuildConfirmEmailHtml(string confirmationLink) => $"""
+    <!DOCTYPE html>
+    <html>
+    <head><meta charset="utf-8" /></head>
+    <body style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:32px 20px;color:#1a1a1a;">
+      <h2 style="margin:0 0 8px;">Job Apps Tracker</h2>
+      <p style="margin:0 0 24px;color:#555;">Confirm your email address to activate your account.</p>
+      <a href="{confirmationLink}"
+         style="display:inline-block;background-color:#1565c0;color:#fff;padding:12px 28px;
+                text-decoration:none;border-radius:4px;font-weight:bold;font-size:15px;">
+        Confirm Email
+      </a>
+      <p style="margin:24px 0 4px;color:#777;font-size:13px;">
+        Button not working? Copy and paste this link into your browser:
+      </p>
+      <p style="margin:0 0 24px;font-size:13px;word-break:break-all;">
+        <a href="{confirmationLink}" style="color:#1565c0;">{confirmationLink}</a>
+      </p>
+      <p style="margin:0;color:#999;font-size:12px;">
+        If you didn't create an account, you can safely ignore this email.
+      </p>
+    </body>
+    </html>
+    """;
+
+  private static string BuildResetPasswordHtml(string resetLink) => $"""
+    <!DOCTYPE html>
+    <html>
+    <head><meta charset="utf-8" /></head>
+    <body style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:32px 20px;color:#1a1a1a;">
+      <h2 style="margin:0 0 8px;">Job Apps Tracker</h2>
+      <p style="margin:0 0 24px;color:#555;">We received a request to reset your password. Click the button below to choose a new one.</p>
+      <a href="{resetLink}"
+         style="display:inline-block;background-color:#1565c0;color:#fff;padding:12px 28px;
+                text-decoration:none;border-radius:4px;font-weight:bold;font-size:15px;">
+        Reset Password
+      </a>
+      <p style="margin:24px 0 4px;color:#777;font-size:13px;">
+        Button not working? Copy and paste this link into your browser:
+      </p>
+      <p style="margin:0 0 24px;font-size:13px;word-break:break-all;">
+        <a href="{resetLink}" style="color:#1565c0;">{resetLink}</a>
+      </p>
+      <p style="margin:0;color:#999;font-size:12px;">
+        If you didn't request a password reset, you can safely ignore this email.
+      </p>
+    </body>
+    </html>
+    """;
 }
