@@ -234,11 +234,18 @@ public class AuthController(
   [EnableRateLimiting("auth")]
   [HttpPost("forgot-password")]
   public async Task<IActionResult> ForgotPassword(ForgotPasswordRequest request) {
+        const string response = "If an account with that email exists, a password reset link has been sent.";
         IdentityUser? user = await userManager.FindByEmailAsync(request.Email);
 
-        // Always return Ok to prevent email enumeration
-        if (user is null || !await userManager.IsEmailConfirmedAsync(user)) {
-                return Ok("If an account with that email exists, a password reset link has been sent.");
+        if (user is null) {
+                return Ok(response);
+        }
+
+        if (!await userManager.IsEmailConfirmedAsync(user)) {
+                if (TryAcquireEmailSendSlot(request.Email)) {
+                        await SendForgotPasswordUnconfirmedEmailAsync(user);
+                }
+                return Ok(response);
         }
 
         if (TryAcquireEmailSendSlot(request.Email)) {
@@ -249,7 +256,7 @@ public class AuthController(
                 await emailService.SendAsync(user.Email!, "Reset your password", BuildResetPasswordHtml(resetLink));
         }
 
-        return Ok("If an account with that email exists, a password reset link has been sent.");
+        return Ok(response);
   }
 
   /// <summary>
@@ -315,6 +322,46 @@ public class AuthController(
         string confirmationLink = $"{frontendBaseUrl}/confirm-email?userId={user.Id}&token={encodedToken}";
         await emailService.SendAsync(user.Email!, "Confirm your email", BuildConfirmEmailHtml(confirmationLink));
   }
+
+  private async Task SendForgotPasswordUnconfirmedEmailAsync(IdentityUser user) {
+        string token = await userManager.GenerateEmailConfirmationTokenAsync(user);
+        string encodedToken = Uri.EscapeDataString(token);
+        string frontendBaseUrl = configuration["App:FrontendBaseUrl"] ?? "http://localhost:5173";
+        string confirmLink = $"{frontendBaseUrl}/confirm-email?userId={user.Id}&token={encodedToken}";
+        string forgotPasswordLink = $"{frontendBaseUrl}/forgot-password";
+        await emailService.SendAsync(user.Email!, "Confirm your email to reset your password", BuildForgotPasswordUnconfirmedHtml(confirmLink, forgotPasswordLink));
+  }
+
+  private static string BuildForgotPasswordUnconfirmedHtml(string confirmLink, string forgotPasswordLink) => $"""
+    <!DOCTYPE html>
+    <html>
+    <head><meta charset="utf-8" /></head>
+    <body style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:32px 20px;color:#1a1a1a;">
+      <h2 style="margin:0 0 8px;">Job Apps Tracker</h2>
+      <p style="margin:0 0 8px;color:#555;">
+        We received a password reset request for your account, but your email address hasn't been confirmed yet.
+      </p>
+      <p style="margin:0 0 24px;color:#555;">
+        Please confirm your email first. Once confirmed, you can sign in or request a password reset if needed.
+      </p>
+      <a href="{confirmLink}"
+         style="display:inline-block;background-color:#1565c0;color:#fff;padding:12px 28px;
+                text-decoration:none;border-radius:4px;font-weight:bold;font-size:15px;">
+        Confirm Email
+      </a>
+      <p style="margin:24px 0 4px;color:#777;font-size:13px;">
+        Button not working? Copy and paste this link into your browser:
+      </p>
+      <p style="margin:0 0 24px;font-size:13px;word-break:break-all;">
+        <a href="{confirmLink}" style="color:#1565c0;">{confirmLink}</a>
+      </p>
+      <p style="margin:0 0 8px;color:#555;font-size:13px;">
+        After confirming, you can <a href="{forgotPasswordLink}" style="color:#1565c0;">reset your password</a> if needed.
+      </p>
+      <p style="margin:0;color:#999;font-size:12px;">If you did not make this request, you can safely ignore this email.</p>
+    </body>
+    </html>
+    """;
 
   private static string BuildUnconfirmedAccountHtml(string confirmLink, string forgotPasswordLink) => $"""
     <!DOCTYPE html>
