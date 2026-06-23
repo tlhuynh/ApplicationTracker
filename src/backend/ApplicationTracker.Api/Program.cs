@@ -95,8 +95,8 @@ builder.Services.AddAuthorization();
 builder.Services.AddScoped<IApplicationRecordService, ApplicationRecordService>();
 builder.Services.AddScoped<IExcelImportService, ExcelImportService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
-/* Write to console for dev and use Resend service for prod/non dev */
-if (builder.Environment.IsDevelopment()) {
+bool useRealEmail = builder.Configuration.GetValue<bool>("App:UseRealEmail");
+if (builder.Environment.IsDevelopment() && !useRealEmail) {
 	builder.Services.AddScoped<IEmailService, ConsoleEmailService>();
 } else {
 	builder.Services.AddHttpClient<IEmailService, ResendEmailService>();
