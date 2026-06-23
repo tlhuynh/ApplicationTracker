@@ -6,7 +6,9 @@ using ApplicationTracker.Shared.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using System.Security.Claims;
 
 namespace ApplicationTracker.Api.Controllers;
@@ -21,18 +23,30 @@ public class AuthController(
 	ITokenService tokenService,
 	IEmailService emailService,
 	ApplicationDbContext dbContext,
-	IConfiguration configuration) : ControllerBase {
+	IConfiguration configuration,
+	IMemoryCache cache) : ControllerBase {
 	/// <summary>
 	/// Registers a new user account.
 	/// </summary>
+	[EnableRateLimiting("auth")]
 	[HttpPost("register")]
 	public async Task<IActionResult> Register(RegisterRequest request) {
-		// If the email already exists but is unconfirmed, resend rather than reject —
-		// otherwise the user has no path forward (can't register again, can't log in).
+		const string response = "If an account for that email was created or already exists, you'll receive an email with next steps.";
+
 		IdentityUser? existingUser = await userManager.FindByEmailAsync(request.Email);
-		if (existingUser is not null && !await userManager.IsEmailConfirmedAsync(existingUser)) {
-			await SendConfirmationEmailAsync(existingUser);
-			return Ok("Registration successful. Please check your email to confirm your account.");
+		if (existingUser is not null) {
+			if (!await userManager.IsEmailConfirmedAsync(existingUser)) {
+				// Unconfirmed — resend with context about the re-registration attempt
+				if (TryAcquireEmailSendSlot(request.Email)) {
+					await SendUnconfirmedAccountEmailAsync(existingUser);
+				}
+			} else {
+				// Confirmed — notify the real owner; never reveal account existence to the requester
+				if (TryAcquireEmailSendSlot(request.Email)) {
+					await SendAccountExistsNoticeEmailAsync(existingUser);
+				}
+			}
+			return Ok(response);
 		}
 
 		IdentityUser user = new() { UserName = request.Email, Email = request.Email };
@@ -42,8 +56,10 @@ public class AuthController(
 			return BadRequest(result.Errors.Select(e => e.Description));
 		}
 
-		await SendConfirmationEmailAsync(user);
-		return Ok("Registration successful. Please check your email to confirm your account.");
+		if (TryAcquireEmailSendSlot(request.Email)) {
+			await SendConfirmationEmailAsync(user);
+		}
+		return Ok(response);
 	}
 
 	/// <summary>
@@ -196,6 +212,7 @@ public class AuthController(
   /// <summary>
   /// Resends the email confirmation link for an unconfirmed account.
   /// </summary>
+  [EnableRateLimiting("auth")]
   [HttpPost("resend-confirmation")]
   public async Task<IActionResult> ResendConfirmation(ResendConfirmationRequest request) {
         IdentityUser? user = await userManager.FindByEmailAsync(request.Email);
@@ -205,13 +222,16 @@ public class AuthController(
                 return Ok("If an account with that email exists and is unconfirmed, a new confirmation link has been sent.");
         }
 
-        await SendConfirmationEmailAsync(user);
+        if (TryAcquireEmailSendSlot(request.Email)) {
+                await SendConfirmationEmailAsync(user);
+        }
         return Ok("If an account with that email exists and is unconfirmed, a new confirmation link has been sent.");
   }
 
   /// <summary>
   /// Sends a password reset link to the specified email address.
   /// </summary>
+  [EnableRateLimiting("auth")]
   [HttpPost("forgot-password")]
   public async Task<IActionResult> ForgotPassword(ForgotPasswordRequest request) {
         IdentityUser? user = await userManager.FindByEmailAsync(request.Email);
@@ -221,15 +241,13 @@ public class AuthController(
                 return Ok("If an account with that email exists, a password reset link has been sent.");
         }
 
-        string token = await userManager.GeneratePasswordResetTokenAsync(user);
-        string encodedToken = Uri.EscapeDataString(token);
-        string frontendBaseUrl = configuration["App:FrontendBaseUrl"] ?? "http://localhost:5173";
-        string resetLink = $"{frontendBaseUrl}/reset-password?email={Uri.EscapeDataString(user.Email!)}&token={encodedToken}";
-
-        await emailService.SendAsync(
-                user.Email!,
-                "Reset your password",
-                BuildResetPasswordHtml(resetLink));
+        if (TryAcquireEmailSendSlot(request.Email)) {
+                string token = await userManager.GeneratePasswordResetTokenAsync(user);
+                string encodedToken = Uri.EscapeDataString(token);
+                string frontendBaseUrl = configuration["App:FrontendBaseUrl"] ?? "http://localhost:5173";
+                string resetLink = $"{frontendBaseUrl}/reset-password?email={Uri.EscapeDataString(user.Email!)}&token={encodedToken}";
+                await emailService.SendAsync(user.Email!, "Reset your password", BuildResetPasswordHtml(resetLink));
+        }
 
         return Ok("If an account with that email exists, a password reset link has been sent.");
   }
@@ -263,6 +281,32 @@ public class AuthController(
         return Ok("Password has been reset successfully. You can now log in.");
   }
 
+  /// <summary>
+  /// Caps auth email sends to 3 per email address per hour to prevent inbox flooding.
+  /// Returns false (skip send) silently — callers always return the same 200 response.
+  /// </summary>
+  private bool TryAcquireEmailSendSlot(string email) {
+        string key = $"auth_email:{email.ToLowerInvariant()}";
+        if (cache.TryGetValue(key, out int count) && count >= 3) { return false; }
+        cache.Set(key, count + 1, TimeSpan.FromHours(1));
+        return true;
+  }
+
+  private async Task SendUnconfirmedAccountEmailAsync(IdentityUser user) {
+        string frontendBaseUrl = configuration["App:FrontendBaseUrl"] ?? "http://localhost:5173";
+        string token = await userManager.GenerateEmailConfirmationTokenAsync(user);
+        string encodedToken = Uri.EscapeDataString(token);
+        string confirmLink = $"{frontendBaseUrl}/confirm-email?userId={user.Id}&token={encodedToken}";
+        string forgotPasswordLink = $"{frontendBaseUrl}/forgot-password";
+        await emailService.SendAsync(user.Email!, "Complete your registration", BuildUnconfirmedAccountHtml(confirmLink, forgotPasswordLink));
+  }
+
+  private async Task SendAccountExistsNoticeEmailAsync(IdentityUser user) {
+        string frontendBaseUrl = configuration["App:FrontendBaseUrl"] ?? "http://localhost:5173";
+        string forgotPasswordLink = $"{frontendBaseUrl}/forgot-password";
+        await emailService.SendAsync(user.Email!, "Registration attempt on your account", BuildSecurityNoticeHtml(forgotPasswordLink));
+  }
+
   private async Task SendConfirmationEmailAsync(IdentityUser user) {
         string token = await userManager.GenerateEmailConfirmationTokenAsync(user);
         // Prevent potential issue since token can contain +, /, =
@@ -271,6 +315,62 @@ public class AuthController(
         string confirmationLink = $"{frontendBaseUrl}/confirm-email?userId={user.Id}&token={encodedToken}";
         await emailService.SendAsync(user.Email!, "Confirm your email", BuildConfirmEmailHtml(confirmationLink));
   }
+
+  private static string BuildUnconfirmedAccountHtml(string confirmLink, string forgotPasswordLink) => $"""
+    <!DOCTYPE html>
+    <html>
+    <head><meta charset="utf-8" /></head>
+    <body style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:32px 20px;color:#1a1a1a;">
+      <h2 style="margin:0 0 8px;">Job Apps Tracker</h2>
+      <p style="margin:0 0 8px;color:#555;">
+        A registration attempt was made with this email address. Your account exists but has not been confirmed yet.
+      </p>
+      <p style="margin:0 0 24px;color:#555;">
+        Click below to confirm your email and activate your account. After confirming, sign in with your original password.
+        If you don't remember it, use Forgot Password after confirming.
+      </p>
+      <a href="{confirmLink}"
+         style="display:inline-block;background-color:#1565c0;color:#fff;padding:12px 28px;
+                text-decoration:none;border-radius:4px;font-weight:bold;font-size:15px;">
+        Confirm Email
+      </a>
+      <p style="margin:24px 0 4px;color:#777;font-size:13px;">
+        Button not working? Copy and paste this link into your browser:
+      </p>
+      <p style="margin:0 0 24px;font-size:13px;word-break:break-all;">
+        <a href="{confirmLink}" style="color:#1565c0;">{confirmLink}</a>
+      </p>
+      <p style="margin:0 0 8px;color:#555;font-size:13px;">
+        Need to reset your password after confirming?
+        <a href="{forgotPasswordLink}" style="color:#1565c0;">Forgot Password</a>
+      </p>
+      <p style="margin:0;color:#999;font-size:12px;">If this wasn't you, you can safely ignore this email.</p>
+    </body>
+    </html>
+    """;
+
+  private static string BuildSecurityNoticeHtml(string forgotPasswordLink) => $"""
+    <!DOCTYPE html>
+    <html>
+    <head><meta charset="utf-8" /></head>
+    <body style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:32px 20px;color:#1a1a1a;">
+      <h2 style="margin:0 0 8px;">Job Apps Tracker</h2>
+      <p style="margin:0 0 8px;color:#555;">
+        Someone attempted to register a new account using your email address. Your existing account was not affected.
+      </p>
+      <p style="margin:0 0 24px;color:#555;">
+        If this was you and you'd like to sign in, use Forgot Password to reset your credentials.
+        If this wasn't you, no action is needed — your account is safe.
+      </p>
+      <a href="{forgotPasswordLink}"
+         style="display:inline-block;background-color:#1565c0;color:#fff;padding:12px 28px;
+                text-decoration:none;border-radius:4px;font-weight:bold;font-size:15px;">
+        Reset Password
+      </a>
+      <p style="margin:24px 0 0;color:#999;font-size:12px;">If you did not make this request, you can safely ignore this email.</p>
+    </body>
+    </html>
+    """;
 
   private static string BuildConfirmEmailHtml(string confirmationLink) => $"""
     <!DOCTYPE html>

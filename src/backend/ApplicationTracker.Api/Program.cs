@@ -1,6 +1,8 @@
 using System.Text;
+using System.Threading.RateLimiting;
 using ApplicationTracker.Api.Services;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.RateLimiting;
 using ApplicationTracker.Api.Transformers;
 using ApplicationTracker.Core.Interfaces.Services;
 using ApplicationTracker.Infrastructure;
@@ -15,6 +17,27 @@ WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 long maxExcelUploadBytes = builder.Configuration.GetValue<long?>("App:MaxExcelUploadBytes") ?? 5_242_880;
 builder.Services.Configure<FormOptions>(options => {
 	options.MultipartBodyLengthLimit = maxExcelUploadBytes;
+});
+
+builder.Services.AddMemoryCache();
+builder.Services.AddRateLimiter(options => {
+	// Per-IP fixed window: max 10 auth requests per 15 minutes.
+	// Applied to register, resend-confirmation, and forgot-password to limit bulk scanning.
+	options.AddPolicy("auth", context =>
+		RateLimitPartition.GetFixedWindowLimiter(
+			partitionKey: context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+			factory: _ => new FixedWindowRateLimiterOptions {
+				PermitLimit = 10,
+				Window = TimeSpan.FromMinutes(15),
+				QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+				QueueLimit = 0
+			}
+		)
+	);
+	options.OnRejected = async (context, token) => {
+		context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
+		await context.HttpContext.Response.WriteAsync("Too many requests. Please try again later.", token);
+	};
 });
 
 builder.Services.AddControllers();
@@ -91,6 +114,7 @@ if (app.Environment.IsDevelopment()) {
 
 app.UseCors();
 app.UseHttpsRedirection();
+app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
