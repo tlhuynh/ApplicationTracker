@@ -412,7 +412,8 @@ FodyWeavers.xsd
 ###############################
 # Claude Code
 ###############################
-.claude/
+.claude/projects/
+.claude/settings.local.json
 AGENTS.md
 CLAUDE.md
 
