@@ -23,8 +23,8 @@ A full-stack .NET project for tracking job applications, built as a learning pla
 - [Angular 21](https://angular.dev/) - Web frontend SPA (active)
 - [React 19](https://react.dev/) - Web frontend SPA (alternate)
 - [Vite](https://vite.dev/) - Frontend build tool and dev server (React)
-- [.NET MAUI](https://learn.microsoft.com/dotnet/maui/) - Cross-platform native UI
-- [Blazor Hybrid](https://learn.microsoft.com/aspnet/core/blazor/hybrid/) - Web UI components within MAUI
+- [.NET MAUI](https://learn.microsoft.com/dotnet/maui/) - Cross-platform native UI (To Be Updated)
+- [Blazor Hybrid](https://learn.microsoft.com/aspnet/core/blazor/hybrid/) - Web UI components within MAUI (To Be Updated)
 
 ### Component Libraries
 - Angular
@@ -66,7 +66,6 @@ A full-stack .NET project for tracking job applications, built as a learning pla
 - [Vitest](https://vitest.dev/) - Frontend test runner (Angular + React)
 - [Angular Testing Library](https://testing-library.com/docs/angular-testing-library/intro/) - Component testing (Angular)
 - [React Testing Library](https://testing-library.com/docs/react-testing-library/intro/) - Component testing (React)
-- [MSW](https://mswjs.io/) - API mocking (Mock Service Worker)
 
 ## Platforms
 - Web
@@ -300,7 +299,6 @@ dotnet run --project src/backend/ApplicationTracker.Api
 - [Vitest](https://vitest.dev/guide/)
 - [Angular Testing Library](https://testing-library.com/docs/angular-testing-library/intro/)
 - [React Testing Library](https://testing-library.com/docs/react-testing-library/intro/)
-- [MSW](https://mswjs.io/docs/)
 - [shadcn/ui](https://ui.shadcn.com/docs)
 - [TanStack Table](https://tanstack.com/table/latest/docs/introduction)
 - [Tailwind CSS](https://tailwindcss.com/docs)
