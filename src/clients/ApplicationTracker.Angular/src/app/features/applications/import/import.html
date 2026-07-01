@@ -56,12 +56,14 @@
           (click)="onUpload()"
           aria-label="Upload and import"
         >
-          @if (isUploading()) {
-            <mat-spinner diameter="20" />
-            Importing…
-          } @else {
-            Import
-          }
+          <span class="btn-content">
+            @if (isUploading()) {
+              <mat-spinner diameter="20" />
+              Importing…
+            } @else {
+              Import
+            }
+          </span>
         </button>
       </div>
     </div>
