@@ -28,6 +28,7 @@ import {
   CreateApplicationRecordRequest,
 } from '../../../core/api/api.types';
 import { ApplicationService } from '../../../core/services/application.service';
+import { extractErrorMessage } from '../../../core/utils/http-error';
 
 /** Rejects non-empty values that are not valid http/https URLs. */
 function urlValidator(control: AbstractControl): ValidationErrors | null {
@@ -117,7 +118,7 @@ export class ApplicationDialog implements OnInit {
     /** Datepicker uses a Date object; defaults to today for new records. */
     appliedDate: new FormControl<Date | null>(new Date()),
     postingUrl: new FormControl<string>('', { nonNullable: true, validators: [urlValidator] }),
-    notes: new FormControl<string>('', { nonNullable: true }),
+    notes: new FormControl<string>('', { nonNullable: true, validators: [Validators.maxLength(5000)] }),
   });
 
   // ── Signals ───────────────────────────────────────────────────────────────
@@ -163,6 +164,19 @@ export class ApplicationDialog implements OnInit {
     if (!control?.touched || !control.invalid) return null;
     if (control.hasError('invalidUrl')) return 'Enter a valid URL (e.g. https://example.com/job)';
     return null;
+  }
+
+  /** Returns the validation error for notes, or null if valid or untouched. */
+  protected getNotesError(): string | null {
+    const control = this.form.get('notes');
+    if (!control?.touched || !control.invalid) return null;
+    if (control.hasError('maxlength')) return 'Notes cannot exceed 5000 characters';
+    return null;
+  }
+
+  /** Current character count for the notes field. */
+  protected get notesLength(): number {
+    return this.form.get('notes')?.value.length ?? 0;
   }
 
   // ── Posting URL focus helpers ──────────────────────────────────────────────
@@ -245,7 +259,7 @@ export class ApplicationDialog implements OnInit {
     if (err.status >= 500 || err.status === 405) {
       this.serverError.set('Something went wrong on our end. Please try again later.');
     } else if (err.status > 0) {
-      this.serverError.set(err.error || 'Save failed. Please try again.');
+      this.serverError.set(extractErrorMessage(err, 'Save failed. Please try again.'));
     } else {
       this.serverError.set('Unable to reach the server. Please check your connection.');
     }

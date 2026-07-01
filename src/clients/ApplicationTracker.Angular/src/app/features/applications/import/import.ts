@@ -17,6 +17,7 @@ import { MatTableModule } from '@angular/material/table';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ApplicationService } from '../../../core/services/application.service';
 import { ExcelImportResultDto } from '../../../core/api/api.types';
+import { extractErrorMessage } from '../../../core/utils/http-error';
 
 @Component({
   selector: 'app-import',
@@ -85,7 +86,7 @@ export class Import {
     if (err.status >= 500 || err.status === 405) {
       this.serverError.set('Something went wrong on our end. Please try again later.');
     } else if (err.status > 0) {
-      this.serverError.set(err.error || 'Upload failed. Please try again.');
+      this.serverError.set(extractErrorMessage(err, 'Upload failed. Please try again.'));
     } else {
       this.serverError.set('Unable to reach the server. Please check your connection.');
     }
