@@ -1,0 +1,44 @@
+.loading-state {
+  display: flex;
+  justify-content: center;
+  padding: 32px 0;
+}
+
+.load-error {
+  color: var(--mat-sys-error);
+  font-size: 0.875rem;
+}
+
+.server-error {
+  background-color: var(--mat-sys-error-container);
+  color: var(--mat-sys-on-error-container);
+  padding: 10px 14px;
+  border-radius: 4px;
+  margin-bottom: 16px;
+  font-size: 0.875rem;
+}
+
+.description-text {
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.no-description {
+  color: var(--mat-sys-on-surface-variant);
+  font-style: italic;
+  font-size: 0.875rem;
+  margin: 0;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.btn-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}

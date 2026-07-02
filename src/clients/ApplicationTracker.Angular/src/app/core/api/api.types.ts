@@ -11,11 +11,20 @@ export type RegisterRequest = components['schemas']['RegisterRequest'];
 export type AuthResponse = components['schemas']['AuthResponse'];
 
 // ── Application Records ───────────────────────────────────────────────────
-export type ApplicationRecordDto = components['schemas']['ApplicationRecordDto'];
+// Extended with hasDescription until next generate-types run picks it up from the schema
+export type ApplicationRecordDto = components['schemas']['ApplicationRecordDto'] & { hasDescription?: boolean };
 export type ApplicationStatus = components['schemas']['ApplicationStatus'];
-export type CreateApplicationRecordRequest = components['schemas']['CreateApplicationRecordRequest'];
+export type CreateApplicationRecordRequest = components['schemas']['CreateApplicationRecordRequest'] & { description?: string | null };
 export type UpdateApplicationRecordRequest = components['schemas']['UpdateApplicationRecordRequest'];
 export type PatchStatusRequest = components['schemas']['PatchStatusRequest'];
+
+export interface DescriptionDto {
+  description: string | null;
+}
+
+export interface PatchDescriptionRequest {
+  description: string | null;
+}
 
 // ── Pagination ────────────────────────────────────────────────────────────
 

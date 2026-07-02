@@ -34,6 +34,7 @@ import {
 import { ConfirmDialog, ConfirmDialogData } from '../../../shared/confirm-dialog/confirm-dialog';
 import { NoteDialog, NoteDialogData } from '../note-dialog/note-dialog';
 import { DetailDialog, DetailDialogData } from '../detail-dialog/detail-dialog';
+import { DescriptionDialog, DescriptionDialogData } from '../description-dialog/description-dialog';
 import { ApplicationRecordDto } from '../../../core/api/api.types';
 
 /** Human-readable label for each ApplicationStatus numeric value. */
@@ -157,6 +158,7 @@ export class Home implements OnInit {
     'appliedDate',
     'postingUrl',
     'notes',
+    'description',
     'actions',
   ];
 
@@ -375,6 +377,31 @@ export class Home implements OnInit {
       },
       width: '480px',
     });
+  }
+
+  /** Opens the description dialog for a record. Fetches description on open; updates hasDescription on save. */
+  protected openDescriptionDialog(record: ApplicationRecordDto): void {
+    const id = this.getRecordId(record);
+    const ref = this._dialog.open<DescriptionDialog, DescriptionDialogData, boolean>(
+      DescriptionDialog,
+      {
+        data: { recordId: id, companyName: record.companyName ?? '' },
+        width: '640px',
+        maxWidth: '95vw',
+        disableClose: true,
+      },
+    );
+
+    ref
+      .afterClosed()
+      .pipe(takeUntilDestroyed(this._destroyRef))
+      .subscribe((hasDescription) => {
+        if (hasDescription !== undefined) {
+          this.records.update((current) =>
+            current.map((r) => (r.id === record.id ? { ...r, hasDescription } : r)),
+          );
+        }
+      });
   }
 
   // ── Inline status actions ─────────────────────────────────────────────────

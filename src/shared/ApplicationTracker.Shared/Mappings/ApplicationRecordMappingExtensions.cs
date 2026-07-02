@@ -20,6 +20,7 @@
               AppliedDate = entity.AppliedDate,
               PostingUrl = entity.PostingUrl,
               Notes = entity.Notes,
+              HasDescription = entity.Description is not null,
               CreatedAt = entity.CreatedAt,
               LastModified = entity.LastModified
           };
@@ -36,6 +37,7 @@
               AppliedDate = request.AppliedDate,
               PostingUrl = request.PostingUrl,
               Notes = request.Notes,
+              Description = request.Description,
           };
       }
 

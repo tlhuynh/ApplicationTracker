@@ -5,9 +5,11 @@ import { environment } from '../../../environments/environment';
 import {
   ApplicationRecordDto,
   CreateApplicationRecordRequest,
+  DescriptionDto,
   ExcelImportResultDto,
   GetAllParams,
   PagedResultDto,
+  PatchDescriptionRequest,
   PatchStatusRequest,
   UpdateApplicationRecordRequest,
 } from '../api/api.types';
@@ -96,5 +98,15 @@ export class ApplicationService {
   /** Downloads all records as an Excel (.xlsx) blob. Caller is responsible for triggering the browser download. */
   public exportRecords(): Observable<Blob> {
     return this._http.get(`${this._baseUrl}/export`, { responseType: 'blob' });
+  }
+
+  /** Fetches the description text for a single record. Only called when the user opens the description dialog. */
+  public getDescription(id: number): Observable<DescriptionDto> {
+    return this._http.get<DescriptionDto>(`${this._baseUrl}/${id}/description`);
+  }
+
+  /** Updates only the description field of a record. */
+  public patchDescription(id: number, request: PatchDescriptionRequest): Observable<DescriptionDto> {
+    return this._http.patch<DescriptionDto>(`${this._baseUrl}/${id}/description`, request);
   }
 }

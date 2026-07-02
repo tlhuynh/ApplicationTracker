@@ -1,0 +1,83 @@
+<h2 mat-dialog-title>Description — {{ data.companyName }}</h2>
+
+<mat-dialog-content>
+
+  @if (isLoading()) {
+    <div class="loading-state">
+      <mat-spinner diameter="36" />
+    </div>
+  } @else if (loadError(); as error) {
+    <p class="load-error" role="alert">{{ error }}</p>
+  } @else {
+
+    @if (serverError(); as error) {
+      <div class="server-error" role="alert" aria-live="polite">{{ error }}</div>
+    }
+
+    @if (isEditing()) {
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Description</mat-label>
+        <textarea
+          matInput
+          [formControl]="descriptionControl"
+          rows="14"
+          aria-label="Description"
+        ></textarea>
+        <mat-hint align="end">{{ descriptionLength }} / 20000</mat-hint>
+        @if (descriptionControl.touched && descriptionControl.hasError('maxlength')) {
+          <mat-error>Description cannot exceed 20000 characters</mat-error>
+        }
+      </mat-form-field>
+    } @else {
+      @if (descriptionControl.value) {
+        <p class="description-text">{{ descriptionControl.value }}</p>
+      } @else {
+        <p class="no-description">No description added yet.</p>
+      }
+    }
+
+  }
+
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  @if (isEditing()) {
+    <button
+      mat-button
+      [disabled]="isSaving()"
+      (click)="cancelEdit()"
+      aria-label="Cancel editing"
+    >
+      Cancel
+    </button>
+    <button
+      mat-raised-button
+      color="primary"
+      [disabled]="isSaving()"
+      (click)="onSave()"
+      aria-label="Save description"
+    >
+      <span class="btn-content">
+        @if (isSaving()) {
+          <mat-spinner diameter="20" />
+          Saving…
+        } @else {
+          Save
+        }
+      </span>
+    </button>
+  } @else {
+    <button mat-button mat-dialog-close aria-label="Close">Close</button>
+    @if (!isLoading() && !loadError()) {
+      <button
+        mat-raised-button
+        color="primary"
+        (click)="enterEditMode()"
+        aria-label="Edit description"
+      >
+        <mat-icon>edit</mat-icon>
+        Edit
+      </button>
+    }
+  }
+</mat-dialog-actions>

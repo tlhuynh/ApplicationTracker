@@ -119,6 +119,7 @@ export class ApplicationDialog implements OnInit {
     appliedDate: new FormControl<Date | null>(new Date()),
     postingUrl: new FormControl<string>('', { nonNullable: true, validators: [urlValidator] }),
     notes: new FormControl<string>('', { nonNullable: true, validators: [Validators.maxLength(5000)] }),
+    description: new FormControl<string>('', { nonNullable: true, validators: [Validators.maxLength(20000)] }),
   });
 
   // ── Signals ───────────────────────────────────────────────────────────────
@@ -179,6 +180,19 @@ export class ApplicationDialog implements OnInit {
     return this.form.get('notes')?.value.length ?? 0;
   }
 
+  /** Returns the validation error for description, or null if valid or untouched. */
+  protected getDescriptionError(): string | null {
+    const control = this.form.get('description');
+    if (!control?.touched || !control.invalid) return null;
+    if (control.hasError('maxlength')) return 'Description cannot exceed 20000 characters';
+    return null;
+  }
+
+  /** Current character count for the description field. */
+  protected get descriptionLength(): number {
+    return this.form.get('description')?.value.length ?? 0;
+  }
+
   // ── Posting URL focus helpers ──────────────────────────────────────────────
 
   /** Pre-fills 'https://' when the field is focused and empty. */
@@ -208,7 +222,7 @@ export class ApplicationDialog implements OnInit {
     this.isSubmitting.set(true);
     this._dialogRef.disableClose = true;
 
-    const { companyName, status, appliedDate, postingUrl, notes } = this.form.getRawValue();
+    const { companyName, status, appliedDate, postingUrl, notes, description } = this.form.getRawValue();
 
     /**
      * Convert the local Date to UTC midnight so the backend receives a consistent
@@ -225,6 +239,7 @@ export class ApplicationDialog implements OnInit {
         : null,
       postingUrl: postingUrl || null,
       notes: notes || null,
+      description: description || null,
     };
 
     const record = this.data.record;

@@ -31,4 +31,10 @@ public class ApplicationRecord : BaseEntity {
     /// Gets or sets additional notes about the application.
     /// </summary>
     public string? Notes { get; set; }
+
+    /// <summary>
+    /// Gets or sets the full description of the job posting.
+    /// Stored off-row and excluded from list queries — fetched only on demand.
+    /// </summary>
+    public string? Description { get; set; }
 }

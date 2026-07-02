@@ -21,6 +21,9 @@ public class ApplicationRecordConfiguration : IEntityTypeConfiguration<Applicati
 		builder.Property(e => e.Notes)
 			.HasMaxLength(5000);
 
+		builder.Property(e => e.Description)
+			.HasMaxLength(20000);
+
 		builder.Property(e => e.UserId)
 			.HasMaxLength(450);
 

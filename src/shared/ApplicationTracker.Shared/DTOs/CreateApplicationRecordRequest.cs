@@ -37,4 +37,10 @@ public class CreateApplicationRecordRequest {
 	/// </summary>
 	[MaxLength(5000)]
 	public string? Notes { get; set; }
+
+	/// <summary>
+	/// Gets or sets the full description of the job posting.
+	/// </summary>
+	[MaxLength(20000)]
+	public string? Description { get; set; }
 }

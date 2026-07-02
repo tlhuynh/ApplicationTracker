@@ -75,6 +75,21 @@ public class ApplicationRecordRepository(ApplicationDbContext context) : Reposit
 		List<ApplicationRecord> items = await query
 			.Skip((page - 1) * pageSize)
 			.Take(pageSize)
+			.Select(r => new ApplicationRecord {
+				Id = r.Id,
+				CompanyName = r.CompanyName,
+				Status = r.Status,
+				AppliedDate = r.AppliedDate,
+				PostingUrl = r.PostingUrl,
+				Notes = r.Notes,
+				UserId = r.UserId,
+				ServerId = r.ServerId,
+				NeedsSync = r.NeedsSync,
+				IsDeleted = r.IsDeleted,
+				CreatedAt = r.CreatedAt,
+				LastModified = r.LastModified,
+				// Description intentionally excluded — fetched separately on demand
+			})
 			.ToListAsync();
 
 		return new PagedResult<ApplicationRecord> {
@@ -92,7 +107,47 @@ public class ApplicationRecordRepository(ApplicationDbContext context) : Reposit
 			.Where(r => r.UserId == userId)
 			.OrderBy(r => r.CompanyName)
 			.ThenByDescending(r => r.AppliedDate)
+			.Select(r => new ApplicationRecord {
+				Id = r.Id,
+				CompanyName = r.CompanyName,
+				Status = r.Status,
+				AppliedDate = r.AppliedDate,
+				PostingUrl = r.PostingUrl,
+				Notes = r.Notes,
+				UserId = r.UserId,
+				CreatedAt = r.CreatedAt,
+				LastModified = r.LastModified,
+				// Description intentionally excluded — not part of export
+			})
 			.ToListAsync();
+	}
+
+	/// <inheritdoc />
+	public async Task<(bool Found, string? Description)> GetDescriptionAsync(int id, string userId) {
+		bool exists = await _dbSet.AnyAsync(r => r.Id == id && r.UserId == userId);
+		if (!exists) {
+			return (false, null);
+		}
+
+		string? description = await _dbSet
+			.AsNoTracking()
+			.Where(r => r.Id == id && r.UserId == userId)
+			.Select(r => r.Description)
+			.FirstOrDefaultAsync();
+
+		return (true, description);
+	}
+
+	/// <inheritdoc />
+	public async Task<bool> UpdateDescriptionAsync(int id, string? description, string userId) {
+		ApplicationRecord? existing = await _dbSet.FirstOrDefaultAsync(r => r.Id == id && r.UserId == userId);
+		if (existing is null) {
+			return false;
+		}
+
+		existing.Description = description;
+		await context.SaveChangesAsync();
+		return true;
 	}
 
 	/// <inheritdoc />

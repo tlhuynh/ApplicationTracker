@@ -210,6 +210,43 @@ public class ApplicationRecordsController(
 	}
 
 	/// <summary>
+	/// Retrieves the description of a single application record.
+	/// </summary>
+	/// <param name="id">The record identifier.</param>
+	[HttpGet("{id:int}/description")]
+	public async Task<ActionResult<DescriptionDto>> GetDescription(int id) {
+		if (!TryGetUserId(out string userId)) {
+			return Unauthorized();
+		}
+
+		(bool found, string? description) = await service.GetDescriptionAsync(id, userId);
+		if (!found) {
+			return NotFound();
+		}
+
+		return Ok(new DescriptionDto { Description = description });
+	}
+
+	/// <summary>
+	/// Updates only the description of an existing application record.
+	/// </summary>
+	/// <param name="id">The identifier of the record to update.</param>
+	/// <param name="request">The patch request containing the new description.</param>
+	[HttpPatch("{id:int}/description")]
+	public async Task<ActionResult<DescriptionDto>> PatchDescription(int id, PatchDescriptionRequest request) {
+		if (!TryGetUserId(out string userId)) {
+			return Unauthorized();
+		}
+
+		bool updated = await service.UpdateDescriptionAsync(id, request.Description, userId);
+		if (!updated) {
+			return NotFound();
+		}
+
+		return Ok(new DescriptionDto { Description = request.Description });
+	}
+
+	/// <summary>
 	/// Imports application records from an Excel file.
 	/// Skips invalid rows and returns a detailed import report.
 	/// </summary>
