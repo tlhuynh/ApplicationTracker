@@ -20,7 +20,7 @@
               AppliedDate = entity.AppliedDate,
               PostingUrl = entity.PostingUrl,
               Notes = entity.Notes,
-              HasDescription = entity.Description is not null,
+              HasDescription = entity.HasDescription || entity.Description is not null,
               CreatedAt = entity.CreatedAt,
               LastModified = entity.LastModified
           };

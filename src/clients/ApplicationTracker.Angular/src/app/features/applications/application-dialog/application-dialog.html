@@ -80,20 +80,22 @@
       }
     </mat-form-field>
 
-    <!-- Description — long-form posting details; editable later via dedicated dialog -->
-    <mat-form-field appearance="outline" class="full-width">
-      <mat-label>Description</mat-label>
-      <textarea
-        matInput
-        formControlName="description"
-        rows="6"
-        aria-label="Description"
-      ></textarea>
-      <mat-hint align="end">{{ descriptionLength }} / 20000</mat-hint>
-      @if (getDescriptionError(); as error) {
-        <mat-error>{{ error }}</mat-error>
-      }
-    </mat-form-field>
+    <!-- Description — only shown on create; existing records use the dedicated dialog -->
+    @if (!isEditing) {
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Description</mat-label>
+        <textarea
+          matInput
+          formControlName="description"
+          rows="6"
+          aria-label="Description"
+        ></textarea>
+        <mat-hint align="end">{{ descriptionLength }} / 20000</mat-hint>
+        @if (getDescriptionError(); as error) {
+          <mat-error>{{ error }}</mat-error>
+        }
+      </mat-form-field>
+    }
 
   </form>
 </mat-dialog-content>

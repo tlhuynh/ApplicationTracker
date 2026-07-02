@@ -396,7 +396,7 @@ export class Home implements OnInit {
       .afterClosed()
       .pipe(takeUntilDestroyed(this._destroyRef))
       .subscribe((hasDescription) => {
-        if (hasDescription !== undefined) {
+        if (typeof hasDescription === 'boolean') {
           this.records.update((current) =>
             current.map((r) => (r.id === record.id ? { ...r, hasDescription } : r)),
           );

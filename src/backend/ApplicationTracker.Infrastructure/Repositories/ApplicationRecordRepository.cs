@@ -88,7 +88,8 @@ public class ApplicationRecordRepository(ApplicationDbContext context) : Reposit
 				IsDeleted = r.IsDeleted,
 				CreatedAt = r.CreatedAt,
 				LastModified = r.LastModified,
-				// Description intentionally excluded — fetched separately on demand
+				HasDescription = r.Description != null,
+				// Description text intentionally excluded — fetched separately on demand
 			})
 			.ToListAsync();
 
