@@ -22,6 +22,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { TextFieldModule } from '@angular/cdk/text-field';
 import { HttpErrorResponse } from '@angular/common/http';
 import {
   ApplicationRecordDto,
@@ -87,6 +88,7 @@ export interface ApplicationDialogData {
     MatSelectModule,
     MatDatepickerModule,
     MatProgressSpinnerModule,
+    TextFieldModule,
   ],
 })
 export class ApplicationDialog implements OnInit {
