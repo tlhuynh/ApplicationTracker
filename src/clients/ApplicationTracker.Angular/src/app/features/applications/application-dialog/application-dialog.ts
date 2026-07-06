@@ -193,24 +193,6 @@ export class ApplicationDialog implements OnInit {
     return this.form.get('description')?.value.length ?? 0;
   }
 
-  // ── Posting URL focus helpers ──────────────────────────────────────────────
-
-  /** Pre-fills 'https://' when the field is focused and empty. */
-  protected onPostingUrlFocus(): void {
-    const control = this.form.get('postingUrl');
-    if (!control?.value) {
-      control?.setValue('https://');
-    }
-  }
-
-  /** Clears the field on blur if the user left it as just 'https://'. */
-  protected onPostingUrlBlur(): void {
-    const control = this.form.get('postingUrl');
-    if (control?.value === 'https://') {
-      control.setValue('');
-    }
-  }
-
   // ── Actions ───────────────────────────────────────────────────────────────
 
   /** Submits the form — calls create or update based on whether we are editing. */

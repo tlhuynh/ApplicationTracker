@@ -57,8 +57,6 @@
         autocomplete="url"
         placeholder="https://"
         aria-label="Job posting URL"
-        (focus)="onPostingUrlFocus()"
-        (blur)="onPostingUrlBlur()"
       />
       @if (getPostingUrlError(); as error) {
         <mat-error>{{ error }}</mat-error>
