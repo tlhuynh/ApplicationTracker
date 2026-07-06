@@ -96,6 +96,10 @@ body {
   .mat-mdc-form-field {
     --mat-form-field-container-height: #{$compact-height};
     --mat-form-field-container-vertical-padding: 8px;
+
+    .mat-mdc-text-field-wrapper .mat-mdc-form-field-flex {
+      height: 100%;
+    }
   }
 }
 
