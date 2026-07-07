@@ -139,6 +139,12 @@
   --mat-table-row-item-hover-state-layer-opacity: 0.1;
 }
 
+.table-scroll-inner {
+  min-width: fit-content; // sizes to table width so paginator stretches to match
+  display: flex;
+  flex-direction: column;
+}
+
 // Reduce row height in the actions column
 td.mat-column-actions {
   padding-top: 4px;

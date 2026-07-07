@@ -124,6 +124,7 @@
     } @else {
       <!-- Table -->
       <div class="table-wrapper">
+      <div class="table-scroll-inner">
       <table
         mat-table
         [dataSource]="records()"
@@ -336,6 +337,7 @@
         (page)="onPageChange($event)"
         aria-label="Select page"
       />
+      </div>
     </div>
   }
 }
