@@ -3,7 +3,7 @@
   border-radius: 6px !important;
   border: 2px solid var(--mat-sys-primary-container) !important;
   padding: 0;
-  overflow: hidden;
+  overflow: clip; // clip preserves border-radius clipping without blocking inner scroll containers
 }
 
 .section-header {
@@ -128,6 +128,8 @@
 // ── Table ─────────────────────────────────────────────────────────────────────
 
 .table-wrapper {
+  overflow-x: auto;
+
   // Reduce default row heights by ~10% (header 56→50px, data 52→47px)
   --mat-table-header-row-container-height: 50px;
   --mat-table-row-item-container-height: 47px;
