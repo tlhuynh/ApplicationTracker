@@ -11,6 +11,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { AuthService } from '../../../core/services/auth.service';
+import { extractErrorMessage } from '../../../core/utils/http-error';
 
 /**
  * Login page component.
@@ -180,8 +181,7 @@ export class Login {
     } else if (err.status >= 500 || err.status === 405) {
       this.serverError.set('Something went wrong on our end. Please try again later.');
     } else if (err.status > 0) {
-      // err.error contains the plain-text response body from our API
-      this.serverError.set(err.error || 'Login failed. Please try again.');
+      this.serverError.set(extractErrorMessage(err, 'Login failed. Please try again.'));
     } else {
       this.serverError.set('Unable to reach the server. Please check your connection.');
     }

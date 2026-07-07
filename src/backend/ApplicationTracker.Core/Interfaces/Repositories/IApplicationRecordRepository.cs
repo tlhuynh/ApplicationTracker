@@ -26,4 +26,19 @@ public interface IApplicationRecordRepository : IRepository<ApplicationRecord> {
 	/// Matches by CompanyName + PostingUrl when a URL is provided, or CompanyName + AppliedDate otherwise.
 	/// </summary>
 	Task<bool> ExistsAsync(string companyName, DateTime appliedDate, string? postingUrl, string userId);
+
+	/// <summary>
+	/// Returns the description of a single record, scoped to the specified user.
+	/// </summary>
+	/// <returns>
+	/// A tuple where <c>Found</c> is <c>false</c> if no record matched,
+	/// or <c>true</c> with the (possibly null) description if the record exists.
+	/// </returns>
+	Task<(bool Found, string? Description)> GetDescriptionAsync(int id, string userId);
+
+	/// <summary>
+	/// Updates only the description of an existing record, scoped to the specified user.
+	/// </summary>
+	/// <returns><c>true</c> if the record was found and updated; otherwise, <c>false</c>.</returns>
+	Task<bool> UpdateDescriptionAsync(int id, string? description, string userId);
 }

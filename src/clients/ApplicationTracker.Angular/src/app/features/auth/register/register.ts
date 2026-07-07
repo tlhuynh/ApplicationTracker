@@ -20,6 +20,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { AuthService } from '../../../core/services/auth.service';
 import { ErrorStateMatcher } from '@angular/material/core';
+import { extractErrorMessage } from '../../../core/utils/http-error';
 
 /**
  * Custom ErrorStateMatcher for the confirmPassword field.
@@ -203,7 +204,7 @@ export class Register {
     if (err.status >= 500 || err.status === 405) {
       this.serverError.set('Something went wrong on our end. Please try again later.');
     } else if (err.status > 0) {
-      this.serverError.set(err.error || 'Registration failed. Please try again.');
+      this.serverError.set(extractErrorMessage(err, 'Registration failed. Please try again.'));
     } else {
       this.serverError.set('Unable to reach the server. Please check your connection.');
     }

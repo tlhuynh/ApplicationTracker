@@ -10,7 +10,7 @@
   public static class ApplicationRecordMappingExtensions {
       /// <summary>
       /// Maps an <see cref="ApplicationRecord"/> entity to an <see cref="ApplicationRecordDto"/>.
-      /// Excludes internal fields like UserId, NeedsSync, and IsDeleted.
+      /// Excludes internal fields like UserId and IsDeleted.
       /// </summary>
       public static ApplicationRecordDto ToDto(this ApplicationRecord entity) {
           return new() {
@@ -20,6 +20,7 @@
               AppliedDate = entity.AppliedDate,
               PostingUrl = entity.PostingUrl,
               Notes = entity.Notes,
+              HasDescription = entity.HasDescription || entity.Description is not null,
               CreatedAt = entity.CreatedAt,
               LastModified = entity.LastModified
           };
@@ -36,6 +37,7 @@
               AppliedDate = request.AppliedDate,
               PostingUrl = request.PostingUrl,
               Notes = request.Notes,
+              Description = request.Description,
           };
       }
 

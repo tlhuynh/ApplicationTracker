@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations.Schema;
 using ApplicationTracker.Core.Entities.Base;
 using ApplicationTracker.Core.Enums;
 
@@ -31,4 +32,17 @@ public class ApplicationRecord : BaseEntity {
     /// Gets or sets additional notes about the application.
     /// </summary>
     public string? Notes { get; set; }
+
+    /// <summary>
+    /// Gets or sets the full description of the job posting.
+    /// Stored off-row and excluded from list queries — fetched only on demand.
+    /// </summary>
+    public string? Description { get; set; }
+
+    /// <summary>
+    /// Set by projections that exclude <see cref="Description"/> to carry the existence flag
+    /// without loading the text. <see cref="ToDto"/> checks both this and <see cref="Description"/>.
+    /// </summary>
+    [NotMapped]
+    public bool HasDescription { get; set; }
 }

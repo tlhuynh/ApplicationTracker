@@ -104,4 +104,14 @@ public class ApplicationRecordService(IApplicationRecordRepository repository) :
 		workbook.SaveAs(stream);
 		return stream.ToArray();
 	}
+
+	/// <inheritdoc />
+	public async Task<(bool Found, string? Description)> GetDescriptionAsync(int id, string userId) {
+		return await repository.GetDescriptionAsync(id, userId);
+	}
+
+	/// <inheritdoc />
+	public async Task<bool> UpdateDescriptionAsync(int id, string? description, string userId) {
+		return await repository.UpdateDescriptionAsync(id, description, userId);
+	}
 }

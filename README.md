@@ -6,7 +6,8 @@ A full-stack .NET project for tracking job applications, built as a learning pla
 
 ## Features
 
-- **Application tracking** — create, view, edit, and delete job applications with fields for company, role, status, applied date, posting URL, and notes
+- **Application tracking** — create, view, edit, and delete job applications with fields for company, status, applied date, posting URL, notes, and long-form description
+- **Description field** — dedicated per-record description for storing full job posting details; fetched on demand via a dedicated dialog to avoid impacting list query performance
 - **Status management** — advance or reject applications directly from the table; status follows a fixed progression (Applied → Interviewing → Offered → Rejected/Withdrawn)
 - **Server-side pagination, sorting, and filtering** — search by keyword, filter by status chips or date range, multi-column compound sort with status priority
 - **Excel import and export** — upload `.xlsx` files with per-row validation feedback; download all records as a formatted spreadsheet

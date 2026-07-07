@@ -4,6 +4,7 @@ using ApplicationTracker.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ApplicationTracker.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260702021523_AddDescriptionToApplicationRecord")]
+    partial class AddDescriptionToApplicationRecord
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -51,6 +54,9 @@ namespace ApplicationTracker.Infrastructure.Migrations
                     b.Property<DateTime>("LastModified")
                         .HasColumnType("datetime2");
 
+                    b.Property<bool>("NeedsSync")
+                        .HasColumnType("bit");
+
                     b.Property<string>("Notes")
                         .HasMaxLength(5000)
                         .HasColumnType("nvarchar(max)");
@@ -58,6 +64,9 @@ namespace ApplicationTracker.Infrastructure.Migrations
                     b.Property<string>("PostingUrl")
                         .HasMaxLength(2000)
                         .HasColumnType("nvarchar(2000)");
+
+                    b.Property<int?>("ServerId")
+                        .HasColumnType("int");
 
                     b.Property<int>("Status")
                         .HasColumnType("int");

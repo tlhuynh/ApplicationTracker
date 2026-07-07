@@ -22,12 +22,14 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { TextFieldModule } from '@angular/cdk/text-field';
 import { HttpErrorResponse } from '@angular/common/http';
 import {
   ApplicationRecordDto,
   CreateApplicationRecordRequest,
 } from '../../../core/api/api.types';
 import { ApplicationService } from '../../../core/services/application.service';
+import { extractErrorMessage } from '../../../core/utils/http-error';
 
 /** Rejects non-empty values that are not valid http/https URLs. */
 function urlValidator(control: AbstractControl): ValidationErrors | null {
@@ -86,6 +88,7 @@ export interface ApplicationDialogData {
     MatSelectModule,
     MatDatepickerModule,
     MatProgressSpinnerModule,
+    TextFieldModule,
   ],
 })
 export class ApplicationDialog implements OnInit {
@@ -117,7 +120,8 @@ export class ApplicationDialog implements OnInit {
     /** Datepicker uses a Date object; defaults to today for new records. */
     appliedDate: new FormControl<Date | null>(new Date()),
     postingUrl: new FormControl<string>('', { nonNullable: true, validators: [urlValidator] }),
-    notes: new FormControl<string>('', { nonNullable: true }),
+    notes: new FormControl<string>('', { nonNullable: true, validators: [Validators.maxLength(5000)] }),
+    description: new FormControl<string>('', { nonNullable: true, validators: [Validators.maxLength(20000)] }),
   });
 
   // ── Signals ───────────────────────────────────────────────────────────────
@@ -165,22 +169,30 @@ export class ApplicationDialog implements OnInit {
     return null;
   }
 
-  // ── Posting URL focus helpers ──────────────────────────────────────────────
-
-  /** Pre-fills 'https://' when the field is focused and empty. */
-  protected onPostingUrlFocus(): void {
-    const control = this.form.get('postingUrl');
-    if (!control?.value) {
-      control?.setValue('https://');
-    }
+  /** Returns the validation error for notes, or null if valid or untouched. */
+  protected getNotesError(): string | null {
+    const control = this.form.get('notes');
+    if (!control?.touched || !control.invalid) return null;
+    if (control.hasError('maxlength')) return 'Notes cannot exceed 5000 characters';
+    return null;
   }
 
-  /** Clears the field on blur if the user left it as just 'https://'. */
-  protected onPostingUrlBlur(): void {
-    const control = this.form.get('postingUrl');
-    if (control?.value === 'https://') {
-      control.setValue('');
-    }
+  /** Current character count for the notes field. */
+  protected get notesLength(): number {
+    return this.form.get('notes')?.value.length ?? 0;
+  }
+
+  /** Returns the validation error for description, or null if valid or untouched. */
+  protected getDescriptionError(): string | null {
+    const control = this.form.get('description');
+    if (!control?.touched || !control.invalid) return null;
+    if (control.hasError('maxlength')) return 'Description cannot exceed 20000 characters';
+    return null;
+  }
+
+  /** Current character count for the description field. */
+  protected get descriptionLength(): number {
+    return this.form.get('description')?.value.length ?? 0;
   }
 
   // ── Actions ───────────────────────────────────────────────────────────────
@@ -194,7 +206,7 @@ export class ApplicationDialog implements OnInit {
     this.isSubmitting.set(true);
     this._dialogRef.disableClose = true;
 
-    const { companyName, status, appliedDate, postingUrl, notes } = this.form.getRawValue();
+    const { companyName, status, appliedDate, postingUrl, notes, description } = this.form.getRawValue();
 
     /**
      * Convert the local Date to UTC midnight so the backend receives a consistent
@@ -211,6 +223,7 @@ export class ApplicationDialog implements OnInit {
         : null,
       postingUrl: postingUrl || null,
       notes: notes || null,
+      description: description || null,
     };
 
     const record = this.data.record;
@@ -245,7 +258,7 @@ export class ApplicationDialog implements OnInit {
     if (err.status >= 500 || err.status === 405) {
       this.serverError.set('Something went wrong on our end. Please try again later.');
     } else if (err.status > 0) {
-      this.serverError.set(err.error || 'Save failed. Please try again.');
+      this.serverError.set(extractErrorMessage(err, 'Save failed. Please try again.'));
     } else {
       this.serverError.set('Unable to reach the server. Please check your connection.');
     }

@@ -37,6 +37,12 @@ public class ApplicationRecordDto {
     public string? Notes { get; set; }
 
     /// <summary>
+    /// Gets or sets whether a long-form description exists for this record.
+    /// The description text is excluded from list queries and fetched separately on demand.
+    /// </summary>
+    public bool HasDescription { get; set; }
+
+    /// <summary>
     /// Gets or sets the date and time when the record was created.
     /// </summary>
     public DateTime CreatedAt { get; set; }

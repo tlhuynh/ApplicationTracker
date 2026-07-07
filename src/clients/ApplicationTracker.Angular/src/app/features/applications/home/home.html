@@ -270,6 +270,21 @@
           </td>
         </ng-container>
 
+        <!-- Description ─────────────────────────────────────────────────── -->
+        <ng-container matColumnDef="description">
+          <th mat-header-cell *matHeaderCellDef scope="col">Description</th>
+          <td mat-cell *matCellDef="let record">
+            <button
+              mat-icon-button
+              (click)="openDescriptionDialog(record)"
+              [matTooltip]="record.hasDescription ? 'View / edit description' : 'Add description'"
+              [attr.aria-label]="(record.hasDescription ? 'View description for ' : 'Add description for ') + record.companyName"
+            >
+              <mat-icon>{{ record.hasDescription ? 'description' : 'add_notes' }}</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+
         <!-- Actions ─────────────────────────────────────────────────────── -->
         <ng-container matColumnDef="actions">
           <th mat-header-cell *matHeaderCellDef scope="col">

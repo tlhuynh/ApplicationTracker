@@ -57,8 +57,6 @@
         autocomplete="url"
         placeholder="https://"
         aria-label="Job posting URL"
-        (focus)="onPostingUrlFocus()"
-        (blur)="onPostingUrlBlur()"
       />
       @if (getPostingUrlError(); as error) {
         <mat-error>{{ error }}</mat-error>
@@ -71,10 +69,35 @@
       <textarea
         matInput
         formControlName="notes"
-        rows="4"
+        cdkTextareaAutosize
+        cdkAutosizeMinRows="2"
+        cdkAutosizeMaxRows="8"
         aria-label="Notes"
       ></textarea>
+      <mat-hint align="end">{{ notesLength }} / 5000</mat-hint>
+      @if (getNotesError(); as error) {
+        <mat-error>{{ error }}</mat-error>
+      }
     </mat-form-field>
+
+    <!-- Description — only shown on create; existing records use the dedicated dialog -->
+    @if (!isEditing) {
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Description</mat-label>
+        <textarea
+          matInput
+          formControlName="description"
+          cdkTextareaAutosize
+          cdkAutosizeMinRows="3"
+          cdkAutosizeMaxRows="12"
+          aria-label="Description"
+        ></textarea>
+        <mat-hint align="end">{{ descriptionLength }} / 20000</mat-hint>
+        @if (getDescriptionError(); as error) {
+          <mat-error>{{ error }}</mat-error>
+        }
+      </mat-form-field>
+    }
 
   </form>
 </mat-dialog-content>
