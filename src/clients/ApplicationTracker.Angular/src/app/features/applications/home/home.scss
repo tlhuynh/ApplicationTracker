@@ -75,17 +75,70 @@
   }
 }
 
-// ── Filter bar ────────────────────────────────────────────────────────────────
+// ── Filter toggle row ─────────────────────────────────────────────────────────
 
-.filter-bar {
+.filter-toggle-row {
   display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding: 10px 16px;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 12px;
   border-bottom: 1px solid var(--mat-sys-outline-variant);
 }
 
-.filter-row-top {
+.toggle-divider {
+  width: 1px;
+  height: 20px;
+  flex-shrink: 0;
+  background: var(--mat-sys-outline-variant);
+}
+
+.filter-toggle-btn {
+  --mdc-outlined-button-container-height: 28px;
+  --mat-icon-size: 16px;
+  font-size: var(--fs-label);
+  gap: 2px;
+
+  .chevron-icon {
+    margin-left: 2px;
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+
+  &.filters-active {
+    border-color: var(--mat-sys-primary);
+    color: var(--mat-sys-primary);
+  }
+}
+
+.filter-count-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 9px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+  background-color: var(--mat-sys-primary);
+  color: var(--mat-sys-on-primary);
+  margin-left: 2px;
+}
+
+// ── Filter bar ────────────────────────────────────────────────────────────────
+
+.filter-bar-outer {
+  // Animated height container — no padding so height:0 collapses completely
+}
+
+.filter-bar {
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--mat-sys-outline-variant);
+}
+
+.filter-row {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -93,15 +146,14 @@
 }
 
 .search-field {
-  width: 220px;
-  flex-shrink: 0;
+  flex: 1;
+  max-width: 320px;
   font-size: var(--fs-label);
+  --mat-icon-size: 18px; // prefix search icon and suffix clear icon
 
-  // Scale down the suffix clear button to fit the reduced container
   button[mat-icon-button] {
     --mdc-icon-button-state-layer-size: 28px;
     --mat-icon-button-state-layer-size: 28px;
-    --mat-icon-size: 18px;
     margin-right: 4px;
   }
 }
@@ -229,7 +281,7 @@ mat-paginator {
 }
 
 @media (max-width: 480px) {
-  .mat-column-statusActions {
+  .mat-column-status {
     display: none;
   }
 }
