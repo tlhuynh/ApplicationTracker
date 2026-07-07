@@ -216,7 +216,8 @@ mat-paginator {
 @media (max-width: 768px) {
   .mat-column-appliedDate,
   .mat-column-postingUrl,
-  .mat-column-notes {
+  .mat-column-notes,
+  .mat-column-description {
     display: none;
   }
 }
