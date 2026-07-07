@@ -21,6 +21,7 @@ import { extractErrorMessage } from '../../../core/utils/http-error';
 export interface DescriptionDialogData {
   recordId: number;
   companyName: string;
+  readOnly?: boolean;
 }
 
 /**

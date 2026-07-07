@@ -182,6 +182,12 @@
 .table-wrapper {
   overflow-x: auto;
 
+  // On phone-width screens (≤430px = widest common phone portrait), remove the
+  // scroll container so vertical touch events pass through to the parent.
+  @media (max-width: 430px) {
+    overflow-x: clip;
+  }
+
   // Reduce default row heights by ~10% (header 56→50px, data 52→47px)
   --mat-table-header-row-container-height: 50px;
   --mat-table-row-item-container-height: 47px;

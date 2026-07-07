@@ -68,7 +68,7 @@
     </button>
   } @else {
     <button mat-button mat-dialog-close aria-label="Close">Close</button>
-    @if (!isLoading() && !loadError()) {
+    @if (!isLoading() && !loadError() && !data.readOnly) {
       <button
         mat-raised-button
         color="primary"

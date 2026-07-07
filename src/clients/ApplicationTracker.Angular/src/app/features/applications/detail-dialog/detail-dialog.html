@@ -16,7 +16,7 @@
     <dt>Posting URL</dt>
     <dd>
       @if (data.record.postingUrl) {
-        <a [href]="data.record.postingUrl" target="_blank" rel="noopener noreferrer">
+        <a class="url-link" [href]="data.record.postingUrl" target="_blank" rel="noopener noreferrer">
           {{ data.record.postingUrl }}
         </a>
       } @else {
@@ -37,5 +37,15 @@
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">
+  @if (data.record.hasDescription) {
+    <button
+      mat-button
+      (click)="openDescriptionDialog()"
+      aria-label="View description"
+    >
+      <mat-icon>description</mat-icon>
+      View Description
+    </button>
+  }
   <button mat-button mat-dialog-close aria-label="Close">Close</button>
 </mat-dialog-actions>

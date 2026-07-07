@@ -1,8 +1,10 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { DatePipe } from '@angular/common';
-import { MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
 import { ApplicationRecordDto } from '../../../core/api/api.types';
+import { DescriptionDialog, DescriptionDialogData } from '../description-dialog/description-dialog';
 
 export interface DetailDialogData {
   record: ApplicationRecordDto;
@@ -13,10 +15,11 @@ export interface DetailDialogData {
   templateUrl: './detail-dialog.html',
   styleUrl: './detail-dialog.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [DatePipe, MatDialogModule, MatButtonModule],
+  imports: [DatePipe, MatDialogModule, MatButtonModule, MatIconModule],
 })
 export class DetailDialog {
   protected readonly data = inject<DetailDialogData>(MAT_DIALOG_DATA);
+  private readonly _dialog = inject(MatDialog);
 
   private readonly _statusLabels: Record<number, string> = {
     0: 'Applied',
@@ -33,6 +36,19 @@ export class DetailDialog {
     3: 'status-rejected',
     4: 'status-withdrawn',
   };
+
+  protected openDescriptionDialog(): void {
+    this._dialog.open(DescriptionDialog, {
+      data: {
+        recordId: this.data.record.id as number,
+        companyName: this.data.record.companyName!,
+        readOnly: true,
+      } satisfies DescriptionDialogData,
+      width: '600px',
+      maxWidth: '95vw',
+      disableClose: true,
+    });
+  }
 
   protected getStatusLabel(status: number | undefined): string {
     return this._statusLabels[status ?? 0] ?? 'Unknown';
