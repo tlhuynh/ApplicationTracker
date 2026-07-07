@@ -83,8 +83,6 @@ public class ApplicationRecordRepository(ApplicationDbContext context) : Reposit
 				PostingUrl = r.PostingUrl,
 				Notes = r.Notes,
 				UserId = r.UserId,
-				ServerId = r.ServerId,
-				NeedsSync = r.NeedsSync,
 				IsDeleted = r.IsDeleted,
 				CreatedAt = r.CreatedAt,
 				LastModified = r.LastModified,

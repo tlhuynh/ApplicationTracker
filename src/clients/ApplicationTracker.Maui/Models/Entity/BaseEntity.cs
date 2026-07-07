@@ -4,7 +4,7 @@ namespace ApplicationTracker.Models.Entity;
 
 /// <summary>
 /// Base class for all database entities.
-/// Provides common properties for tracking, synchronization, and multi-tenant support.
+/// Provides common properties for tracking and multi-tenant support.
 /// Optimized for SQLite-NET in MAUI application.
 /// Server will have its own entity definitions with EF Core annotations.
 /// </summary>
@@ -37,20 +37,6 @@ public abstract class BaseEntity {
 	/// </summary>
 	[MaxLength(450)]
 	public string? UserId { get; set; }
-
-	/// <summary>
-	/// Gets or sets the server-side identifier after synchronization.
-	/// Null if the record has not been synced to the remote server yet.
-	/// Used to map local records to their corresponding server records.
-	/// </summary>
-	public int? ServerId { get; set; }
-
-	/// <summary>
-	/// Gets or sets whether this record needs to be synchronized to the server.
-	/// Automatically set to true when the record is created or modified.
-	/// Set to false after successful synchronization.
-	/// </summary>
-	public bool NeedsSync { get; set; } = true;
 
 	/// <summary>
 	/// Gets or sets whether this record has been soft-deleted.

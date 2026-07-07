@@ -10,7 +10,7 @@
   public static class ApplicationRecordMappingExtensions {
       /// <summary>
       /// Maps an <see cref="ApplicationRecord"/> entity to an <see cref="ApplicationRecordDto"/>.
-      /// Excludes internal fields like UserId, NeedsSync, and IsDeleted.
+      /// Excludes internal fields like UserId and IsDeleted.
       /// </summary>
       public static ApplicationRecordDto ToDto(this ApplicationRecord entity) {
           return new() {

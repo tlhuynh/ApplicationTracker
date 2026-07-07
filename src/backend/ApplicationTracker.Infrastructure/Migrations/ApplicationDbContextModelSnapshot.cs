@@ -74,7 +74,7 @@ namespace ApplicationTracker.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("ApplicationRecords");
+                    b.ToTable("ApplicationRecords", (string)null);
                 });
 
             modelBuilder.Entity("ApplicationTracker.Core.Entities.RefreshToken", b =>
@@ -116,7 +116,7 @@ namespace ApplicationTracker.Infrastructure.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("RefreshTokens");
+                    b.ToTable("RefreshTokens", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>

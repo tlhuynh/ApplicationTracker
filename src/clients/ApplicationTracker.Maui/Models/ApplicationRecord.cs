@@ -46,8 +46,6 @@ public class ApplicationRecord : BaseEntity {
         CreatedAt = CreatedAt,
         LastModified = LastModified,
         UserId = UserId,
-        ServerId = ServerId,
-        NeedsSync = NeedsSync,
         IsDeleted = IsDeleted,
         CompanyName = CompanyName,
         Status = Status,
