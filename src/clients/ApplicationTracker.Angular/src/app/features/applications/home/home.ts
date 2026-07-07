@@ -8,6 +8,7 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
+import { trigger, state, style, animate, transition } from '@angular/animations';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DatePipe } from '@angular/common';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
@@ -25,6 +26,7 @@ import { provideNativeDateAdapter } from '@angular/material/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSortModule, Sort } from '@angular/material/sort';
 import { MatPaginatorModule, MatPaginator, PageEvent } from '@angular/material/paginator';
+import { MatBadgeModule } from '@angular/material/badge';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { ApplicationService } from '../../../core/services/application.service';
 import {
@@ -95,6 +97,14 @@ const STATUS_OPTIONS = [
     MatDatepickerModule,
     MatSortModule,
     MatPaginatorModule,
+    MatBadgeModule,
+  ],
+  animations: [
+    trigger('filterExpand', [
+      state('collapsed', style({ height: '0px', overflow: 'hidden', opacity: 0 })),
+      state('expanded', style({ height: '*', overflow: 'hidden', opacity: 1 })),
+      transition('collapsed <=> expanded', animate('200ms ease-in-out')),
+    ]),
   ],
 })
 export class Home implements OnInit {
@@ -124,6 +134,18 @@ export class Home implements OnInit {
   protected readonly _activeStatuses = signal<number[]>([]);
   protected readonly _dateFrom = signal<Date | null>(null);
   protected readonly _dateTo = signal<Date | null>(null);
+
+  /** Controls filter bar visibility. */
+  protected readonly isFilterExpanded = signal(false);
+
+  /** Number of currently active filters — drives the toggle badge. */
+  protected readonly activeFilterCount = computed(
+    () =>
+      (this._search().length > 0 ? 1 : 0) +
+      this._activeStatuses().length +
+      (this._dateFrom() !== null ? 1 : 0) +
+      (this._dateTo() !== null ? 1 : 0),
+  );
 
   /** True when any filter is active — controls the Clear button and empty-state message. */
   protected readonly hasActiveFilters = computed(
@@ -240,6 +262,10 @@ export class Home implements OnInit {
   }
 
   // ── Filter actions ────────────────────────────────────────────────────────
+
+  protected toggleFilters(): void {
+    this.isFilterExpanded.update((v) => !v);
+  }
 
   protected onStatusChipChange(event: MatChipListboxChange): void {
     this._activeStatuses.set((event.value as number[]) ?? []);

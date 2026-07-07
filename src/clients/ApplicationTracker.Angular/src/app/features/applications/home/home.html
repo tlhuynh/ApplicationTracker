@@ -26,31 +26,53 @@
     </div>
   </div>
 
+  <!-- Filter toggle row ──────────────────────────────────────────────────── -->
+  <div class="filter-toggle-row" role="search" aria-label="Search and filter applications">
+    <button
+      mat-stroked-button
+      class="filter-toggle-btn"
+      [class.filters-active]="activeFilterCount() > 0"
+      (click)="toggleFilters()"
+      [attr.aria-expanded]="isFilterExpanded()"
+      aria-controls="filter-bar-content"
+    >
+      <mat-icon>tune</mat-icon>
+      Filters
+      @if (activeFilterCount() > 0) {
+        <span class="filter-count-badge">{{ activeFilterCount() }}</span>
+      }
+      <mat-icon class="chevron-icon">{{ isFilterExpanded() ? 'expand_less' : 'expand_more' }}</mat-icon>
+    </button>
+
+    <span class="toggle-divider" aria-hidden="true"></span>
+
+    <mat-form-field appearance="outline" subscriptSizing="dynamic" class="search-field">
+      <mat-icon matPrefix>search</mat-icon>
+      <input
+        matInput
+        placeholder="Search..."
+        [formControl]="searchControl"
+        aria-label="Search by company name"
+      />
+      @if (searchControl.value) {
+        <button
+          matSuffix
+          mat-icon-button
+          aria-label="Clear search"
+          (click)="clearSearch()"
+        >
+          <mat-icon>close</mat-icon>
+        </button>
+      }
+    </mat-form-field>
+  </div>
+
   <!-- Filter bar ─────────────────────────────────────────────────────────── -->
-  <div class="filter-bar" role="search" aria-label="Filter applications">
+  <div [@filterExpand]="isFilterExpanded() ? 'expanded' : 'collapsed'" class="filter-bar-outer">
+  <div id="filter-bar-content" class="filter-bar" aria-label="Additional filters">
 
-    <!-- Row 1: text search + date range + clear -->
-    <div class="filter-row-top">
-      <mat-form-field appearance="outline" subscriptSizing="dynamic" class="search-field">
-        <mat-icon matPrefix>search</mat-icon>
-        <input
-          matInput
-          placeholder="Search companies..."
-          [formControl]="searchControl"
-          aria-label="Search by company name"
-        />
-        @if (searchControl.value) {
-          <button
-            matSuffix
-            mat-icon-button
-            aria-label="Clear search"
-            (click)="clearSearch()"
-          >
-            <mat-icon>close</mat-icon>
-          </button>
-        }
-      </mat-form-field>
-
+    <!-- Dates + status chips + clear on one row -->
+    <div class="filter-row">
       <mat-form-field appearance="outline" subscriptSizing="dynamic" class="date-field">
         <mat-label>From</mat-label>
         <input matInput [matDatepicker]="fromPicker" [formControl]="dateFromControl" />
@@ -65,6 +87,18 @@
         <mat-datepicker #toPicker />
       </mat-form-field>
 
+      <mat-chip-listbox
+        multiple
+        [value]="_activeStatuses()"
+        (change)="onStatusChipChange($event)"
+        aria-label="Filter by status"
+        class="status-chips"
+      >
+        @for (option of statusOptions; track option.value) {
+          <mat-chip-option [value]="option.value">{{ option.label }}</mat-chip-option>
+        }
+      </mat-chip-listbox>
+
       @if (hasActiveFilters()) {
         <button
           mat-icon-button
@@ -77,19 +111,7 @@
       }
     </div>
 
-    <!-- Row 2: status chips -->
-    <mat-chip-listbox
-      multiple
-      [value]="_activeStatuses()"
-      (change)="onStatusChipChange($event)"
-      aria-label="Filter by status"
-      class="status-chips"
-    >
-      @for (option of statusOptions; track option.value) {
-        <mat-chip-option [value]="option.value">{{ option.label }}</mat-chip-option>
-      }
-    </mat-chip-listbox>
-
+  </div>
   </div>
 
   <!-- Loading ────────────────────────────────────────────────────────────── -->
@@ -124,6 +146,7 @@
     } @else {
       <!-- Table -->
       <div class="table-wrapper">
+      <div class="table-scroll-inner">
       <table
         mat-table
         [dataSource]="records()"
@@ -336,6 +359,7 @@
         (page)="onPageChange($event)"
         aria-label="Select page"
       />
+      </div>
     </div>
   }
 }

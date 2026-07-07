@@ -14,7 +14,7 @@ A full-stack .NET project for tracking job applications, built as a learning pla
 - **Full authentication flow** — registration with email confirmation, JWT access tokens (15 min) + refresh tokens (7 days) with rotation, forgot/reset password, per-user data isolation
 - **Security hardening** — email enumeration prevention (consistent 200 responses for all registration cases), IP-based rate limiting (10 req / 15 min), per-email send cap (3 emails / hour), refresh token revocation on password reset
 - **Light/dark theme toggle**
-- **Responsive shell layout** — collapsible sidebar navigation
+- **Responsive layout** — collapsible sidebar navigation; responsive table with adaptive column visibility across breakpoints (desktop, tablet, mobile); horizontal scroll on narrow desktop windows; collapsible filter bar with active filter count badge; search always visible in the filter toggle row
 
 ## Technologies
 

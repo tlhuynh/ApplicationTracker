@@ -3,7 +3,7 @@
   border-radius: 6px !important;
   border: 2px solid var(--mat-sys-primary-container) !important;
   padding: 0;
-  overflow: hidden;
+  overflow: clip; // clip preserves border-radius clipping without blocking inner scroll containers
 }
 
 .section-header {
@@ -75,17 +75,70 @@
   }
 }
 
-// ── Filter bar ────────────────────────────────────────────────────────────────
+// ── Filter toggle row ─────────────────────────────────────────────────────────
 
-.filter-bar {
+.filter-toggle-row {
   display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding: 10px 16px;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 12px;
   border-bottom: 1px solid var(--mat-sys-outline-variant);
 }
 
-.filter-row-top {
+.toggle-divider {
+  width: 1px;
+  height: 20px;
+  flex-shrink: 0;
+  background: var(--mat-sys-outline-variant);
+}
+
+.filter-toggle-btn {
+  --mdc-outlined-button-container-height: 28px;
+  --mat-icon-size: 16px;
+  font-size: var(--fs-label);
+  gap: 2px;
+
+  .chevron-icon {
+    margin-left: 2px;
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+
+  &.filters-active {
+    border-color: var(--mat-sys-primary);
+    color: var(--mat-sys-primary);
+  }
+}
+
+.filter-count-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 9px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+  background-color: var(--mat-sys-primary);
+  color: var(--mat-sys-on-primary);
+  margin-left: 2px;
+}
+
+// ── Filter bar ────────────────────────────────────────────────────────────────
+
+.filter-bar-outer {
+  // Animated height container — no padding so height:0 collapses completely
+}
+
+.filter-bar {
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--mat-sys-outline-variant);
+}
+
+.filter-row {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -93,15 +146,14 @@
 }
 
 .search-field {
-  width: 220px;
-  flex-shrink: 0;
+  flex: 1;
+  max-width: 320px;
   font-size: var(--fs-label);
+  --mat-icon-size: 18px; // prefix search icon and suffix clear icon
 
-  // Scale down the suffix clear button to fit the reduced container
   button[mat-icon-button] {
     --mdc-icon-button-state-layer-size: 28px;
     --mat-icon-button-state-layer-size: 28px;
-    --mat-icon-size: 18px;
     margin-right: 4px;
   }
 }
@@ -128,6 +180,14 @@
 // ── Table ─────────────────────────────────────────────────────────────────────
 
 .table-wrapper {
+  overflow-x: auto;
+
+  // On phone-width screens (≤430px = widest common phone portrait), remove the
+  // scroll container so vertical touch events pass through to the parent.
+  @media (max-width: 430px) {
+    overflow-x: clip;
+  }
+
   // Reduce default row heights by ~10% (header 56→50px, data 52→47px)
   --mat-table-header-row-container-height: 50px;
   --mat-table-row-item-container-height: 47px;
@@ -135,6 +195,12 @@
   // Blue-tinted hover (bumped from default 0.08 so it reads clearly)
   --mat-table-row-item-hover-state-layer-color: var(--mat-sys-primary);
   --mat-table-row-item-hover-state-layer-opacity: 0.1;
+}
+
+.table-scroll-inner {
+  min-width: fit-content; // sizes to table width so paginator stretches to match
+  display: flex;
+  flex-direction: column;
 }
 
 // Reduce row height in the actions column
@@ -214,13 +280,14 @@ mat-paginator {
 @media (max-width: 768px) {
   .mat-column-appliedDate,
   .mat-column-postingUrl,
-  .mat-column-notes {
+  .mat-column-notes,
+  .mat-column-description {
     display: none;
   }
 }
 
 @media (max-width: 480px) {
-  .mat-column-statusActions {
+  .mat-column-status {
     display: none;
   }
 }

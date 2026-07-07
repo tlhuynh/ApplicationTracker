@@ -6,7 +6,7 @@ paths:
 ## Key Patterns
 
 - **Auth**: `auth.service.ts` manages token state (login/register/logout/refresh). `auth.interceptor.ts` attaches Bearer token to every request and handles 401 → silent token refresh → retry original request transparently. Route guards: `auth.guard.ts` redirects unauthenticated users to /login; `guest.guard.ts` redirects already-authenticated users to /home. Login 403 (unconfirmed email): shows inline "Resend confirmation email" button, calls `POST /api/auth/resend-confirmation`, displays feedback in place
-- **Dialog pattern**: all modals use `MatDialog` with dedicated standalone components — `application-dialog` (add/edit), `detail-dialog` (read-only), `note-dialog` (notes viewer), `confirm-dialog` (generic confirmation). Follow this pattern for any new dialogs; do not use inline modals
+- **Dialog pattern**: all modals use `MatDialog` with dedicated standalone components — `application-dialog` (add/edit), `detail-dialog` (read-only detail; opens `description-dialog` in read-only mode when `hasDescription` is true), `note-dialog` (notes viewer), `description-dialog` (job posting description viewer/editor; accepts `readOnly?: boolean` in dialog data to hide the Edit button), `confirm-dialog` (generic confirmation). Follow this pattern for any new dialogs; do not use inline modals
 - **Demo mode**: not yet implemented — planned for future development; backend `/parse` endpoint already supports it
 - **Production API URL**: `environment.prod.ts` holds `apiUrl`; CI/CD (`deploy-angular.yml`) injects `API_URL` via `sed` before build — never hardcode the URL in source
 - **Error handling**: components implement a private `handleError(err: HttpErrorResponse)` method — `5xx/405` → `'Something went wrong on our end. Please try again later.'`; `status > 0` (other 4xx) → `err.error` API message passthrough; `status === 0` → `'Unable to reach the server. Please check your connection.'`. Errors shown via a `serverError` signal rendered inline (not toast). Data-load errors (e.g. home page) use a simpler static `loadError` message without status branching. Silent action errors (delete, status patch, export) just reset the loading state with no message. 401 is handled centrally in `auth.interceptor.ts` — components never handle 401 themselves.
@@ -20,7 +20,7 @@ Located in `src/clients/ApplicationTracker.Angular/`:
   - `api/` — generated OpenAPI types (`api.d.ts`) and mapped TypeScript types (`api.types.ts`)
   - `guards/` — `auth.guard.ts`, `guest.guard.ts`
   - `interceptors/` — `auth.interceptor.ts`
-  - `services/` — `auth.service.ts`, `application.service.ts` (getAll with filtering/pagination/sort, CRUD, patchStatus, importRecords), `theme.service.ts` (light/dark toggle)
+  - `services/` — `auth.service.ts`, `application.service.ts` (getAll with filtering/pagination/sort, CRUD, patchStatus, patchDescription, getDescription, importRecords), `theme.service.ts` (light/dark toggle)
 - `src/app/features/` — lazy-loaded feature areas
   - `auth/login/` — login form (Reactive Forms, Angular Material)
   - `auth/register/` — registration form
@@ -33,6 +33,7 @@ Located in `src/clients/ApplicationTracker.Angular/`:
   - `applications/application-dialog/` — add/edit
   - `applications/detail-dialog/` — read-only detail
   - `applications/note-dialog/` — notes viewer
+  - `applications/description-dialog/` — job posting description viewer/editor (supports `readOnly` flag via dialog data)
 - `src/app/shared/` — shared components used across features
   - `confirm-dialog/` — generic confirmation
   - `not-found/` — 404 page
@@ -62,6 +63,7 @@ Located in `src/clients/ApplicationTracker.Angular/`:
 
 ## Testing
 
+- **Run command**: `ng test --watch=false` — never `npx vitest run` directly (bypasses the Angular builder; causes `@angular/compiler` not to load and Vitest globals to be missing)
 - **Component Testing**: `@testing-library/angular` — `render`, `screen`, `userEvent`
 - **Mocking**: `vi.fn()` for service methods; provide mock via `{ provide: ServiceClass, useValue: mock }`
 - **Required providers**: always include `provideNoopAnimations()` for any Material component; add `provideRouter([])` when component uses router; add `provideHttpClient()` + `provideHttpClientTesting()` when the service under test injects `HttpClient` even if mocked

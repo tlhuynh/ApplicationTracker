@@ -95,7 +95,7 @@ Located in `src/clients/ApplicationTracker.Maui/`:
 
 ### Entity Design
 
-`BaseEntity` provides common fields: `Id`, `CreatedAt`, `LastModified`, `UserId`, `ServerId`, `NeedsSync`, `IsDeleted`. `ServerId` and `NeedsSync` are currently unused — reserved for a future MAUI offline-sync feature; do not write logic around them until that feature is scoped.
+`BaseEntity` provides common fields: `Id`, `CreatedAt`, `LastModified`, `UserId`, `IsDeleted`.
 
 `RefreshToken` is a standalone entity (not extending `BaseEntity`) for auth infrastructure — stores SHA-256 token hash, user ID, security stamp, expiration, revocation flag, and `CreatedAt` (defaulted to `DateTime.UtcNow` via property initializer; never set explicitly in object initializers).
 
@@ -152,7 +152,7 @@ dotnet test tests/ApplicationTracker.Api.Tests
 
 ### Frontend (Shared)
 
-- **Test Runner**: Vitest — used by both Angular and React clients
+- **Test Runner**: Vitest — used by both Angular and React clients. For Angular, always run via `ng test --watch=false` (not `npx vitest run` directly — the Angular builder must load `@angular/compiler` and configure globals first)
 - **Pattern**: AAA (Arrange, Act, Assert)
 - **Test both paths** — every feature test should cover the success path and at least one failure path (API error, validation rejection, empty/null response); a suite that only covers the happy path is incomplete
 - **E2E**: Playwright — future, not yet implemented

@@ -76,14 +76,15 @@ body {
   }
 }
 
-// ── Compact form fields in the home filter bar ────────────────────────────────
+// ── Compact form fields in the home filter bar and filter toggle row ──────────
 //
 // Angular Material M3 hardcodes `height: 56px` on `.mdc-text-field--outlined`
 // and only drives the floating-label transform via --mat-form-field-container-height.
 // Setting the variable alone moves the label math without shrinking the box,
 // so the override must target the MDC class directly in global styles.
 
-.filter-bar {
+.filter-bar,
+.filter-toggle-row {
   $compact-height: 36px;
 
   .mdc-text-field--outlined {
