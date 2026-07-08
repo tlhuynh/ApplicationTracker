@@ -13,7 +13,16 @@ export interface paths {
         };
         get: {
             parameters: {
-                query?: never;
+                query?: {
+                    page?: number | string;
+                    pageSize?: number | string;
+                    sortBy?: string;
+                    sortDir?: string;
+                    search?: string;
+                    statuses?: (number | string)[];
+                    dateFrom?: string;
+                    dateTo?: string;
+                };
                 header?: never;
                 path?: never;
                 cookie?: never;
@@ -26,9 +35,9 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": components["schemas"]["ApplicationRecordDto"][];
-                        "application/json": components["schemas"]["ApplicationRecordDto"][];
-                        "text/json": components["schemas"]["ApplicationRecordDto"][];
+                        "text/plain": components["schemas"]["PagedResultDtoOfApplicationRecordDto"];
+                        "application/json": components["schemas"]["PagedResultDtoOfApplicationRecordDto"];
+                        "text/json": components["schemas"]["PagedResultDtoOfApplicationRecordDto"];
                     };
                 };
             };
@@ -62,6 +71,39 @@ export interface paths {
                 };
             };
         };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/ApplicationRecords/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -194,6 +236,74 @@ export interface paths {
                         "text/plain": components["schemas"]["ApplicationRecordDto"];
                         "application/json": components["schemas"]["ApplicationRecordDto"];
                         "text/json": components["schemas"]["ApplicationRecordDto"];
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/ApplicationRecords/{id}/description": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["DescriptionDto"];
+                        "application/json": components["schemas"]["DescriptionDto"];
+                        "text/json": components["schemas"]["DescriptionDto"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["PatchDescriptionRequest"];
+                    "text/json": components["schemas"]["PatchDescriptionRequest"];
+                    "application/*+json": components["schemas"]["PatchDescriptionRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["DescriptionDto"];
+                        "application/json": components["schemas"]["DescriptionDto"];
+                        "text/json": components["schemas"]["DescriptionDto"];
                     };
                 };
             };
@@ -606,6 +716,140 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/applicationrecords/{applicationRecordId}/interviews": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    applicationRecordId: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["InterviewDto"][];
+                        "application/json": components["schemas"]["InterviewDto"][];
+                        "text/json": components["schemas"]["InterviewDto"][];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    applicationRecordId: number;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CreateInterviewRequest"];
+                    "text/json": components["schemas"]["CreateInterviewRequest"];
+                    "application/*+json": components["schemas"]["CreateInterviewRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["InterviewDto"];
+                        "application/json": components["schemas"]["InterviewDto"];
+                        "text/json": components["schemas"]["InterviewDto"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/applicationrecords/{applicationRecordId}/interviews/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    applicationRecordId: number;
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["UpdateInterviewRequest"];
+                    "text/json": components["schemas"]["UpdateInterviewRequest"];
+                    "application/*+json": components["schemas"]["UpdateInterviewRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["InterviewDto"];
+                        "application/json": components["schemas"]["InterviewDto"];
+                        "text/json": components["schemas"]["InterviewDto"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    applicationRecordId: number;
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -619,6 +863,7 @@ export interface components {
             appliedDate?: null | string;
             postingUrl?: null | string;
             notes?: null | string;
+            hasDescription?: boolean;
             /** Format: date-time */
             createdAt?: string;
             /** Format: date-time */
@@ -642,6 +887,19 @@ export interface components {
             appliedDate?: null | string;
             postingUrl?: null | string;
             notes?: null | string;
+            description?: null | string;
+        };
+        CreateInterviewRequest: {
+            type: components["schemas"]["InterviewType"];
+            /** Format: int32 */
+            roundNumber?: null | number | string;
+            /** Format: date-time */
+            date: null | string;
+            outcome?: null | components["schemas"]["InterviewOutcome"];
+            notes?: null | string;
+        };
+        DescriptionDto: {
+            description?: null | string;
         };
         ExcelImportErrorDto: {
             /** Format: int32 */
@@ -663,10 +921,40 @@ export interface components {
         };
         /** Format: binary */
         IFormFile: string;
+        InterviewDto: {
+            /** Format: int32 */
+            id?: number | string;
+            /** Format: int32 */
+            applicationRecordId?: number | string;
+            type?: components["schemas"]["InterviewType"];
+            /** Format: int32 */
+            roundNumber?: null | number | string;
+            /** Format: date-time */
+            date?: string;
+            outcome?: null | components["schemas"]["InterviewOutcome"];
+            notes?: null | string;
+            /** Format: date-time */
+            createdAt?: string;
+            /** Format: date-time */
+            lastModified?: string;
+        };
+        InterviewOutcome: number;
+        InterviewType: number;
         LoginRequest: {
             email: string;
             password: string;
             rememberMe?: boolean;
+        };
+        PagedResultDtoOfApplicationRecordDto: {
+            items?: components["schemas"]["ApplicationRecordDto"][];
+            /** Format: int32 */
+            totalCount?: number | string;
+            /** Format: int32 */
+            page?: number | string;
+            /** Format: int32 */
+            pageSize?: number | string;
+            /** Format: int32 */
+            totalPages?: number | string;
         };
         ParseExcelResultDto: {
             /** Format: int32 */
@@ -677,6 +965,9 @@ export interface components {
             failedCount?: number | string;
             parsedRecords?: components["schemas"]["CreateApplicationRecordRequest"][];
             errors?: components["schemas"]["ExcelImportErrorDto"][];
+        };
+        PatchDescriptionRequest: {
+            description?: null | string;
         };
         PatchStatusRequest: {
             status: components["schemas"]["ApplicationStatus"];
@@ -699,6 +990,15 @@ export interface components {
             /** Format: date-time */
             appliedDate?: null | string;
             postingUrl?: null | string;
+            notes?: null | string;
+        };
+        UpdateInterviewRequest: {
+            type: components["schemas"]["InterviewType"];
+            /** Format: int32 */
+            roundNumber?: null | number | string;
+            /** Format: date-time */
+            date: null | string;
+            outcome?: null | components["schemas"]["InterviewOutcome"];
             notes?: null | string;
         };
     };
