@@ -1,4 +1,4 @@
-# Application Tracker
+# Job Application Tracker
 
 A full-stack .NET project for tracking job applications, built as a learning playground to explore modern technologies.
 
