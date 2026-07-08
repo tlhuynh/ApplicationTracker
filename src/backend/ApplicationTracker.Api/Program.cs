@@ -93,6 +93,7 @@ builder.Services.AddAuthorization();
 
 // Register DI for services
 builder.Services.AddScoped<IApplicationRecordService, ApplicationRecordService>();
+builder.Services.AddScoped<IInterviewService, InterviewService>();
 builder.Services.AddScoped<IExcelImportService, ExcelImportService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 bool useRealEmail = builder.Configuration.GetValue<bool>("App:UseRealEmail");

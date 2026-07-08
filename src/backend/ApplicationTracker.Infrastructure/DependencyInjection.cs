@@ -18,6 +18,7 @@ public static class DependencyInjection {
 
 		// Register DI for repositories
 		services.AddScoped<IApplicationRecordRepository, ApplicationRecordRepository>();
+		services.AddScoped<IInterviewRepository, InterviewRepository>();
 
 		return services;
 	}
