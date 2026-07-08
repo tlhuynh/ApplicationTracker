@@ -1,0 +1,71 @@
+<h2 mat-dialog-title>Interview History — {{ data.companyName }}</h2>
+
+<mat-dialog-content>
+
+  @if (isLoading()) {
+    <div class="loading-container" aria-live="polite">
+      <mat-spinner diameter="36" />
+    </div>
+  } @else if (loadError()) {
+    <p class="load-error" role="alert">{{ loadError() }}</p>
+  } @else if (interviews().length === 0) {
+    <div class="empty-state">
+      <p>No interviews logged yet.</p>
+    </div>
+  } @else {
+    <ul class="interview-list" aria-label="Interview history">
+      @for (interview of interviews(); track interview.id) {
+        <li class="interview-item">
+          <div class="interview-main">
+            <span class="interview-label">
+              @if (interview.roundNumber !== null && interview.roundNumber !== undefined) {
+                <span class="round-badge">R{{ interview.roundNumber }}</span>
+              }
+              {{ getTypeLabel(interview.type) }}
+            </span>
+            <span class="interview-date">{{ interview.date | date : 'mediumDate' : 'UTC' }}</span>
+            <span [class]="'outcome-badge ' + getOutcomeClass(interview.outcome)">
+              {{ getOutcomeLabel(interview.outcome) }}
+            </span>
+          </div>
+          @if (interview.notes) {
+            <p class="interview-notes">{{ interview.notes }}</p>
+          }
+          <div class="interview-actions">
+            <button
+              mat-icon-button
+              (click)="openEditDialog(interview)"
+              matTooltip="Edit"
+              [attr.aria-label]="'Edit ' + getTypeLabel(interview.type) + ' interview'"
+            >
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button
+              mat-icon-button
+              class="btn-delete"
+              [disabled]="deletingId() === getInterviewId(interview)"
+              (click)="openDeleteDialog(interview)"
+              matTooltip="Delete"
+              [attr.aria-label]="'Delete ' + getTypeLabel(interview.type) + ' interview'"
+            >
+              @if (deletingId() === getInterviewId(interview)) {
+                <mat-spinner diameter="20" />
+              } @else {
+                <mat-icon>delete</mat-icon>
+              }
+            </button>
+          </div>
+        </li>
+      }
+    </ul>
+  }
+
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="openAddDialog()" aria-label="Add interview">
+    <mat-icon>add</mat-icon>
+    Add Interview
+  </button>
+  <button mat-button mat-dialog-close aria-label="Close">Close</button>
+</mat-dialog-actions>

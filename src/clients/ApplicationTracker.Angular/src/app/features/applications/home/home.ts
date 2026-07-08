@@ -37,6 +37,7 @@ import { ConfirmDialog, ConfirmDialogData } from '../../../shared/confirm-dialog
 import { NoteDialog, NoteDialogData } from '../note-dialog/note-dialog';
 import { DetailDialog, DetailDialogData } from '../detail-dialog/detail-dialog';
 import { DescriptionDialog, DescriptionDialogData } from '../description-dialog/description-dialog';
+import { InterviewDialog, InterviewDialogData } from '../interview-dialog/interview-dialog';
 import { ApplicationRecordDto } from '../../../core/api/api.types';
 
 /** Human-readable label for each ApplicationStatus numeric value. */
@@ -181,6 +182,7 @@ export class Home implements OnInit {
     'postingUrl',
     'notes',
     'description',
+    'interviews',
     'actions',
   ];
 
@@ -402,6 +404,16 @@ export class Home implements OnInit {
         notes: record.notes ?? '',
       },
       width: '480px',
+    });
+  }
+
+  /** Opens the interview history dialog for a record. */
+  protected openInterviewDialog(record: ApplicationRecordDto): void {
+    this._dialog.open<InterviewDialog, InterviewDialogData>(InterviewDialog, {
+      data: { applicationRecordId: this.getRecordId(record), companyName: record.companyName ?? '' },
+      width: '520px',
+      maxWidth: '95vw',
+      disableClose: true,
     });
   }
 

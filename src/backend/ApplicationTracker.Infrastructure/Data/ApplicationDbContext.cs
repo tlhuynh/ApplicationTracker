@@ -12,6 +12,7 @@ namespace ApplicationTracker.Infrastructure.Data;
 public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
 	: IdentityDbContext<IdentityUser>(options) {
 	public DbSet<ApplicationRecord> ApplicationRecords => Set<ApplicationRecord>();
+	public DbSet<Interview> Interviews => Set<Interview>();
 	public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
 	protected override void OnModelCreating(ModelBuilder modelBuilder) {
