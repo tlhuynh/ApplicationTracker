@@ -10,6 +10,14 @@
       </span>
     </dd>
 
+    <dt>Interviews</dt>
+    <dd>
+      <button mat-button (click)="openInterviewDialog()" aria-label="View interview history">
+        <mat-icon>work_history</mat-icon>
+        View Interview History
+      </button>
+    </dd>
+
     <dt>Applied Date</dt>
     <dd>{{ data.record.appliedDate ? (data.record.appliedDate | date : 'mediumDate' : 'UTC') : '—' }}</dd>
 

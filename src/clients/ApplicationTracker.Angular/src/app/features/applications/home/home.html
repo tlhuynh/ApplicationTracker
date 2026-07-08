@@ -308,6 +308,21 @@
           </td>
         </ng-container>
 
+        <!-- Interviews ──────────────────────────────────────────────────── -->
+        <ng-container matColumnDef="interviews">
+          <th mat-header-cell *matHeaderCellDef scope="col">Interviews</th>
+          <td mat-cell *matCellDef="let record">
+            <button
+              mat-icon-button
+              (click)="openInterviewDialog(record)"
+              matTooltip="View interview history"
+              [attr.aria-label]="'View interviews for ' + record.companyName"
+            >
+              <mat-icon>work_history</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+
         <!-- Actions ─────────────────────────────────────────────────────── -->
         <ng-container matColumnDef="actions">
           <th mat-header-cell *matHeaderCellDef scope="col">

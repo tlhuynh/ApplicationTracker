@@ -1,0 +1,75 @@
+<h2 mat-dialog-title>{{ isEditMode ? 'Edit Interview' : 'Add Interview' }}</h2>
+
+<mat-dialog-content>
+  <form [formGroup]="form" id="interview-form">
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Type</mat-label>
+      <mat-select formControlName="type">
+        @for (option of typeOptions; track option.value) {
+          <mat-option [value]="option.value">{{ option.label }}</mat-option>
+        }
+      </mat-select>
+      @if (form.controls.type.hasError('required')) {
+        <mat-error>Type is required.</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Round Number</mat-label>
+      <input matInput type="number" min="1" formControlName="roundNumber" placeholder="e.g. 1" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Date</mat-label>
+      <input matInput [matDatepicker]="datePicker" formControlName="date" />
+      <mat-datepicker-toggle matIconSuffix [for]="datePicker" />
+      <mat-datepicker #datePicker />
+      @if (form.controls.date.hasError('required')) {
+        <mat-error>Date is required.</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Outcome</mat-label>
+      <mat-select formControlName="outcome">
+        <mat-option [value]="null">—</mat-option>
+        @for (option of outcomeOptions; track option.value) {
+          <mat-option [value]="option.value">{{ option.label }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Notes</mat-label>
+      <textarea matInput formControlName="notes" rows="3" placeholder="Optional notes..." [maxlength]="notesMaxLength"></textarea>
+      <mat-hint align="end">{{ notesLength }} / {{ notesMaxLength }}</mat-hint>
+      @if (form.controls.notes.touched && form.controls.notes.hasError('maxlength')) {
+        <mat-error>Notes cannot exceed {{ notesMaxLength }} characters.</mat-error>
+      }
+    </mat-form-field>
+
+    @if (serverError()) {
+      <p class="server-error" role="alert">{{ serverError() }}</p>
+    }
+
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button mat-dialog-close [disabled]="isSaving()" aria-label="Cancel">Cancel</button>
+  <button
+    mat-raised-button
+    class="btn-primary-filled"
+    form="interview-form"
+    (click)="onSubmit()"
+    [disabled]="form.invalid || isSaving()"
+    aria-label="Save interview"
+  >
+    @if (isSaving()) {
+      <mat-spinner diameter="18" />
+    } @else {
+      Save
+    }
+  </button>
+</mat-dialog-actions>

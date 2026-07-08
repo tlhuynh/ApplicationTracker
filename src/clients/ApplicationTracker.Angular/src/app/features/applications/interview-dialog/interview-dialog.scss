@@ -1,0 +1,120 @@
+.loading-container {
+  display: flex;
+  justify-content: center;
+  padding: 32px 0;
+}
+
+.load-error {
+  color: var(--mat-sys-error);
+  font-size: 0.875rem;
+}
+
+.empty-state {
+  text-align: center;
+  color: var(--mat-sys-on-surface-variant);
+  padding: 24px 0;
+}
+
+// ── Interview list ─────────────────────────────────────────────────────────────
+
+.interview-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.interview-item {
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: 6px;
+  padding: 8px 12px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.interview-main {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.interview-label {
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.round-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  height: 20px;
+  padding: 0 5px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+  background-color: var(--mat-sys-secondary-container);
+  color: var(--mat-sys-on-secondary-container);
+}
+
+.interview-date {
+  color: var(--mat-sys-on-surface-variant);
+  font-size: 0.875rem;
+  margin-left: auto;
+}
+
+.outcome-badge {
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background-color: var(--mat-sys-surface-variant);
+  color: var(--mat-sys-on-surface-variant);
+
+  &.outcome-passed {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+  }
+
+  &.outcome-failed {
+    background-color: #ffebee;
+    color: #c62828;
+  }
+
+  &.outcome-pending {
+    background-color: var(--mat-sys-surface-variant);
+    color: var(--mat-sys-on-surface-variant);
+  }
+}
+
+.interview-notes {
+  font-size: 0.875rem;
+  color: var(--mat-sys-on-surface-variant);
+  margin: 4px 0 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+.interview-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.btn-delete {
+  color: #c62828;
+
+  &:not([disabled]):hover {
+    background-color: rgba(198, 40, 40, 0.08);
+  }
+}

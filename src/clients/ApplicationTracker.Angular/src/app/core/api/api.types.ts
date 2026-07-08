@@ -52,6 +52,13 @@ export type ExcelImportResultDto = components['schemas']['ExcelImportResultDto']
 export type ExcelImportErrorDto = components['schemas']['ExcelImportErrorDto'];
 export type ParseExcelResultDto = components['schemas']['ParseExcelResultDto'];
 
+// ── Interviews ────────────────────────────────────────────────────────────
+export type InterviewDto = components['schemas']['InterviewDto'];
+export type CreateInterviewRequest = components['schemas']['CreateInterviewRequest'];
+export type UpdateInterviewRequest = components['schemas']['UpdateInterviewRequest'];
+export type InterviewType = components['schemas']['InterviewType'];
+export type InterviewOutcome = components['schemas']['InterviewOutcome'];
+
 // ── Email flows ───────────────────────────────────────────────────────────
 export type ConfirmEmailRequest = components['schemas']['ConfirmEmailRequest'];
 export type ResendConfirmationRequest = components['schemas']['ResendConfirmationRequest'];

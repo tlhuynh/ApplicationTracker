@@ -5,6 +5,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { ApplicationRecordDto } from '../../../core/api/api.types';
 import { DescriptionDialog, DescriptionDialogData } from '../description-dialog/description-dialog';
+import { InterviewDialog, InterviewDialogData } from '../interview-dialog/interview-dialog';
 
 export interface DetailDialogData {
   record: ApplicationRecordDto;
@@ -36,6 +37,18 @@ export class DetailDialog {
     3: 'status-rejected',
     4: 'status-withdrawn',
   };
+
+  protected openInterviewDialog(): void {
+    this._dialog.open<InterviewDialog, InterviewDialogData>(InterviewDialog, {
+      data: {
+        applicationRecordId: this.data.record.id as number,
+        companyName: this.data.record.companyName!,
+      },
+      width: '520px',
+      maxWidth: '95vw',
+      disableClose: true,
+    });
+  }
 
   protected openDescriptionDialog(): void {
     this._dialog.open(DescriptionDialog, {

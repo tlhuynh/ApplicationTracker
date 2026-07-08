@@ -39,7 +39,7 @@ describe('ShellComponent', () => {
 
   it('should render the app title in the sidebar', async () => {
     await setup();
-    expect(screen.getByText('Job Apps Tracker')).toBeInTheDocument();
+    expect(screen.getByText('Job Application Tracker')).toBeInTheDocument();
   });
 
   it('should render all navigation items', async () => {
