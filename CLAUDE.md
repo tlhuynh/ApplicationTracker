@@ -157,6 +157,13 @@ dotnet test tests/ApplicationTracker.Api.Tests
 - **Test both paths** — every feature test should cover the success path and at least one failure path (API error, validation rejection, empty/null response); a suite that only covers the happy path is incomplete
 - **E2E**: Playwright — future, not yet implemented
 
+## Memory Protocol
+
+- **Session start — read everything**: When the user opens a session or says "let's continue", read ALL individual files listed in the memory index (not just `MEMORY.md`) before responding. Then verify any state-sensitive claims (active branch, in-progress work, MCP/tool status) against current reality (`git log`, `git status`, `git branch`) — never trust a memory claim about branch or task state without checking. Then check GitHub Issues via `mcp__github__list_issues` (use `ToolSearch` to load the schema first — do NOT use `gh` CLI, it is not authenticated) to get the current task state before summarizing where things stand.
+- **Update immediately**: When anything changes during a session (branch merged, feature started, tool updated, decision made), update the relevant memory file and `MEMORY.md` index right then — don't defer to end of session.
+- **Stale = wrong**: If memory says X is in-progress but git shows it merged, update the memory before acting on it. A stale memory is worse than no memory.
+- **MEMORY.md index entries must stay current**: Each line in the index should reflect the current state, not historical state. When updating a memory file, also update its index line if the one-liner no longer matches.
+
 ## Response Guidelines
 
 - **Source transparency**: end every response with a brief "Sources" section — note whether information came from training data, a web search, or documentation; include links to references when available; prioritize Microsoft Learn and MDN over third-party articles when linking
