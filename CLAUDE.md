@@ -21,9 +21,10 @@ dotnet build src/clients/ApplicationTracker.Maui -f net10.0-windows10.0.19041.0
 dotnet run --project src/backend/ApplicationTracker.Api
 
 # Generate TypeScript types from OpenAPI spec (backend must be running)
-# Run after any backend API change — never manually edit src/types/api.d.ts
+# Run after any backend API change — never manually edit api.d.ts directly
 # Only hand-edit custom types in api.types.ts that aren't derivable from the schema
-npm run generate-types  # from src/clients/ApplicationTracker.React/
+# Both Angular and React clients have their own generate-types script and api.d.ts
+npm run generate-types  # from src/clients/ApplicationTracker.Angular/ or src/clients/ApplicationTracker.React/
 
 # Apply EF Core migrations (run this yourself — assistant cannot run dotnet ef)
 dotnet ef database update --project src/backend/ApplicationTracker.Infrastructure --startup-project src/backend/ApplicationTracker.Api
@@ -96,6 +97,8 @@ Located in `src/clients/ApplicationTracker.Maui/`:
 ### Entity Design
 
 `BaseEntity` provides common fields: `Id`, `CreatedAt`, `LastModified`, `UserId`, `IsDeleted`.
+
+`Interview` extends `BaseEntity` — fields: `ApplicationRecordId` (FK → `ApplicationRecord`, cascade delete), `Type` (`InterviewType` enum: Screening/Technical/Onsite/Other), `RoundNumber` (optional int, user-managed — not auto-assigned), `Date` (DateTime), `Outcome` (optional `InterviewOutcome` enum: Pending/Passed/Failed), `Notes` (optional, max 5000 chars). Scoped under `api/applicationrecords/{applicationRecordId:int}/interviews`; ownership validated by checking the parent `ApplicationRecord` belongs to the current user.
 
 `RefreshToken` is a standalone entity (not extending `BaseEntity`) for auth infrastructure — stores SHA-256 token hash, user ID, security stamp, expiration, revocation flag, and `CreatedAt` (defaulted to `DateTime.UtcNow` via property initializer; never set explicitly in object initializers).
 
