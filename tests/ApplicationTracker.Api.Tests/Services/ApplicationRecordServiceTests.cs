@@ -13,11 +13,16 @@ namespace ApplicationTracker.Api.Tests.Services;
 public class ApplicationRecordServiceTests {
 	private const string TestUserId = "test-user-id";
 	private readonly Mock<IApplicationRecordRepository> _repositoryMock;
+	private readonly Mock<IInterviewRepository> _interviewRepositoryMock;
 	private readonly ApplicationRecordService _service;
 
 	public ApplicationRecordServiceTests() {
 		_repositoryMock = new Mock<IApplicationRecordRepository>();
-		_service = new ApplicationRecordService(_repositoryMock.Object);
+		_interviewRepositoryMock = new Mock<IInterviewRepository>();
+		_interviewRepositoryMock
+			.Setup(r => r.DeleteAllByApplicationRecordIdAsync(It.IsAny<int>()))
+			.Returns(Task.CompletedTask);
+		_service = new ApplicationRecordService(_repositoryMock.Object, _interviewRepositoryMock.Object);
 	}
 
 	[Fact]
@@ -158,7 +163,7 @@ public class ApplicationRecordServiceTests {
 	}
 
 	[Fact]
-	public async Task DeleteAsync_WhenFound_DeletesAndReturnsTrue() {
+	public async Task DeleteAsync_WhenFound_CascadeDeletesInterviewsAndReturnsTrue() {
 		// Arrange
 		ApplicationRecord existing = new() { Id = 1, CompanyName = "Acme" };
 		_repositoryMock.Setup(r => r.GetByIdAsync(1, TestUserId)).ReturnsAsync(existing);
@@ -168,6 +173,7 @@ public class ApplicationRecordServiceTests {
 
 		// Assert
 		Assert.True(result);
+		_interviewRepositoryMock.Verify(r => r.DeleteAllByApplicationRecordIdAsync(1), Times.Once);
 		_repositoryMock.Verify(r => r.Delete(existing), Times.Once);
 		_repositoryMock.Verify(r => r.SaveChangesAsync(), Times.Once);
 	}
@@ -182,6 +188,7 @@ public class ApplicationRecordServiceTests {
 
 		// Assert
 		Assert.False(result);
+		_interviewRepositoryMock.Verify(r => r.DeleteAllByApplicationRecordIdAsync(It.IsAny<int>()), Times.Never);
 		_repositoryMock.Verify(r => r.Delete(It.IsAny<ApplicationRecord>()), Times.Never);
 		_repositoryMock.Verify(r => r.SaveChangesAsync(), Times.Never);
 	}

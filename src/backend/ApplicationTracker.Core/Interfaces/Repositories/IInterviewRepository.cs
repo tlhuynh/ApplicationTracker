@@ -17,4 +17,11 @@ public interface IInterviewRepository : IRepository<Interview> {
     /// Used to distinguish "application not found" from "no interviews yet".
     /// </summary>
     Task<bool> ApplicationRecordBelongsToUserAsync(int applicationRecordId, string userId);
+
+    /// <summary>
+    /// Marks all interviews for the given application record for deletion.
+    /// Does not call SaveChangesAsync — the caller is responsible for persisting changes
+    /// so all deletes within a single operation share one transaction.
+    /// </summary>
+    Task DeleteAllByApplicationRecordIdAsync(int applicationRecordId);
 }

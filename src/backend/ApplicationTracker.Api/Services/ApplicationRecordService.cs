@@ -11,7 +11,7 @@ namespace ApplicationTracker.Api.Services;
 /// Service implementation for application record business logic.
 /// Orchestrates repository calls and applies domain rules.
 /// </summary>
-public class ApplicationRecordService(IApplicationRecordRepository repository) : IApplicationRecordService {
+public class ApplicationRecordService(IApplicationRecordRepository repository, IInterviewRepository interviewRepository) : IApplicationRecordService {
 	/// <inheritdoc />
 	public async Task<PagedResult<ApplicationRecord>> GetPagedAsync(
 		string userId, int page, int pageSize, string sortBy, string sortDir,
@@ -70,6 +70,7 @@ public class ApplicationRecordService(IApplicationRecordRepository repository) :
 			return false;
 		}
 
+		await interviewRepository.DeleteAllByApplicationRecordIdAsync(id);
 		repository.Delete(existing);
 		await repository.SaveChangesAsync();
 		return true;
