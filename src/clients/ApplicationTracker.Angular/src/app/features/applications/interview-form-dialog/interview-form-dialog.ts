@@ -72,7 +72,7 @@ export class InterviewFormDialog implements OnInit {
 
   protected readonly form = new FormGroup<InterviewForm>({
     type: new FormControl<number>(0, { nonNullable: true, validators: [Validators.required] }),
-    roundNumber: new FormControl<number | null>(null),
+    roundNumber: new FormControl<number | null>(null, { validators: [Validators.min(1)] }),
     date: new FormControl<Date | null>(null, { validators: [Validators.required] }),
     outcome: new FormControl<number | null>(null),
     notes: new FormControl<string>('', { nonNullable: true, validators: [Validators.maxLength(5000)] }),
@@ -98,10 +98,11 @@ export class InterviewFormDialog implements OnInit {
     this.serverError.set(null);
 
     const value = this.form.getRawValue();
+    const d = value.date!;
     const request = {
       type: value.type,
       roundNumber: value.roundNumber ?? undefined,
-      date: value.date!.toISOString(),
+      date: new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())).toISOString(),
       outcome: value.outcome ?? undefined,
       notes: value.notes || undefined,
     };
