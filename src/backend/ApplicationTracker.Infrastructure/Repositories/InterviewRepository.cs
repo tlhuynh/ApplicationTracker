@@ -22,7 +22,7 @@ public class InterviewRepository(ApplicationDbContext context) : Repository<Inte
 
     /// <inheritdoc />
     public async Task<bool> ApplicationRecordBelongsToUserAsync(int applicationRecordId, string userId) {
-        return await context.ApplicationRecords
+        return await _context.ApplicationRecords
             .AnyAsync(r => r.Id == applicationRecordId && r.UserId == userId);
     }
 

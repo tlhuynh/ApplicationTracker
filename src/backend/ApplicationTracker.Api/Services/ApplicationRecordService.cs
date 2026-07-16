@@ -88,6 +88,8 @@ public class ApplicationRecordService(IApplicationRecordRepository repository, I
 		sheet.Cell(1, 3).Value = "AppliedDate";
 		sheet.Cell(1, 4).Value = "PostingUrl";
 		sheet.Cell(1, 5).Value = "Notes";
+		sheet.Cell(1, 6).Value = "Description";
+		sheet.Cell(1, 7).Value = "Interviews";
 
 		for (int i = 0; i < records.Count; i++) {
 			ApplicationRecord r = records[i];
@@ -99,11 +101,24 @@ public class ApplicationRecordService(IApplicationRecordRepository repository, I
 				: string.Empty;
 			sheet.Cell(row, 4).Value = r.PostingUrl ?? string.Empty;
 			sheet.Cell(row, 5).Value = r.Notes ?? string.Empty;
+			sheet.Cell(row, 6).Value = r.Description ?? string.Empty;
+			sheet.Cell(row, 7).Value = BuildInterviewSummary(r.Interviews);
 		}
 
 		using MemoryStream stream = new();
 		workbook.SaveAs(stream);
 		return stream.ToArray();
+	}
+
+	private static string BuildInterviewSummary(List<Interview> interviews) {
+		if (interviews.Count == 0) {
+			return string.Empty;
+		}
+
+		Interview last = interviews.OrderByDescending(i => i.Date).First();
+		string count = interviews.Count == 1 ? "1 interview" : $"{interviews.Count} interviews";
+		string outcome = last.Outcome.HasValue ? $" ({last.Outcome.Value})" : string.Empty;
+		return $"{count} – last: {last.Type}{outcome}";
 	}
 
 	/// <inheritdoc />
