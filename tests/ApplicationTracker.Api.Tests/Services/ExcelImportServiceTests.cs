@@ -22,7 +22,7 @@ public class ExcelImportServiceTests {
 
 	/// <summary>
 	/// Creates an in-memory .xlsx stream with header row and optional data rows.
-	/// Each row is a string array matching columns: CompanyName, Status, AppliedDate, PostingUrl, Notes.
+	/// Each row is a string array matching columns: CompanyName, Status, AppliedDate, PostingUrl, Notes, Description.
 	/// </summary>
 	private static MemoryStream CreateExcelStream(params string[][] rows) {
 		using XLWorkbook workbook = new();
@@ -322,5 +322,111 @@ public class ExcelImportServiceTests {
 		Assert.Equal(0, result.FailedCount);
 		Assert.Empty(result.ParsedRows);
 		Assert.Empty(result.Errors);
+	}
+
+	// ── Description column (ImportAsync) ─────────────────────────────────────
+
+	[Fact]
+	public async Task ImportAsync_WithDescription_SavesDescriptionToEntity() {
+		// Arrange
+		await using MemoryStream stream = CreateExcelStream(
+			["Acme", "Applied", "2025-01-15", "", "", "Full-stack role with React and Node.js"]
+		);
+
+		// Act
+		ExcelImportResult result = await _service.ImportAsync(stream, TestUserId);
+
+		// Assert
+		Assert.Equal(1, result.ImportedCount);
+		_repositoryMock.Verify(r =>
+			r.AddAsync(It.Is<ApplicationRecord>(e =>
+				e.Description == "Full-stack role with React and Node.js")), Times.Once);
+	}
+
+	[Fact]
+	public async Task ImportAsync_WithNotesTooLong_SkipsRowAndReportsError() {
+		// Arrange
+		string longNotes = new('x', 5001);
+		await using MemoryStream stream = CreateExcelStream(
+			["Acme", "Applied", "2025-01-15", "", longNotes, ""]
+		);
+
+		// Act
+		ExcelImportResult result = await _service.ImportAsync(stream, TestUserId);
+
+		// Assert
+		Assert.Equal(0, result.ImportedCount);
+		Assert.Single(result.Errors);
+		Assert.Contains("5000", result.Errors[0].ErrorMessage);
+		_repositoryMock.Verify(r => r.AddAsync(It.IsAny<ApplicationRecord>()), Times.Never);
+	}
+
+	[Fact]
+	public async Task ImportAsync_WithDescriptionTooLong_SkipsRowAndReportsError() {
+		// Arrange
+		string longDescription = new('x', 20001);
+		await using MemoryStream stream = CreateExcelStream(
+			["Acme", "Applied", "2025-01-15", "", "", longDescription]
+		);
+
+		// Act
+		ExcelImportResult result = await _service.ImportAsync(stream, TestUserId);
+
+		// Assert
+		Assert.Equal(0, result.ImportedCount);
+		Assert.Single(result.Errors);
+		Assert.Contains("20000", result.Errors[0].ErrorMessage);
+		_repositoryMock.Verify(r => r.AddAsync(It.IsAny<ApplicationRecord>()), Times.Never);
+	}
+
+	// ── Description column (ParseAsync) ──────────────────────────────────────
+
+	[Fact]
+	public async Task ParseAsync_WithDescription_ReturnsDescriptionInParsedRow() {
+		// Arrange
+		await using MemoryStream stream = CreateExcelStream(
+			["Acme", "Applied", "2025-01-15", "", "", "Full-stack role with React and Node.js"]
+		);
+
+		// Act
+		ParseExcelResult result = await _service.ParseAsync(stream);
+
+		// Assert
+		Assert.Equal(1, result.ParsedCount);
+		Assert.Equal("Full-stack role with React and Node.js", result.ParsedRows[0].Description);
+	}
+
+	[Fact]
+	public async Task ParseAsync_WithNotesTooLong_SkipsRowAndReportsError() {
+		// Arrange
+		string longNotes = new('x', 5001);
+		await using MemoryStream stream = CreateExcelStream(
+			["Acme", "Applied", "2025-01-15", "", longNotes, ""]
+		);
+
+		// Act
+		ParseExcelResult result = await _service.ParseAsync(stream);
+
+		// Assert
+		Assert.Equal(0, result.ParsedCount);
+		Assert.Single(result.Errors);
+		Assert.Contains("5000", result.Errors[0].ErrorMessage);
+	}
+
+	[Fact]
+	public async Task ParseAsync_WithDescriptionTooLong_SkipsRowAndReportsError() {
+		// Arrange
+		string longDescription = new('x', 20001);
+		await using MemoryStream stream = CreateExcelStream(
+			["Acme", "Applied", "2025-01-15", "", "", longDescription]
+		);
+
+		// Act
+		ParseExcelResult result = await _service.ParseAsync(stream);
+
+		// Assert
+		Assert.Equal(0, result.ParsedCount);
+		Assert.Single(result.Errors);
+		Assert.Contains("20000", result.Errors[0].ErrorMessage);
 	}
 }
