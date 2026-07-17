@@ -15,7 +15,7 @@ export type AuthResponse = components['schemas']['AuthResponse'];
 export type ApplicationRecordDto = components['schemas']['ApplicationRecordDto'] & { hasDescription?: boolean };
 export type ApplicationStatus = components['schemas']['ApplicationStatus'];
 export type CreateApplicationRecordRequest = components['schemas']['CreateApplicationRecordRequest'] & { description?: string | null };
-export type UpdateApplicationRecordRequest = components['schemas']['UpdateApplicationRecordRequest'];
+export type UpdateApplicationRecordRequest = components['schemas']['UpdateApplicationRecordRequest'] & { description?: string | null };
 export type PatchStatusRequest = components['schemas']['PatchStatusRequest'];
 
 export interface DescriptionDto {

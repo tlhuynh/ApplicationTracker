@@ -163,7 +163,8 @@ public class ApplicationRecordsController(
 			Status = request.Status,
 			AppliedDate = request.AppliedDate,
 			PostingUrl = request.PostingUrl,
-			Notes = request.Notes
+			Notes = request.Notes,
+			Description = request.Description
 		};
 
 		ApplicationRecord? updated = await service.UpdateAsync(id, updatedFields, userId);

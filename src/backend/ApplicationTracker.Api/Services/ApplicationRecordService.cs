@@ -44,6 +44,7 @@ public class ApplicationRecordService(IApplicationRecordRepository repository, I
 		existing.AppliedDate = updatedFields.AppliedDate;
 		existing.PostingUrl = updatedFields.PostingUrl;
 		existing.Notes = updatedFields.Notes;
+		existing.Description = updatedFields.Description;
 
 		repository.Update(existing);
 		await repository.SaveChangesAsync();

@@ -80,24 +80,22 @@
       }
     </mat-form-field>
 
-    <!-- Description — only shown on create; existing records use the dedicated dialog -->
-    @if (!isEditing) {
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Description</mat-label>
-        <textarea
-          matInput
-          formControlName="description"
-          cdkTextareaAutosize
-          cdkAutosizeMinRows="3"
-          cdkAutosizeMaxRows="12"
-          aria-label="Description"
-        ></textarea>
-        <mat-hint align="end">{{ descriptionLength }} / 20000</mat-hint>
-        @if (getDescriptionError(); as error) {
-          <mat-error>{{ error }}</mat-error>
-        }
-      </mat-form-field>
-    }
+    <!-- Description — pre-filled via lazy fetch when editing an existing record -->
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Description</mat-label>
+      <textarea
+        matInput
+        formControlName="description"
+        cdkTextareaAutosize
+        cdkAutosizeMinRows="3"
+        cdkAutosizeMaxRows="12"
+        aria-label="Description"
+      ></textarea>
+      <mat-hint align="end">{{ descriptionLength }} / 20000</mat-hint>
+      @if (getDescriptionError(); as error) {
+        <mat-error>{{ error }}</mat-error>
+      }
+    </mat-form-field>
 
   </form>
 </mat-dialog-content>
@@ -116,7 +114,7 @@
   <button
     mat-raised-button
     color="primary"
-    [disabled]="isSubmitting()"
+    [disabled]="isSubmitting() || isLoadingDescription()"
     (click)="onSave()"
     [attr.aria-label]="isEditing ? 'Save changes' : 'Add application'"
   >
