@@ -410,14 +410,6 @@ FodyWeavers.xsd
 *.old
 
 ###############################
-# Claude Code
-###############################
-.claude/projects/
-.claude/settings.local.json
-AGENTS.md
-CLAUDE.md
-
-###############################
 # Environment / Secrets
 ###############################
 .env
@@ -453,7 +445,8 @@ coverage/
 nul
 
 ###############################
-# Sensitive docs
+# Local-only files
 ###############################
-docs/windows-memory.md
+AGENTS.md
+.claude/
 docs/session-notes/

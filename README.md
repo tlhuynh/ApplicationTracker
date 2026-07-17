@@ -2,8 +2,6 @@
 
 A full-stack .NET project for tracking job applications, built as a learning playground to explore modern technologies.
 
-**Live Demo**: [jobapptracker.tlhuynh.dev](https://jobapptracker.tlhuynh.dev) (Angular client — active)
-
 ## Features
 
 - **Application tracking** — create, view, edit, and delete job applications with fields for company, status, applied date, posting URL, notes, and long-form description
@@ -184,8 +182,8 @@ ApplicationTracker/
 │   └── ApplicationTracker.Api.Tests/             # Unit tests (xUnit + Moq)
 │       ├── Controllers/                          # Controller tests
 │       └── Services/                             # Service tests
-├── templates/                                    # Static files (import templates)
-│   └── ApplicationRecords_Import_Template.xlsx
+├── docs/
+│   └── sample_applications.xlsx                  # Sample data for import testing
 ├── ApplicationTracker.sln
 ├── Directory.Build.props
 ├── global.json
@@ -254,11 +252,11 @@ npm run test:watch # Watch mode
 
 The project deploys to Azure via GitHub Actions on every push to `main`.
 
-| Component | Service | Tier | URL |
-|---|---|---|---|
-| Angular SPA | Azure Static Web Apps | Free | [jobapptracker.tlhuynh.dev](https://jobapptracker.tlhuynh.dev) |
-| ASP.NET Core API | Azure App Service | B1 Basic | `applicationtracker-api-g5f4efdwenfpf5a0.centralus-01.azurewebsites.net` |
-| Database | Azure SQL Database | Basic DTU | `ApplicationTrackerDB` (Central US) |
+| Component | Service | Tier |
+|---|---|---|
+| Angular SPA | Azure Static Web Apps | Free |
+| ASP.NET Core API | Azure App Service | B1 Basic |
+| Database | Azure SQL Database | Basic DTU |
 
 The Angular and React clients share the same Azure Static Web Apps resource. The active client is whichever was deployed last. Use `workflow_dispatch` on either workflow to switch.
 
