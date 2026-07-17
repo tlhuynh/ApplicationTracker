@@ -7,11 +7,11 @@ A full-stack .NET project for tracking job applications, built as a learning pla
 ## Features
 
 - **Application tracking** — create, view, edit, and delete job applications with fields for company, status, applied date, posting URL, notes, and long-form description
-- **Description field** — dedicated per-record description for storing full job posting details; fetched on demand via a dedicated dialog to avoid impacting list query performance
+- **Description field** — dedicated per-record description for storing full job posting details; editable inline in the add/edit dialog (pre-filled via lazy fetch in edit mode) and via the dedicated description dialog; excluded from list queries to keep responses lightweight
 - **Status management** — advance or reject applications directly from the table; status follows a fixed progression (Applied → Interviewing → Offered → Rejected/Withdrawn)
 - **Interview tracking** — log interviews per application with type (Screening, Technical, Onsite, Other), optional round number, date, optional outcome (Pending / Passed / Failed), and notes; accessible from the applications table and the detail dialog
 - **Server-side pagination, sorting, and filtering** — search by keyword, filter by status chips or date range, multi-column compound sort with status priority
-- **Excel import and export** — upload `.xlsx` files with per-row validation feedback; download all records as a formatted spreadsheet
+- **Excel import and export** — upload `.xlsx` files with per-row validation feedback; export includes description and interview summary columns; downloadable import template with column guide included
 - **Full authentication flow** — registration with email confirmation, JWT access tokens (15 min) + refresh tokens (7 days) with rotation, forgot/reset password, per-user data isolation
 - **Security hardening** — email enumeration prevention (consistent 200 responses for all registration cases), IP-based rate limiting (10 req / 15 min), per-email send cap (3 emails / hour), refresh token revocation on password reset
 - **Light/dark theme toggle**
