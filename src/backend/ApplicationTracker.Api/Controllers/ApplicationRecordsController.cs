@@ -103,7 +103,7 @@ public class ApplicationRecordsController(
 
 	/// <summary>
 	/// Exports all application records for the authenticated user as an Excel (.xlsx) file.
-	/// Columns match the import template: CompanyName, Status, AppliedDate, PostingUrl, Notes.
+	/// Columns: CompanyName, Status, AppliedDate, PostingUrl, Notes, Description, Interviews.
 	/// </summary>
 	[HttpGet("export")]
 	public async Task<IActionResult> Export() {
