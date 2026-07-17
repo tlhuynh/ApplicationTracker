@@ -327,6 +327,22 @@ public class ExcelImportServiceTests {
 	// ── Description column (ImportAsync) ─────────────────────────────────────
 
 	[Fact]
+	public async Task ImportAsync_WithNoDescriptionColumn_SavesDescriptionAsNull() {
+		// Arrange — 5-column row; column 6 absent so GetString() returns empty string
+		await using MemoryStream stream = CreateExcelStream(
+			["Acme", "Applied", "2025-01-15", "", ""]
+		);
+
+		// Act
+		ExcelImportResult result = await _service.ImportAsync(stream, TestUserId);
+
+		// Assert
+		Assert.Equal(1, result.ImportedCount);
+		_repositoryMock.Verify(r =>
+			r.AddAsync(It.Is<ApplicationRecord>(e => e.Description == null)), Times.Once);
+	}
+
+	[Fact]
 	public async Task ImportAsync_WithDescription_SavesDescriptionToEntity() {
 		// Arrange
 		await using MemoryStream stream = CreateExcelStream(

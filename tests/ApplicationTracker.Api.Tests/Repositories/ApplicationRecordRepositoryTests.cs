@@ -140,6 +140,86 @@ public class ApplicationRecordRepositoryTests {
 	}
 
 	[Fact]
+	public async Task GetAllForExportAsync_OnlyReturnsRecordsForRequestingUser() {
+		// Arrange
+		await using ApplicationDbContext context = CreateContext();
+		ApplicationRecordRepository repository = new(context);
+
+		context.ApplicationRecords.AddRange(
+			new ApplicationRecord { CompanyName = "Acme", UserId = "user-a" },
+			new ApplicationRecord { CompanyName = "OtherCo", UserId = "user-b" }
+		);
+		await context.SaveChangesAsync();
+
+		// Act
+		List<ApplicationRecord> records = await repository.GetAllForExportAsync("user-a");
+
+		// Assert
+		Assert.Single(records);
+		Assert.Equal("Acme", records[0].CompanyName);
+	}
+
+	[Fact]
+	public async Task GetAllForExportAsync_ExcludesSoftDeletedInterviews() {
+		// Arrange
+		await using ApplicationDbContext context = CreateContext();
+		ApplicationRecordRepository repository = new(context);
+
+		ApplicationRecord record = new() { CompanyName = "Acme", UserId = "user-a" };
+		context.ApplicationRecords.Add(record);
+		await context.SaveChangesAsync();
+
+		context.Set<Interview>().AddRange(
+			new Interview {
+				ApplicationRecordId = record.Id,
+				Type = InterviewType.Screening,
+				Date = new DateTime(2025, 3, 1, 0, 0, 0, DateTimeKind.Utc),
+				UserId = "user-a",
+				IsDeleted = false
+			},
+			new Interview {
+				ApplicationRecordId = record.Id,
+				Type = InterviewType.Technical,
+				Date = new DateTime(2025, 3, 10, 0, 0, 0, DateTimeKind.Utc),
+				UserId = "user-a",
+				IsDeleted = true
+			}
+		);
+		await context.SaveChangesAsync();
+
+		// Act
+		List<ApplicationRecord> records = await repository.GetAllForExportAsync("user-a");
+
+		// Assert — global query filter on Interview excludes the soft-deleted one
+		Assert.Single(records);
+		Assert.Single(records[0].Interviews);
+		Assert.Equal(InterviewType.Screening, records[0].Interviews[0].Type);
+	}
+
+	[Fact]
+	public async Task GetPagedAsync_DoesNotLoadDescriptionText_SetsHasDescriptionFlag() {
+		// Arrange
+		await using ApplicationDbContext context = CreateContext();
+		ApplicationRecordRepository repository = new(context);
+
+		context.ApplicationRecords.Add(new ApplicationRecord {
+			CompanyName = "Acme",
+			UserId = "user-a",
+			Description = "Full-stack engineer role"
+		});
+		await context.SaveChangesAsync();
+
+		// Act
+		PagedResult<ApplicationRecord> result = await repository.GetPagedAsync(
+			"user-a", 1, 10, "companyName", "asc", null, null, null, null);
+
+		// Assert — Description text is excluded from the projection; HasDescription flag is set
+		Assert.Single(result.Items);
+		Assert.Null(result.Items[0].Description);
+		Assert.True(result.Items[0].HasDescription);
+	}
+
+	[Fact]
 	public async Task ExistsAsync_WithMatchingAppliedDateForSameUser_ReturnsTrue() {
 		// Arrange
 		await using ApplicationDbContext context = CreateContext();
