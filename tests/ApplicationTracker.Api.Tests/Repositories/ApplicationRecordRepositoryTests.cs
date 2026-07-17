@@ -1,4 +1,6 @@
 using ApplicationTracker.Core.Entities;
+using ApplicationTracker.Core.Enums;
+using ApplicationTracker.Core.Models;
 using ApplicationTracker.Infrastructure.Data;
 using ApplicationTracker.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -80,6 +82,61 @@ public class ApplicationRecordRepositoryTests {
 
 		// Assert
 		Assert.False(exists);
+	}
+
+	// ── Interview loading isolation ───────────────────────────────────────────
+
+	[Fact]
+	public async Task GetPagedAsync_DoesNotLoadInterviews() {
+		// Arrange
+		await using ApplicationDbContext context = CreateContext();
+		ApplicationRecordRepository repository = new(context);
+
+		ApplicationRecord record = new() { CompanyName = "Acme", UserId = "user-a" };
+		context.ApplicationRecords.Add(record);
+		await context.SaveChangesAsync();
+
+		context.Set<Interview>().Add(new Interview {
+			ApplicationRecordId = record.Id,
+			Type = InterviewType.Screening,
+			Date = new DateTime(2025, 3, 1, 0, 0, 0, DateTimeKind.Utc),
+			UserId = "user-a"
+		});
+		await context.SaveChangesAsync();
+
+		// Act
+		PagedResult<ApplicationRecord> result = await repository.GetPagedAsync(
+			"user-a", 1, 10, "companyName", "asc", null, null, null, null);
+
+		// Assert — the Select projection in GetPagedAsync does not include Interviews
+		Assert.Single(result.Items);
+		Assert.Empty(result.Items[0].Interviews);
+	}
+
+	[Fact]
+	public async Task GetAllForExportAsync_LoadsInterviews() {
+		// Arrange
+		await using ApplicationDbContext context = CreateContext();
+		ApplicationRecordRepository repository = new(context);
+
+		ApplicationRecord record = new() { CompanyName = "Acme", UserId = "user-a" };
+		context.ApplicationRecords.Add(record);
+		await context.SaveChangesAsync();
+
+		context.Set<Interview>().Add(new Interview {
+			ApplicationRecordId = record.Id,
+			Type = InterviewType.Screening,
+			Date = new DateTime(2025, 3, 1, 0, 0, 0, DateTimeKind.Utc),
+			UserId = "user-a"
+		});
+		await context.SaveChangesAsync();
+
+		// Act
+		List<ApplicationRecord> records = await repository.GetAllForExportAsync("user-a");
+
+		// Assert — GetAllForExportAsync uses .Include(r => r.Interviews) so they are loaded
+		Assert.Single(records);
+		Assert.Single(records[0].Interviews);
 	}
 
 	[Fact]

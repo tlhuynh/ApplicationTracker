@@ -3,6 +3,7 @@ using ApplicationTracker.Core.Entities;
 using ApplicationTracker.Core.Enums;
 using ApplicationTracker.Core.Interfaces.Repositories;
 using ApplicationTracker.Core.Models;
+using ClosedXML.Excel;
 using Moq;
 
 namespace ApplicationTracker.Api.Tests.Services;
@@ -222,5 +223,130 @@ public class ApplicationRecordServiceTests {
 		// Assert
 		Assert.NotEmpty(result);
 		_repositoryMock.Verify(r => r.GetAllForExportAsync(TestUserId), Times.Once);
+	}
+
+	// ── Export content ────────────────────────────────────────────────────────
+
+	/// <summary>Parses the exported byte array and returns the Data worksheet.</summary>
+	private static IXLWorksheet ParseDataSheet(byte[] exportBytes) {
+		MemoryStream stream = new(exportBytes);
+		XLWorkbook workbook = new(stream);
+		return workbook.Worksheet("Data");
+	}
+
+	private List<ApplicationRecord> SetupSingleRecordExport(ApplicationRecord record) {
+		List<ApplicationRecord> records = [record];
+		_repositoryMock.Setup(r => r.GetAllForExportAsync(TestUserId)).ReturnsAsync(records);
+		return records;
+	}
+
+	[Fact]
+	public async Task ExportAsync_HeaderRow_ContainsAllSevenColumns() {
+		// Arrange
+		SetupSingleRecordExport(new() { CompanyName = "Acme", Status = ApplicationStatus.Applied });
+
+		// Act
+		IXLWorksheet sheet = ParseDataSheet(await _service.ExportAsync(TestUserId));
+
+		// Assert
+		string[] expected = ["CompanyName", "Status", "AppliedDate", "PostingUrl", "Notes", "Description", "Interviews"];
+		for (int i = 0; i < expected.Length; i++) {
+			Assert.Equal(expected[i], sheet.Cell(1, i + 1).GetString());
+		}
+	}
+
+	[Fact]
+	public async Task ExportAsync_WithDescription_WritesDescriptionToColumnF() {
+		// Arrange
+		SetupSingleRecordExport(new() {
+			CompanyName = "Acme",
+			Status = ApplicationStatus.Applied,
+			Description = "Full-stack engineer role requiring React and Node.js"
+		});
+
+		// Act
+		IXLWorksheet sheet = ParseDataSheet(await _service.ExportAsync(TestUserId));
+
+		// Assert
+		Assert.Equal("Full-stack engineer role requiring React and Node.js", sheet.Cell(2, 6).GetString());
+	}
+
+	[Fact]
+	public async Task ExportAsync_WithNoDescription_WritesEmptyToColumnF() {
+		// Arrange
+		SetupSingleRecordExport(new() { CompanyName = "Acme", Status = ApplicationStatus.Applied, Description = null });
+
+		// Act
+		IXLWorksheet sheet = ParseDataSheet(await _service.ExportAsync(TestUserId));
+
+		// Assert
+		Assert.Equal(string.Empty, sheet.Cell(2, 6).GetString());
+	}
+
+	[Fact]
+	public async Task ExportAsync_WithNoInterviews_WritesEmptyToInterviewsColumn() {
+		// Arrange
+		SetupSingleRecordExport(new() { CompanyName = "Acme", Status = ApplicationStatus.Applied, Interviews = [] });
+
+		// Act
+		IXLWorksheet sheet = ParseDataSheet(await _service.ExportAsync(TestUserId));
+
+		// Assert
+		Assert.Equal(string.Empty, sheet.Cell(2, 7).GetString());
+	}
+
+	[Fact]
+	public async Task ExportAsync_WithSingleInterview_WritesSingularSummary() {
+		// Arrange
+		SetupSingleRecordExport(new() {
+			CompanyName = "Acme",
+			Status = ApplicationStatus.Applied,
+			Interviews = [
+				new() { Type = InterviewType.Screening, Date = new DateTime(2025, 3, 1, 0, 0, 0, DateTimeKind.Utc), Outcome = InterviewOutcome.Passed }
+			]
+		});
+
+		// Act
+		IXLWorksheet sheet = ParseDataSheet(await _service.ExportAsync(TestUserId));
+
+		// Assert
+		Assert.Equal("1 interview – last: Screening (Passed)", sheet.Cell(2, 7).GetString());
+	}
+
+	[Fact]
+	public async Task ExportAsync_WithMultipleInterviews_WritesPluralSummaryWithMostRecent() {
+		// Arrange
+		SetupSingleRecordExport(new() {
+			CompanyName = "Acme",
+			Status = ApplicationStatus.Applied,
+			Interviews = [
+				new() { Type = InterviewType.Screening, Date = new DateTime(2025, 3, 1, 0, 0, 0, DateTimeKind.Utc), Outcome = InterviewOutcome.Passed },
+				new() { Type = InterviewType.Technical, Date = new DateTime(2025, 3, 10, 0, 0, 0, DateTimeKind.Utc), Outcome = InterviewOutcome.Pending }
+			]
+		});
+
+		// Act
+		IXLWorksheet sheet = ParseDataSheet(await _service.ExportAsync(TestUserId));
+
+		// Assert — most recent by date is the Technical interview
+		Assert.Equal("2 interviews – last: Technical (Pending)", sheet.Cell(2, 7).GetString());
+	}
+
+	[Fact]
+	public async Task ExportAsync_WithInterviewWithNoOutcome_OmitsOutcomeFromSummary() {
+		// Arrange
+		SetupSingleRecordExport(new() {
+			CompanyName = "Acme",
+			Status = ApplicationStatus.Applied,
+			Interviews = [
+				new() { Type = InterviewType.Onsite, Date = new DateTime(2025, 4, 1, 0, 0, 0, DateTimeKind.Utc), Outcome = null }
+			]
+		});
+
+		// Act
+		IXLWorksheet sheet = ParseDataSheet(await _service.ExportAsync(TestUserId));
+
+		// Assert
+		Assert.Equal("1 interview – last: Onsite", sheet.Cell(2, 7).GetString());
 	}
 }
