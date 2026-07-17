@@ -132,6 +132,9 @@ export class ApplicationDialog implements OnInit {
   /** True while the save request is in flight — disables the form and shows a spinner. */
   protected readonly isSubmitting = signal(false);
 
+  /** True while the description is being fetched for an existing record — blocks save until loaded. */
+  protected readonly isLoadingDescription = signal(false);
+
   /** Server-side error message displayed inside the dialog, or null when no error. */
   protected readonly serverError = signal<string | null>(null);
 
@@ -149,6 +152,28 @@ export class ApplicationDialog implements OnInit {
       postingUrl: record.postingUrl ?? '',
       notes: record.notes ?? '',
     });
+
+    if (record.hasDescription) {
+      const id = this.getRecordId();
+      if (id != null) {
+        const descControl = this.form.get('description');
+        descControl?.disable();
+        this.isLoadingDescription.set(true);
+        this._applicationsService.getDescription(id)
+          .pipe(takeUntilDestroyed(this._destroyRef))
+          .subscribe({
+            next: (dto) => {
+              this.form.patchValue({ description: dto.description ?? '' });
+              descControl?.enable();
+              this.isLoadingDescription.set(false);
+            },
+            error: () => {
+              descControl?.enable();
+              this.isLoadingDescription.set(false);
+            },
+          });
+      }
+    }
   }
 
   // ── Helpers ───────────────────────────────────────────────────────────────
@@ -197,10 +222,17 @@ export class ApplicationDialog implements OnInit {
 
   // ── Actions ───────────────────────────────────────────────────────────────
 
+  /** Extracts and normalises the record ID from the dialog data. */
+  private getRecordId(): number | null {
+    const record = this.data.record;
+    if (record?.id == null) return null;
+    return typeof record.id === 'string' ? parseInt(record.id, 10) : record.id;
+  }
+
   /** Submits the form — calls create or update based on whether we are editing. */
   protected onSave(): void {
     this.form.markAllAsTouched();
-    if (this.form.invalid) return;
+    if (this.form.invalid || this.isLoadingDescription()) return;
 
     this.serverError.set(null);
     this.isSubmitting.set(true);
@@ -226,13 +258,7 @@ export class ApplicationDialog implements OnInit {
       description: description || null,
     };
 
-    const record = this.data.record;
-    const id =
-      record?.id != null
-        ? typeof record.id === 'string'
-          ? parseInt(record.id, 10)
-          : record.id
-        : null;
+    const id = this.getRecordId();
 
     const operation =
       this.isEditing && id != null

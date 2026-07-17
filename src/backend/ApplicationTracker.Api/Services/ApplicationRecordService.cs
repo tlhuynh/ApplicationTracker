@@ -11,7 +11,7 @@ namespace ApplicationTracker.Api.Services;
 /// Service implementation for application record business logic.
 /// Orchestrates repository calls and applies domain rules.
 /// </summary>
-public class ApplicationRecordService(IApplicationRecordRepository repository) : IApplicationRecordService {
+public class ApplicationRecordService(IApplicationRecordRepository repository, IInterviewRepository interviewRepository) : IApplicationRecordService {
 	/// <inheritdoc />
 	public async Task<PagedResult<ApplicationRecord>> GetPagedAsync(
 		string userId, int page, int pageSize, string sortBy, string sortDir,
@@ -44,6 +44,7 @@ public class ApplicationRecordService(IApplicationRecordRepository repository) :
 		existing.AppliedDate = updatedFields.AppliedDate;
 		existing.PostingUrl = updatedFields.PostingUrl;
 		existing.Notes = updatedFields.Notes;
+		existing.Description = updatedFields.Description;
 
 		repository.Update(existing);
 		await repository.SaveChangesAsync();
@@ -70,6 +71,7 @@ public class ApplicationRecordService(IApplicationRecordRepository repository) :
 			return false;
 		}
 
+		await interviewRepository.DeleteAllByApplicationRecordIdAsync(id);
 		repository.Delete(existing);
 		await repository.SaveChangesAsync();
 		return true;
@@ -87,6 +89,8 @@ public class ApplicationRecordService(IApplicationRecordRepository repository) :
 		sheet.Cell(1, 3).Value = "AppliedDate";
 		sheet.Cell(1, 4).Value = "PostingUrl";
 		sheet.Cell(1, 5).Value = "Notes";
+		sheet.Cell(1, 6).Value = "Description";
+		sheet.Cell(1, 7).Value = "Interviews";
 
 		for (int i = 0; i < records.Count; i++) {
 			ApplicationRecord r = records[i];
@@ -98,11 +102,24 @@ public class ApplicationRecordService(IApplicationRecordRepository repository) :
 				: string.Empty;
 			sheet.Cell(row, 4).Value = r.PostingUrl ?? string.Empty;
 			sheet.Cell(row, 5).Value = r.Notes ?? string.Empty;
+			sheet.Cell(row, 6).Value = r.Description ?? string.Empty;
+			sheet.Cell(row, 7).Value = BuildInterviewSummary(r.Interviews);
 		}
 
 		using MemoryStream stream = new();
 		workbook.SaveAs(stream);
 		return stream.ToArray();
+	}
+
+	private static string BuildInterviewSummary(List<Interview> interviews) {
+		if (interviews.Count == 0) {
+			return string.Empty;
+		}
+
+		Interview last = interviews.OrderByDescending(i => i.Date).First();
+		string count = interviews.Count == 1 ? "1 interview" : $"{interviews.Count} interviews";
+		string outcome = last.Outcome.HasValue ? $" ({last.Outcome.Value})" : string.Empty;
+		return $"{count} – last: {last.Type}{outcome}";
 	}
 
 	/// <inheritdoc />

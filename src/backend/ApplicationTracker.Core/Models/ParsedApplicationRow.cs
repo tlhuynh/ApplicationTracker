@@ -20,4 +20,7 @@ public class ParsedApplicationRow {
 
 	/// <summary>Gets or sets additional notes.</summary>
 	public string? Notes { get; set; }
+
+	/// <summary>Gets or sets the job posting description.</summary>
+	public string? Description { get; set; }
 }

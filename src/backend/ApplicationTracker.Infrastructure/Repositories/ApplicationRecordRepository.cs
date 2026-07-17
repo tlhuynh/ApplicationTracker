@@ -103,21 +103,10 @@ public class ApplicationRecordRepository(ApplicationDbContext context) : Reposit
 	public async Task<List<ApplicationRecord>> GetAllForExportAsync(string userId) {
 		return await _dbSet
 			.AsNoTracking()
+			.Include(r => r.Interviews)
 			.Where(r => r.UserId == userId)
 			.OrderBy(r => r.CompanyName)
 			.ThenByDescending(r => r.AppliedDate)
-			.Select(r => new ApplicationRecord {
-				Id = r.Id,
-				CompanyName = r.CompanyName,
-				Status = r.Status,
-				AppliedDate = r.AppliedDate,
-				PostingUrl = r.PostingUrl,
-				Notes = r.Notes,
-				UserId = r.UserId,
-				CreatedAt = r.CreatedAt,
-				LastModified = r.LastModified,
-				// Description intentionally excluded — not part of export
-			})
 			.ToListAsync();
 	}
 
@@ -145,7 +134,7 @@ public class ApplicationRecordRepository(ApplicationDbContext context) : Reposit
 		}
 
 		existing.Description = description;
-		await context.SaveChangesAsync();
+		await SaveChangesAsync();
 		return true;
 	}
 

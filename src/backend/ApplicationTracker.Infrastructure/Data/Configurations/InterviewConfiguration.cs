@@ -18,7 +18,7 @@ public class InterviewConfiguration : IEntityTypeConfiguration<Interview> {
             .HasMaxLength(450);
 
         builder.HasOne(e => e.ApplicationRecord)
-            .WithMany()
+            .WithMany(r => r.Interviews)
             .HasForeignKey(e => e.ApplicationRecordId)
             .OnDelete(DeleteBehavior.Cascade);
 

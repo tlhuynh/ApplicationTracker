@@ -91,6 +91,25 @@
               string? notes = row.Cell(5).GetString().Trim();
               if (string.IsNullOrWhiteSpace(notes)) {
                   notes = null;
+              } else if (notes.Length > 5000) {
+                  errors.Add(new() {
+                      RowNumber = rowNumber,
+                      CompanyName = companyName,
+                      ErrorMessage = "Notes must be 5000 characters or fewer."
+                  });
+                  continue;
+              }
+
+              string? description = row.Cell(6).GetString().Trim();
+              if (string.IsNullOrWhiteSpace(description)) {
+                  description = null;
+              } else if (description.Length > 20000) {
+                  errors.Add(new() {
+                      RowNumber = rowNumber,
+                      CompanyName = companyName,
+                      ErrorMessage = "Description must be 20000 characters or fewer."
+                  });
+                  continue;
               }
 
               if (await repository.ExistsAsync(companyName, appliedDate, postingUrl, userId)) {
@@ -110,6 +129,7 @@
                   AppliedDate = appliedDate,
                   PostingUrl = postingUrl,
                   Notes = notes,
+                  Description = description,
                   UserId = userId
               };
 
@@ -204,6 +224,25 @@
               string? notes = row.Cell(5).GetString().Trim();
               if (string.IsNullOrWhiteSpace(notes)) {
                   notes = null;
+              } else if (notes.Length > 5000) {
+                  errors.Add(new() {
+                      RowNumber = rowNumber,
+                      CompanyName = companyName,
+                      ErrorMessage = "Notes must be 5000 characters or fewer."
+                  });
+                  continue;
+              }
+
+              string? description = row.Cell(6).GetString().Trim();
+              if (string.IsNullOrWhiteSpace(description)) {
+                  description = null;
+              } else if (description.Length > 20000) {
+                  errors.Add(new() {
+                      RowNumber = rowNumber,
+                      CompanyName = companyName,
+                      ErrorMessage = "Description must be 20000 characters or fewer."
+                  });
+                  continue;
               }
 
               parsedRows.Add(new() {
@@ -211,7 +250,8 @@
                   Status = status,
                   AppliedDate = appliedDate,
                   PostingUrl = postingUrl,
-                  Notes = notes
+                  Notes = notes,
+                  Description = description
               });
           }
 

@@ -45,4 +45,10 @@ public class ApplicationRecord : BaseEntity {
     /// </summary>
     [NotMapped]
     public bool HasDescription { get; set; }
+
+    /// <summary>
+    /// Gets or sets the interviews associated with this application record.
+    /// Not loaded by default — only populated by queries that explicitly include it (e.g. export).
+    /// </summary>
+    public List<Interview> Interviews { get; set; } = [];
 }
